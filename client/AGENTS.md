@@ -1,0 +1,1 @@
+Keep client code under `src/` and standalone server code under `../server/src/`. The server follows MVC boundaries: routes delegate to controllers, controllers coordinate services, and models own data access.
