@@ -9,16 +9,16 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Quitech: Learn, Challenge & Progress" },
+      { title: "Quitech Online: Learn, Challenge & Progress" },
       {
         name: "description",
         content:
-          "Thousands of quiz questions across early learning, primary, secondary, college and professional tracks. Score 80% on a full section to earn a verifiable certificate.",
+          "Quitech online helps you learn faster, challenge yourself smarter, and earn verifiable certificates across every level from beginner to professional.",
       },
-      { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
+      { property: "og:title", content: "Quitech Online: Learn, Challenge & Progress" },
       {
         property: "og:description",
-        content: "Timed quizzes, instant explanations, leaderboards and verifiable certificates for every level.",
+        content: "Timed quizzes, instant feedback, leaderboards, and verifiable certificates from quitech.online.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -63,11 +63,11 @@ function HomePage() {
             {data ? `${data.totalQuestions.toLocaleString()} questions` : "Thousands of questions"} across every level
           </span>
           <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Learn, challenge, and progress from first letters to industry expertise.
+            Learn online, challenge yourself, and grow from beginner to expert.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Quitech guides early learners through primary, secondary, college and professional tracks. Practice at your
-            own pace, take the timed full section, and earn a verifiable certificate when you score 80% or more.
+            Quitech online helps learners build confidence across primary, secondary, college, and professional tracks.
+            Practice at your own pace, take timed quizzes, and earn a verifiable certificate when you reach the pass mark.
           </p>
 
           <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">

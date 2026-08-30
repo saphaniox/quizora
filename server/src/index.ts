@@ -12,6 +12,7 @@ export async function createApp() {
     credentials: true,
   });
   await app.register(helmet);
+  app.get("/", async () => ({ status: "ok", service: "quitech-api" }));
   app.get("/health", async () => ({ status: "ok", service: "quitech-api" }));
   await app.register(routes);
   return app;

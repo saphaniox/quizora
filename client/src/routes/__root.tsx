@@ -13,6 +13,8 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { Header } from "@/components/Header";
 
+const SITE_URL = "https://quitech.online";
+
 function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
@@ -78,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#0f172a" },
       { title: "Quitech: Learn, Challenge & Progress" },
       { name: "description", content: "Learn, challenge & progress. Quitech helps you learn, challenge yourself, and track progress across technology, business, science, and general knowledge." },
       { name: "application-name", content: "Quitech: Learn, Challenge & Progress" },
@@ -85,15 +88,28 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
       { property: "og:description", content: "Learn, challenge & progress." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: SITE_URL },
+      { property: "og:image", content: `${SITE_URL}/logo.png` },
+      { property: "og:image:alt", content: "Quitech logo" },
+      { property: "og:image:type", content: "image/png" },
+      { property: "og:site_name", content: "Quitech" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Quitech" },
+      { name: "twitter:title", content: "Quitech: Learn, Challenge & Progress" },
+      { name: "twitter:description", content: "Learn, challenge & progress." },
+      { name: "twitter:url", content: SITE_URL },
+      { name: "twitter:image", content: `${SITE_URL}/logo.png` },
+      { name: "twitter:image:alt", content: "Quitech logo" },
     ],
     links: [
       {
         rel: "stylesheet",
         href: appCss,
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "canonical", href: SITE_URL },
+      { rel: "icon", href: "/logo.png", type: "image/png" },
+      { rel: "apple-touch-icon", href: "/logo.png" },
+      { rel: "mask-icon", href: "/logo.png" },
     ],
   }),
   shellComponent: RootShell,

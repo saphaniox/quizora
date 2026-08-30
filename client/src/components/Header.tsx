@@ -16,9 +16,11 @@ export function Header() {
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <Link to="/" className="flex items-center gap-2 text-lg font-semibold tracking-tight text-foreground">
-          <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            Q
-          </span>
+          <img
+            src="/logo.png"
+            alt="Quitech logo"
+            className="h-9 w-9 rounded-md object-cover shadow-sm ring-1 ring-border"
+          />
           <span>Quitech</span>
         </Link>
 
