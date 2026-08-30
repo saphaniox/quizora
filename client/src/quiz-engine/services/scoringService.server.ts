@@ -36,6 +36,7 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   const maxScore = graded.length;
   const percentage = Math.round((score / maxScore) * 100);
   const playerName = payload.playerName.trim() || "Anonymous";
+  const visitorId = payload.visitorId ?? null;
   const countryCode = payload.countryCode ?? null;
   const countryName = payload.countryName ?? null;
 
@@ -46,6 +47,7 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
     levelId: quiz.levelId,
     quizTitle: `${quiz.levelName} - ${quiz.title}`,
     levelName: quiz.levelName,
+    visitorId,
     countryCode,
     countryName,
     score,
@@ -54,7 +56,7 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
     timeSpentSeconds: payload.timeSpentSeconds,
     completedAt: new Date().toISOString(),
   };
-  leaderboardModel.addEntry(entry);
+  const leaderboardResult = leaderboardModel.recordBestEntry(entry);
 
   const fullSection = answeredIds.length === quiz.questions.length;
   const passed = percentage >= PASS_MARK;
@@ -95,8 +97,10 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
     correctAnswers,
     correctOptionIndices,
     explanations,
-    leaderboardRank: leaderboardModel.rankOf(entry.id),
-    totalEntries: leaderboardModel.count(),
+    leaderboardRank: leaderboardModel.rankOf(leaderboardResult.entry.id, { quizId: quiz.id }),
+    totalEntries: leaderboardModel.count({ quizId: quiz.id }),
+    leaderboardImproved: leaderboardResult.improved,
+    leaderboardBestPercentage: leaderboardResult.entry.percentage,
     certificate,
     certificateMessage,
   };

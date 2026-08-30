@@ -59,6 +59,8 @@ function ResultsPage() {
 
   const { result } = attempt;
   const certificate = result.certificate;
+  const leaderboardBestPercentage = result.leaderboardBestPercentage ?? result.percentage;
+  const leaderboardImproved = result.leaderboardImproved !== false;
 
   const share = async () => {
     const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quitech!`;
@@ -91,7 +93,9 @@ function ResultsPage() {
               {attempt.timeSpentSeconds % 60}s.
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Rank #{result.leaderboardRank} of {result.totalEntries} attempts on this section.
+              {leaderboardImproved
+                ? `Leaderboard best: rank #${result.leaderboardRank} of ${result.totalEntries} learners on this section.`
+                : `Your leaderboard best remains ${leaderboardBestPercentage}% at rank #${result.leaderboardRank} of ${result.totalEntries} learners.`}
             </p>
             {attempt.countryName && (
               <p className="mt-1 text-sm text-muted-foreground">
@@ -108,7 +112,7 @@ function ResultsPage() {
             params={{ id: attempt.quizId }}
             className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
           >
-            <RotateCcw className="h-4 w-4" /> Retake section
+            <RotateCcw className="h-4 w-4" /> Retake quiz
           </Link>
           <button
             type="button"
@@ -124,6 +128,9 @@ function ResultsPage() {
             <Trophy className="h-4 w-4" /> Leaderboard
           </Link>
         </div>
+        <p className="mt-3 text-sm text-muted-foreground">
+          Only your highest score is used on the leaderboard; fastest time breaks ties.
+        </p>
       </div>
 
       {certificate ? (

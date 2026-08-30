@@ -127,6 +127,7 @@ export async function getQuiz(id: string, limit?: number, seed?: string): Promis
 export async function submitAnswers(payload: {
   quizId: string;
   playerName: string;
+  visitorId?: string | null;
   countryCode?: string | null;
   countryName?: string | null;
   answers: Record<string, number>;

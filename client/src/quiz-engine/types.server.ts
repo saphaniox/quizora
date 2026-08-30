@@ -76,6 +76,7 @@ export interface LeaderboardEntry {
   levelId: string;
   quizTitle: string;
   levelName: string;
+  visitorId?: string | null;
   countryCode?: string | null;
   countryName?: string | null;
   score: number;
@@ -104,6 +105,7 @@ export interface AnswerPayload {
   quizId: string;
   playerName: string;
   answers: Record<string, number>;
+  visitorId?: string | null;
   countryCode?: string | null;
   countryName?: string | null;
   timeSpentSeconds: number;
@@ -123,6 +125,8 @@ export interface AnswerResult {
   explanations: Record<string, string>;
   leaderboardRank: number;
   totalEntries: number;
+  leaderboardImproved?: boolean;
+  leaderboardBestPercentage?: number;
   certificate: Certificate | null;
   certificateMessage: string;
 }

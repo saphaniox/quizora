@@ -75,6 +75,8 @@ export interface AnswerResult {
   explanations: Record<string, string>;
   leaderboardRank: number;
   totalEntries: number;
+  leaderboardImproved?: boolean;
+  leaderboardBestPercentage?: number;
   certificate?: Certificate | null;
   certificateMessage?: string;
 }

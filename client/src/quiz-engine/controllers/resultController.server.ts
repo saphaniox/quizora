@@ -16,11 +16,21 @@ const optionalCountryName = z.preprocess(
   (value) => (typeof value === "string" && value.trim() !== "" ? value.trim() : undefined),
   z.string().max(80).optional(),
 );
+const optionalVisitorId = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() !== "" ? value.trim() : undefined),
+  z
+    .string()
+    .min(12)
+    .max(100)
+    .regex(/^[A-Za-z0-9:_-]+$/)
+    .optional(),
+);
 
 const answerSchema = z
   .object({
     quizId: z.string().min(1).max(120),
     playerName: z.string().trim().max(50).optional().default(""),
+    visitorId: optionalVisitorId,
     countryCode: optionalCountryCode,
     countryName: optionalCountryName,
     answers: z

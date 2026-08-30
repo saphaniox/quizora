@@ -29,11 +29,11 @@ const collectedData = [
   },
   {
     title: "Quiz activity",
-    body: "Quitech stores quiz submissions, scores, time spent, optional country selection, leaderboard entries, and certificate records needed to show results and verify certificates.",
+    body: "Quitech stores quiz submissions, scores, time spent, optional country selection, best-score leaderboard entries, retake records, and certificate records needed to show results and verify certificates.",
   },
   {
     title: "Device and usage data",
-    body: "The app may use cookies, local storage, hosting logs, diagnostics, and basic analytics to keep the service reliable and improve the experience.",
+    body: "The app may use cookies, local storage, a visitor identifier for non-account leaderboard retakes, hosting logs, diagnostics, and basic analytics to keep the service reliable and improve the experience.",
   },
   {
     title: "Support messages",
@@ -65,7 +65,7 @@ function PrivacyPage() {
           Your progress belongs to you.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Last updated: August 30, 2026. This policy explains how Quitech online ("Quitech", "we",
+          Last updated: August 31, 2026. This policy explains how Quitech online ("Quitech", "we",
           "us", or "our") collects, uses, shares, protects, and deletes information for learners 13
           and older.
         </p>

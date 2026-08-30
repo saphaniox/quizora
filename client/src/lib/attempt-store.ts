@@ -4,6 +4,7 @@ const ATTEMPT_KEY = "quitech-current-attempt";
 const HISTORY_KEY = "quitech-history";
 const PROFILE_KEY = "quitech-player-name";
 const COUNTRY_KEY = "quitech-player-country";
+const VISITOR_KEY = "quitech-visitor-id";
 const PROGRESS_PREFIX = "quitech-progress-";
 const CERTS_KEY = "quitech-certificates";
 
@@ -137,6 +138,19 @@ export function savePlayerCountry(country: PlayerCountry | null): void {
 
 export function loadPlayerCountry(): PlayerCountry | null {
   return read<PlayerCountry | null>(COUNTRY_KEY, null);
+}
+
+export function getVisitorId(): string {
+  if (!browser()) return "";
+  const existing = localStorage.getItem(VISITOR_KEY);
+  if (existing) return existing;
+
+  const generated =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? `visitor-${crypto.randomUUID()}`
+      : `visitor-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`;
+  localStorage.setItem(VISITOR_KEY, generated);
+  return generated;
 }
 
 /* ---------- in-progress quiz (resume) ---------- */

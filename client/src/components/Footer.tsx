@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { ExternalLink, HeartHandshake, LifeBuoy, ShieldCheck } from "lucide-react";
+import { HeartHandshake, LifeBuoy, ShieldCheck } from "lucide-react";
 
 const links = [
   { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
@@ -32,7 +32,6 @@ export function Footer() {
               className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
             >
               SAPTech Uganda
-              <ExternalLink className="h-3 w-3" />
             </a>
           </p>
         </div>

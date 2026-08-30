@@ -56,6 +56,7 @@ export async function scoreSubmission(
     submittedName && submittedName.toLowerCase() !== "anonymous"
       ? submittedName
       : user?.displayName || submittedName || "Anonymous";
+  const visitorId = user ? null : (payload.visitorId ?? null);
   const countryCode = payload.countryCode ?? null;
   const countryName = payload.countryName ?? null;
 
@@ -67,6 +68,7 @@ export async function scoreSubmission(
     quizTitle: `${quiz.levelName} - ${quiz.title}`,
     levelName: quiz.levelName,
     userId: user?.id ?? null,
+    visitorId,
     countryCode,
     countryName,
     score,
@@ -75,7 +77,7 @@ export async function scoreSubmission(
     timeSpentSeconds: payload.timeSpentSeconds,
     completedAt: new Date().toISOString(),
   };
-  await leaderboardModel.addEntry(entry);
+  const leaderboardResult = await leaderboardModel.recordBestEntry(entry);
 
   const fullSection = answeredIds.length === quiz.questions.length;
   const passed = percentage >= PASS_MARK;
@@ -117,8 +119,10 @@ export async function scoreSubmission(
     correctAnswers,
     correctOptionIndices,
     explanations,
-    leaderboardRank: await leaderboardModel.rankOf(entry.id),
-    totalEntries: await leaderboardModel.count(),
+    leaderboardRank: await leaderboardModel.rankOf(leaderboardResult.entry.id, { quizId: quiz.id }),
+    totalEntries: await leaderboardModel.count({ quizId: quiz.id }),
+    leaderboardImproved: leaderboardResult.improved,
+    leaderboardBestPercentage: leaderboardResult.entry.percentage,
     certificate,
     certificateMessage,
   };

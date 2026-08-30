@@ -45,8 +45,8 @@ function LeaderboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Leaderboard</h1>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Ranked by score, then by fastest completion time. Add a country before your attempt if you
-        want it shown.
+        Ranked by each learner's best score, then by fastest completion time. Add a country before
+        your attempt if you want it shown.
       </p>
 
       <div className="mt-6 flex flex-wrap gap-2">

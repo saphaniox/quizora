@@ -241,7 +241,7 @@ function AdminPage() {
       icon: Database,
       label: "Data endpoints",
       value: levelsQuery.isSuccess && leaderboardQuery.isSuccess ? "Responding" : "Loading",
-      detail: `${formatNumber(totalSections)} sections, ${formatNumber(leaderboard.length)} score entries`,
+      detail: `${formatNumber(totalSections)} sections, ${formatNumber(leaderboard.length)} best score entries`,
       tone:
         levelsQuery.isError || leaderboardQuery.isError
           ? "blocked"
@@ -389,7 +389,7 @@ function AdminPage() {
           />
           <MetricCard
             icon={Trophy}
-            label="Score entries"
+            label="Best score entries"
             value={formatNumber(leaderboard.length)}
             detail={`${activity.passRate}% estimated pass rate`}
           />

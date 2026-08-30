@@ -15,6 +15,7 @@ import { QuestionCard } from "@/components/QuestionCard";
 import { Timer } from "@/components/Timer";
 import {
   clearProgress,
+  getVisitorId,
   loadProgress,
   loadPlayerCountry,
   loadPlayerName,
@@ -147,6 +148,7 @@ function QuizPage() {
       const { result } = await submitAnswers({
         quizId: quiz.id,
         playerName,
+        visitorId: getVisitorId(),
         countryCode: attemptCountry?.iso ?? null,
         countryName: attemptCountry?.name ?? null,
         answers,

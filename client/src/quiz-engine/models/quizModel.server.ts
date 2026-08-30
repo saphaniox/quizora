@@ -232,14 +232,13 @@ export function findQuiz(id: string): Quiz | undefined {
 
 /**
  * Build the client-safe quiz. `limit` produces a shorter practice run, which is
- * never certificate eligible — certificates require the full section.
- * `seed` shuffles which questions appear so repeat practice runs stay fresh.
+ * never certificate eligible. `seed` shuffles question order for every run.
  */
 export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQuiz {
   const total = quiz.questions.length;
   const count = limit && limit > 0 && limit < total ? limit : total;
   let pool = quiz.questions;
-  if (seed && count < total) {
+  if (seed) {
     const random = makeRng(`${quiz.id}-${seed}`);
     pool = quiz.questions
       .map((question) => ({ question, sort: random() }))
