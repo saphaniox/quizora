@@ -12,7 +12,10 @@ export const Route = createFileRoute("/_authenticated")({
       return { user };
     } catch (error) {
       if (error instanceof Response) throw error;
-      throw redirect({ to: "/auth", search: { next: location.pathname, accountApi: "offline" } as never });
+      throw redirect({
+        to: "/auth",
+        search: { next: location.pathname, accountApi: "offline" } as never,
+      });
     }
   },
   component: () => <Outlet />,

@@ -16,7 +16,11 @@ export function rankOf(id: string): number {
 }
 
 export function list(
-  options: { levelId?: string | undefined; quizId?: string | undefined; limit?: number | undefined } = {},
+  options: {
+    levelId?: string | undefined;
+    quizId?: string | undefined;
+    limit?: number | undefined;
+  } = {},
 ): LeaderboardEntry[] {
   let result = entries;
   if (options.quizId) result = result.filter((entry) => entry.quizId === options.quizId);

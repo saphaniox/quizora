@@ -40,11 +40,17 @@ const linearAlgebraBank = () => [
   ...fromMap(
     [
       ["What is a singular matrix?", "A matrix with determinant zero"],
-      ["What is the identity matrix?", "A square matrix with ones on the diagonal and zeros elsewhere"],
+      [
+        "What is the identity matrix?",
+        "A square matrix with ones on the diagonal and zeros elsewhere",
+      ],
       ["What is the transpose of a matrix?", "The matrix with rows and columns interchanged"],
       ["What is an eigenvalue?", "A scalar λ where Av = λv for some non-zero v"],
       ["What is the rank of a matrix?", "The number of linearly independent rows or columns"],
-      ["When is a set of vectors linearly dependent?", "When one vector is a combination of the others"],
+      [
+        "When is a set of vectors linearly dependent?",
+        "When one vector is a combination of the others",
+      ],
       ["What is a basis of a vector space?", "A linearly independent set that spans the space"],
       ["What is the dimension of a vector space?", "The number of vectors in a basis"],
       ["What does an orthogonal matrix satisfy?", "Its transpose equals its inverse"],
@@ -81,7 +87,10 @@ const databaseBank = () => [
       ["What column references another table's primary key?", "A foreign key"],
       ["What enforces that a column has no duplicates?", "A UNIQUE constraint"],
       ["What is an index used for?", "Speeding up data retrieval"],
-      ["What does ACID stand for in transactions?", "Atomicity, Consistency, Isolation, Durability"],
+      [
+        "What does ACID stand for in transactions?",
+        "Atomicity, Consistency, Isolation, Durability",
+      ],
       ["What does normalisation reduce?", "Data redundancy"],
       ["What is first normal form?", "All column values are atomic"],
       ["What is a view?", "A stored query presented as a virtual table"],
@@ -116,7 +125,10 @@ const databaseBank = () => [
       return draft(
         `Which SQL statement will ${item[0]}?`,
         item[1],
-        tasks.filter((t) => t[1] !== item[1]).slice(0, 3).map((t) => t[1]),
+        tasks
+          .filter((t) => t[1] !== item[1])
+          .slice(0, 3)
+          .map((t) => t[1]),
         `To ${item[0]} use: ${item[1]}`,
       );
     },
@@ -163,21 +175,39 @@ const engPhysicsBank = () => [
   ),
   ...fromMap(
     [
-      ["What is Newton's first law?", "A body stays at rest or in uniform motion unless acted on by a force"],
+      [
+        "What is Newton's first law?",
+        "A body stays at rest or in uniform motion unless acted on by a force",
+      ],
       ["What is Newton's third law?", "Every action has an equal and opposite reaction"],
       ["What is the SI unit of power?", "The watt"],
       ["What is the SI unit of pressure?", "The pascal"],
       ["What is the SI unit of frequency?", "The hertz"],
-      ["What is Hooke's law?", "Extension is proportional to the applied force within the elastic limit"],
-      ["What is the first law of thermodynamics?", "Energy cannot be created or destroyed, only transferred"],
-      ["What does the second law of thermodynamics state?", "Entropy of an isolated system never decreases"],
+      [
+        "What is Hooke's law?",
+        "Extension is proportional to the applied force within the elastic limit",
+      ],
+      [
+        "What is the first law of thermodynamics?",
+        "Energy cannot be created or destroyed, only transferred",
+      ],
+      [
+        "What does the second law of thermodynamics state?",
+        "Entropy of an isolated system never decreases",
+      ],
       ["What is Young's modulus?", "The ratio of stress to strain in the elastic region"],
       ["What is stress?", "Force per unit area"],
       ["What is strain?", "Change in length divided by original length"],
       ["What is a moment of a force?", "Force multiplied by perpendicular distance"],
-      ["What is the principle of moments?", "For equilibrium, clockwise moments equal anticlockwise moments"],
+      [
+        "What is the principle of moments?",
+        "For equilibrium, clockwise moments equal anticlockwise moments",
+      ],
       ["What is Archimedes' principle?", "Upthrust equals the weight of fluid displaced"],
-      ["What does Bernoulli's equation relate?", "Pressure, velocity and height in a flowing fluid"],
+      [
+        "What does Bernoulli's equation relate?",
+        "Pressure, velocity and height in a flowing fluid",
+      ],
       ["What is laminar flow?", "Smooth flow in parallel layers"],
       ["What is the Reynolds number used for?", "Predicting whether flow is laminar or turbulent"],
       ["What is specific heat capacity?", "Energy needed to raise 1 kg by 1 K"],
@@ -192,7 +222,10 @@ const engPhysicsBank = () => [
 const managementBank = () => [
   ...fromMap(
     [
-      ["What are the four classic functions of management?", "Planning, organising, leading and controlling"],
+      [
+        "What are the four classic functions of management?",
+        "Planning, organising, leading and controlling",
+      ],
       ["What does SWOT analysis examine?", "Strengths, weaknesses, opportunities and threats"],
       ["What are the 4Ps of the marketing mix?", "Product, price, place and promotion"],
       ["What is market segmentation?", "Dividing a market into distinct buyer groups"],
@@ -213,9 +246,15 @@ const managementBank = () => [
       ["What is a value proposition?", "The unique benefit a product promises customers"],
       ["What is Porter's five forces about?", "Analysing competitive pressures in an industry"],
       ["What is a competitive advantage?", "An edge that lets a firm outperform rivals"],
-      ["What is supply chain management?", "Coordinating the flow of goods from supplier to customer"],
+      [
+        "What is supply chain management?",
+        "Coordinating the flow of goods from supplier to customer",
+      ],
       ["What is just-in-time production?", "Producing goods only as they are needed"],
-      ["What is total quality management?", "An organisation-wide focus on continuous quality improvement"],
+      [
+        "What is total quality management?",
+        "An organisation-wide focus on continuous quality improvement",
+      ],
       ["What is a stakeholder?", "Anyone affected by the organisation's actions"],
       ["What is change management?", "Guiding people and processes through organisational change"],
       ["What is a business model?", "How a company creates, delivers and captures value"],
@@ -255,8 +294,32 @@ const managementBank = () => [
 ];
 
 export const collegeExtraSections: SectionDefinition[] = [
-  { id: "college-linear-algebra", name: "Linear Algebra", description: "Matrices, determinants, vectors and vector spaces.", difficulty: "Hard", build: linearAlgebraBank },
-  { id: "college-databases", name: "Databases & SQL", description: "Relational design, SQL queries, transactions and scaling.", difficulty: "Hard", build: databaseBank },
-  { id: "college-engineering-physics", name: "Engineering Physics", description: "Mechanics, energy, materials, fluids and thermodynamics.", difficulty: "Hard", build: engPhysicsBank },
-  { id: "college-management", name: "Management & Marketing", description: "Management functions, strategy, marketing and break-even analysis.", difficulty: "Medium", build: managementBank },
+  {
+    id: "college-linear-algebra",
+    name: "Linear Algebra",
+    description: "Matrices, determinants, vectors and vector spaces.",
+    difficulty: "Hard",
+    build: linearAlgebraBank,
+  },
+  {
+    id: "college-databases",
+    name: "Databases & SQL",
+    description: "Relational design, SQL queries, transactions and scaling.",
+    difficulty: "Hard",
+    build: databaseBank,
+  },
+  {
+    id: "college-engineering-physics",
+    name: "Engineering Physics",
+    description: "Mechanics, energy, materials, fluids and thermodynamics.",
+    difficulty: "Hard",
+    build: engPhysicsBank,
+  },
+  {
+    id: "college-management",
+    name: "Management & Marketing",
+    description: "Management functions, strategy, marketing and break-even analysis.",
+    difficulty: "Medium",
+    build: managementBank,
+  },
 ];

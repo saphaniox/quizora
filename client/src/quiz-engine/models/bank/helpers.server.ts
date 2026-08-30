@@ -7,7 +7,12 @@ export interface Draft {
   explanation: string;
 }
 
-export function draft(text: string, correct: string, distractors: string[], explanation: string): Draft {
+export function draft(
+  text: string,
+  correct: string,
+  distractors: string[],
+  explanation: string,
+): Draft {
   return { text, correct, distractors, explanation };
 }
 
@@ -56,7 +61,8 @@ export function pick<T>(list: T[], count: number, seed: string): T[] {
 
 /** Numeric distractors that are plausible but wrong. */
 export function numericOptions(correct: number, spread = 4, decimals = 0): string[] {
-  const format = (value: number) => (decimals > 0 ? value.toFixed(decimals) : String(Math.round(value)));
+  const format = (value: number) =>
+    decimals > 0 ? value.toFixed(decimals) : String(Math.round(value));
   const candidates = new Set<string>();
   const target = format(correct);
   const offsets = [1, -1, 2, -2, 3, -3, spread, -spread];
@@ -69,7 +75,11 @@ export function numericOptions(correct: number, spread = 4, decimals = 0): strin
 }
 
 /** Repeat a generator until the section reaches `total` questions. */
-export function generate(total: number, make: (index: number, random: () => number) => Draft, seed: string): Draft[] {
+export function generate(
+  total: number,
+  make: (index: number, random: () => number) => Draft,
+  seed: string,
+): Draft[] {
   const random = makeRng(seed);
   const out: Draft[] = [];
   const seen = new Set<string>();
@@ -141,7 +151,10 @@ const FRAMINGS = [
 ];
 
 function stem(text: string): string {
-  const clean = text.replace(/\s+/g, " ").trim().replace(/[?:.]+$/, "");
+  const clean = text
+    .replace(/\s+/g, " ")
+    .trim()
+    .replace(/[?:.]+$/, "");
   return clean.length > 90 ? `${clean.slice(0, 87)}…` : clean;
 }
 
@@ -217,11 +230,17 @@ export function expandTo(sectionId: string, base: Draft[], target: number): Draf
     const text = `Practice set ${extra} · Q${out.length + 1} — ${item.text}`;
     if (!seen.has(text)) {
       seen.add(text);
-      out.push(draft(text, item.correct, fill(answers, item.correct, `${sectionId}-x${out.length}`), item.explanation));
+      out.push(
+        draft(
+          text,
+          item.correct,
+          fill(answers, item.correct, `${sectionId}-x${out.length}`),
+          item.explanation,
+        ),
+      );
     }
     extra += 1;
   }
 
   return out.slice(0, target);
 }
-

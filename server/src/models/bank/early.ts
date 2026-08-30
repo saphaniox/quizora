@@ -10,7 +10,7 @@ const countingBank = () =>
       const n = 1 + Math.floor(random() * 20);
       if (kind === 0) {
         return draft(
-          `How many stars are here?  ${"â˜…".repeat(Math.min(n, 10))}`,
+          `How many stars are here?  ${"★".repeat(Math.min(n, 10))}`,
           String(Math.min(n, 10)),
           numericOptions(Math.min(n, 10), 3),
           `Count them one by one: there are ${Math.min(n, 10)} stars.`,
@@ -147,7 +147,7 @@ const shapesBank = () => [
       if (kind === 1) {
         const count = 2 + (index % 6);
         return draft(
-          `${"â– ".repeat(count)}  How many squares can you see?`,
+          `${"■".repeat(count)}  How many squares can you see?`,
           String(count),
           numericOptions(count, 2),
           `Count each square: there are ${count}.`,
@@ -179,7 +179,7 @@ const additionBank = () =>
       }
       if (kind === 1) {
         const big = a + b;
-        return draft(`What is ${big} âˆ’ ${a}?`, String(b), numericOptions(b, 3), `${big} âˆ’ ${a} = ${b}.`);
+        return draft(`What is ${big} − ${a}?`, String(b), numericOptions(b, 3), `${big} − ${a} = ${b}.`);
       }
       if (kind === 2) {
         const answer = a + b;
@@ -196,7 +196,7 @@ const additionBank = () =>
         `There are ${total} mangoes on a plate and ${eaten} are eaten. How many are left?`,
         String(total - eaten),
         numericOptions(total - eaten, 3),
-        `${total} âˆ’ ${eaten} = ${total - eaten} mangoes.`,
+        `${total} − ${eaten} = ${total - eaten} mangoes.`,
       );
     },
     "early-addition",

@@ -29,7 +29,12 @@ const moneyTimeBank = () =>
       if (kind === 2) {
         const hour = 1 + (index % 11);
         const minutes = 15 * (1 + (index % 3));
-        const answer = minutes === 15 ? "Quarter past" : minutes === 30 ? "Half past" : "Quarter to the next hour";
+        const answer =
+          minutes === 15
+            ? "Quarter past"
+            : minutes === 30
+              ? "Half past"
+              : "Quarter to the next hour";
         return draft(
           `The clock reads ${hour}:${String(minutes).padStart(2, "0")}. How do we say this time?`,
           `${answer} ${minutes === 45 ? hour + 1 : hour}`.trim(),
@@ -82,16 +87,34 @@ const grammarFacts: [string, string][] = [
 ];
 
 const spellings: [string, string][] = [
-  ["recieve / receive", "receive"], ["freind / friend", "friend"], ["becuase / because", "because"],
-  ["beautifull / beautiful", "beautiful"], ["tomorow / tomorrow", "tomorrow"], ["adress / address", "address"],
-  ["seperate / separate", "separate"], ["definately / definitely", "definitely"], ["libary / library"," library"],
-  ["writting / writing", "writing"], ["begining / beginning", "beginning"], ["neccessary / necessary", "necessary"],
-  ["occassion / occasion", "occasion"], ["enviroment / environment", "environment"], ["goverment / government", "government"],
+  ["recieve / receive", "receive"],
+  ["freind / friend", "friend"],
+  ["becuase / because", "because"],
+  ["beautifull / beautiful", "beautiful"],
+  ["tomorow / tomorrow", "tomorrow"],
+  ["adress / address", "address"],
+  ["seperate / separate", "separate"],
+  ["definately / definitely", "definitely"],
+  ["libary / library", " library"],
+  ["writting / writing", "writing"],
+  ["begining / beginning", "beginning"],
+  ["neccessary / necessary", "necessary"],
+  ["occassion / occasion", "occasion"],
+  ["enviroment / environment", "environment"],
+  ["goverment / government", "government"],
 ];
 
 const readingBank = () => [
-  ...fromMap(grammarFacts, (k) => `${k} is called what?`, (k, v) => `${k} is ${v.toLowerCase()}.`),
-  ...fromMap(spellings, (k) => `Which spelling is correct: ${k}?`, (_k, v) => `The correct spelling is "${v.trim()}".`),
+  ...fromMap(
+    grammarFacts,
+    (k) => `${k} is called what?`,
+    (k, v) => `${k} is ${v.toLowerCase()}.`,
+  ),
+  ...fromMap(
+    spellings,
+    (k) => `Which spelling is correct: ${k}?`,
+    (_k, v) => `The correct spelling is "${v.trim()}".`,
+  ),
   ...generate(
     15,
     (index) => {
@@ -106,7 +129,10 @@ const readingBank = () => [
       return draft(
         `Complete the sentence: ${item[0]}`,
         item[1],
-        items.filter((i) => i[1] !== item[1]).slice(0, 3).map((i) => i[1]),
+        items
+          .filter((i) => i[1] !== item[1])
+          .slice(0, 3)
+          .map((i) => i[1]),
         `The correct sentence is: ${item[0].replace("___", item[1])}`,
       );
     },
@@ -148,19 +174,29 @@ const healthFacts: [string, string][] = [
 ];
 
 const healthBank = () => [
-  ...fromMap(healthFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
+  ...fromMap(
+    healthFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
   ...generate(
     15,
     (index) => {
       const nutrients: [string, string][] = [
-        ["Rice and bread", "Carbohydrates"], ["Beans and fish", "Proteins"], ["Oranges and mangoes", "Vitamins"],
-        ["Milk and small fish", "Calcium"], ["Cooking oil and groundnuts", "Fats"],
+        ["Rice and bread", "Carbohydrates"],
+        ["Beans and fish", "Proteins"],
+        ["Oranges and mangoes", "Vitamins"],
+        ["Milk and small fish", "Calcium"],
+        ["Cooking oil and groundnuts", "Fats"],
       ];
       const item = nutrients[index % nutrients.length] as [string, string];
       return draft(
         `${item[0]} mainly give the body which nutrient?`,
         item[1],
-        nutrients.filter((n) => n[1] !== item[1]).slice(0, 3).map((n) => n[1]),
+        nutrients
+          .filter((n) => n[1] !== item[1])
+          .slice(0, 3)
+          .map((n) => n[1]),
         `${item[0]} are a good source of ${item[1].toLowerCase()}.`,
       );
     },
@@ -220,8 +256,32 @@ const reasoningBank = () =>
   );
 
 export const primaryExtraSections: SectionDefinition[] = [
-  { id: "primary-money-time", name: "Money & Time", description: "Shopping change, prices, clocks and calendars.", difficulty: "Easy", build: moneyTimeBank },
-  { id: "primary-reading", name: "Reading & Grammar", description: "Parts of speech, punctuation, spelling and sentences.", difficulty: "Easy", build: readingBank },
-  { id: "primary-health", name: "Health & Hygiene", description: "Personal hygiene, nutrition, safety and staying well.", difficulty: "Easy", build: healthBank },
-  { id: "primary-reasoning", name: "Everyday Problem Solving", description: "Number patterns and simple real-life word problems.", difficulty: "Easy", build: reasoningBank },
+  {
+    id: "primary-money-time",
+    name: "Money & Time",
+    description: "Shopping change, prices, clocks and calendars.",
+    difficulty: "Easy",
+    build: moneyTimeBank,
+  },
+  {
+    id: "primary-reading",
+    name: "Reading & Grammar",
+    description: "Parts of speech, punctuation, spelling and sentences.",
+    difficulty: "Easy",
+    build: readingBank,
+  },
+  {
+    id: "primary-health",
+    name: "Health & Hygiene",
+    description: "Personal hygiene, nutrition, safety and staying well.",
+    difficulty: "Easy",
+    build: healthBank,
+  },
+  {
+    id: "primary-reasoning",
+    name: "Everyday Problem Solving",
+    description: "Number patterns and simple real-life word problems.",
+    difficulty: "Easy",
+    build: reasoningBank,
+  },
 ];

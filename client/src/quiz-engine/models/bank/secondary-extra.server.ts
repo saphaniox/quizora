@@ -39,7 +39,10 @@ const govFacts: [string, string][] = [
   ["What do we call the right to vote?", "Suffrage"],
   ["What is the role of an opposition party?", "To hold the government accountable"],
   ["What is a by-election?", "An election held between general elections"],
-  ["What is meant by separation of powers?", "Splitting authority between the three arms of government"],
+  [
+    "What is meant by separation of powers?",
+    "Splitting authority between the three arms of government",
+  ],
   ["What is the term for money the government collects from citizens?", "Taxation"],
   ["What is a national budget?", "A plan of government income and spending"],
   ["What do we call the movement of people into a country?", "Immigration"],
@@ -57,8 +60,16 @@ const govFacts: [string, string][] = [
 ];
 
 const historyBank = () => [
-  ...fromMap(historyFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
-  ...fromMap(govFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
+  ...fromMap(
+    historyFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
+  ...fromMap(
+    govFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
 ];
 
 const literatureFacts: [string, string][] = [
@@ -95,7 +106,11 @@ const literatureFacts: [string, string][] = [
 ];
 
 const comprehensionBank = () => [
-  ...fromMap(literatureFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
+  ...fromMap(
+    literatureFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
   ...generate(
     20,
     (index) => {
@@ -111,7 +126,10 @@ const comprehensionBank = () => [
       return draft(
         `Which figure of speech is used in: "${item[0]}"?`,
         item[1],
-        items.filter((i) => i[1] !== item[1]).slice(0, 3).map((i) => i[1]),
+        items
+          .filter((i) => i[1] !== item[1])
+          .slice(0, 3)
+          .map((i) => i[1]),
         `"${item[0]}" is an example of ${item[1].toLowerCase()}.`,
       );
     },
@@ -153,7 +171,11 @@ const businessFacts: [string, string][] = [
 ];
 
 const businessBank = () => [
-  ...fromMap(businessFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
+  ...fromMap(
+    businessFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
   ...generate(
     40,
     (index, random) => {
@@ -217,7 +239,11 @@ const computerFacts: [string, string][] = [
 ];
 
 const computerBank = () => [
-  ...fromMap(computerFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
+  ...fromMap(
+    computerFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
   ...generate(
     20,
     (index) => {
@@ -245,8 +271,32 @@ const computerBank = () => [
 ];
 
 export const secondaryExtraSections: SectionDefinition[] = [
-  { id: "secondary-history", name: "History & Government", description: "World and African history, governance and citizenship.", difficulty: "Medium", build: historyBank },
-  { id: "secondary-literature", name: "Literature & Comprehension", description: "Figures of speech, literary terms and text analysis.", difficulty: "Medium", build: comprehensionBank },
-  { id: "secondary-business", name: "Business Studies", description: "Trade, costs, profit calculations and commerce basics.", difficulty: "Medium", build: businessBank },
-  { id: "secondary-computer", name: "Computer Studies", description: "Hardware, software, networks, binary and safe computing.", difficulty: "Medium", build: computerBank },
+  {
+    id: "secondary-history",
+    name: "History & Government",
+    description: "World and African history, governance and citizenship.",
+    difficulty: "Medium",
+    build: historyBank,
+  },
+  {
+    id: "secondary-literature",
+    name: "Literature & Comprehension",
+    description: "Figures of speech, literary terms and text analysis.",
+    difficulty: "Medium",
+    build: comprehensionBank,
+  },
+  {
+    id: "secondary-business",
+    name: "Business Studies",
+    description: "Trade, costs, profit calculations and commerce basics.",
+    difficulty: "Medium",
+    build: businessBank,
+  },
+  {
+    id: "secondary-computer",
+    name: "Computer Studies",
+    description: "Hardware, software, networks, binary and safe computing.",
+    difficulty: "Medium",
+    build: computerBank,
+  },
 ];

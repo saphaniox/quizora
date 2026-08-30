@@ -13,7 +13,7 @@ const moneyTimeBank = () =>
           `An item costs ${price} shillings and you pay with ${paid} shillings. How much change do you get?`,
           String(change),
           numericOptions(change, 50),
-          `${paid} âˆ’ ${price} = ${change} shillings.`,
+          `${paid} − ${price} = ${change} shillings.`,
         );
       }
       if (kind === 1) {
@@ -23,7 +23,7 @@ const moneyTimeBank = () =>
           `One book costs ${price} shillings. How much do ${count} books cost?`,
           String(total),
           numericOptions(total, Math.max(50, Math.round(total / 5))),
-          `${price} Ã— ${count} = ${total} shillings.`,
+          `${price} × ${count} = ${total} shillings.`,
         );
       }
       if (kind === 2) {
@@ -44,7 +44,7 @@ const moneyTimeBank = () =>
           `How many hours are ${mins} minutes?`,
           hours % 1 === 0 ? String(hours) : hours.toFixed(1),
           numericOptions(hours, 2, hours % 1 === 0 ? 0 : 1),
-          `${mins} Ã· 60 = ${hours % 1 === 0 ? hours : hours.toFixed(1)} hours.`,
+          `${mins} ÷ 60 = ${hours % 1 === 0 ? hours : hours.toFixed(1)} hours.`,
         );
       }
       const days = 7 * (1 + (index % 8));
@@ -52,7 +52,7 @@ const moneyTimeBank = () =>
         `How many weeks are in ${days} days?`,
         String(days / 7),
         numericOptions(days / 7, 3),
-        `${days} Ã· 7 = ${days / 7} weeks.`,
+        `${days} ÷ 7 = ${days / 7} weeks.`,
       );
     },
     "primary-money-time",
@@ -194,7 +194,7 @@ const reasoningBank = () =>
           `${items} baskets each hold ${each} oranges. How many oranges altogether?`,
           String(total),
           numericOptions(total, 3),
-          `${items} Ã— ${each} = ${total} oranges.`,
+          `${items} × ${each} = ${total} oranges.`,
         );
       }
       if (kind === 2) {
@@ -204,7 +204,7 @@ const reasoningBank = () =>
           `${pupils} pupils are shared equally into ${groups} groups. How many are in each group?`,
           String(pupils / groups),
           numericOptions(pupils / groups, 3),
-          `${pupils} Ã· ${groups} = ${pupils / groups} pupils per group.`,
+          `${pupils} ÷ ${groups} = ${pupils / groups} pupils per group.`,
         );
       }
       const total = 10 * (2 + (index % 8));

@@ -20,7 +20,7 @@ const iotFacts: Facts = [
   ["Which sensor is typically used for room occupancy detection?", "A PIR motion sensor"],
   ["What does an ADC do on a microcontroller?", "Converts analogue voltage into a digital value"],
   ["What does PWM control on an actuator?", "The average power by varying duty cycle"],
-  ["Which two-wire bus uses SDA and SCL lines?", "IÂ²C"],
+  ["Which two-wire bus uses SDA and SCL lines?", "I²C"],
   ["Which bus uses MOSI, MISO, SCLK and CS?", "SPI"],
   ["Which serial interface uses TX and RX with no clock line?", "UART"],
   ["What is firmware?", "Software stored permanently on a device"],
@@ -132,10 +132,10 @@ const automationBank = () => [
         const mA = 4 + 4 * (1 + (index % 4));
         const value = Number((((mA - 4) / 16) * span).toFixed(1));
         return draft(
-          `A 4-20 mA transmitter is scaled 0 to ${span} Â°C. What temperature does ${mA} mA represent?`,
-          `${value} Â°C`,
-          numericOptions(value, Math.max(5, Math.round(span / 8)), 1).map((v) => `${v} Â°C`),
-          `(${mA} âˆ’ 4)/16 Ã— ${span} = ${value} Â°C.`,
+          `A 4-20 mA transmitter is scaled 0 to ${span} °C. What temperature does ${mA} mA represent?`,
+          `${value} °C`,
+          numericOptions(value, Math.max(5, Math.round(span / 8)), 1).map((v) => `${v} °C`),
+          `(${mA} − 4)/16 × ${span} = ${value} °C.`,
         );
       }
       const value = Math.round(span / 4) * (1 + (index % 2));
@@ -144,7 +144,7 @@ const automationBank = () => [
         `A 4-20 mA transmitter is scaled 0 to ${span} bar. What current represents ${value} bar?`,
         `${mA} mA`,
         numericOptions(mA, 3, 2).map((v) => `${v} mA`),
-        `4 + (${value}/${span}) Ã— 16 = ${mA} mA.`,
+        `4 + (${value}/${span}) × 16 = ${mA} mA.`,
       );
     },
     "professional-automation",
@@ -265,9 +265,9 @@ const mechanicalBank = () => [
         const t = Number((f * r).toFixed(1));
         return draft(
           `A force of ${f} N acts at ${r} m from a shaft centre. What torque is produced?`,
-          `${t} NÂ·m`,
-          numericOptions(t, Math.max(2, Math.round(t / 5)), 1).map((v) => `${v} NÂ·m`),
-          `T = F Ã— r = ${f} Ã— ${r} = ${t} NÂ·m.`,
+          `${t} N·m`,
+          numericOptions(t, Math.max(2, Math.round(t / 5)), 1).map((v) => `${v} N·m`),
+          `T = F × r = ${f} × ${r} = ${t} N·m.`,
         );
       }
       if (kind === 1) {
@@ -284,10 +284,10 @@ const mechanicalBank = () => [
       const area = 100 * (1 + (index % 5));
       const stress = Number((f / area).toFixed(3));
       return draft(
-        `A tensile force of ${f} N acts on a cross-section of ${area} mmÂ². What is the stress?`,
+        `A tensile force of ${f} N acts on a cross-section of ${area} mm². What is the stress?`,
         `${stress} MPa`,
         numericOptions(stress, 1, 3).map((v) => `${v} MPa`),
-        `Ïƒ = F/A = ${f} N / ${area} mmÂ² = ${stress} MPa (1 N/mmÂ² = 1 MPa).`,
+        `σ = F/A = ${f} N / ${area} mm² = ${stress} MPa (1 N/mm² = 1 MPa).`,
       );
     },
     "professional-mechanical",
@@ -351,18 +351,18 @@ const civilBank = () => [
         const volume = Number((l * w * 0.15).toFixed(2));
         return draft(
           `A slab measures ${l} m by ${w} m and is 150 mm thick. What volume of concrete is required?`,
-          `${volume} mÂ³`,
-          numericOptions(volume, 2, 2).map((v) => `${v} mÂ³`),
-          `${l} Ã— ${w} Ã— 0.15 = ${volume} mÂ³.`,
+          `${volume} m³`,
+          numericOptions(volume, 2, 2).map((v) => `${v} m³`),
+          `${l} × ${w} × 0.15 = ${volume} m³.`,
         );
       }
       const udl = 5 * (1 + (index % 5));
       const moment = Number(((udl * l * l) / 8).toFixed(2));
       return draft(
         `A simply supported beam of span ${l} m carries a UDL of ${udl} kN/m. What is the maximum bending moment?`,
-        `${moment} kNÂ·m`,
-        numericOptions(moment, Math.max(2, Math.round(moment / 5)), 2).map((v) => `${v} kNÂ·m`),
-        `M = wLÂ²/8 = ${udl} Ã— ${l}Â² / 8 = ${moment} kNÂ·m.`,
+        `${moment} kN·m`,
+        numericOptions(moment, Math.max(2, Math.round(moment / 5)), 2).map((v) => `${v} kN·m`),
+        `M = wL²/8 = ${udl} × ${l}² / 8 = ${moment} kN·m.`,
       );
     },
     "professional-civil",
@@ -373,7 +373,7 @@ const civilBank = () => [
 
 const healthcareFacts: Facts = [
   ["What is the normal adult resting heart rate range?", "60 to 100 beats per minute"],
-  ["What is a normal adult body temperature?", "About 36.5 to 37.5 Â°C"],
+  ["What is a normal adult body temperature?", "About 36.5 to 37.5 °C"],
   ["What is a normal adult respiratory rate?", "12 to 20 breaths per minute"],
   ["What blood pressure is considered normal for adults?", "About 120/80 mmHg"],
   ["What does hypertension mean?", "Persistently high blood pressure"],
@@ -634,7 +634,7 @@ const automotiveBank = () => [
         `A vehicle uses ${litres} litres of fuel over ${km} km. What is its fuel consumption?`,
         `${consumption} L/100 km`,
         numericOptions(consumption, 2, 2).map((v) => `${v} L/100 km`),
-        `(${litres} / ${km}) Ã— 100 = ${consumption} L per 100 km.`,
+        `(${litres} / ${km}) × 100 = ${consumption} L per 100 km.`,
       );
     },
     "professional-automotive",

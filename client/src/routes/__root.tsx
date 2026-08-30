@@ -82,7 +82,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "viewport", content: "width=device-width, initial-scale=1" },
       { name: "theme-color", content: "#0f172a" },
       { title: "Quitech: Learn, Challenge & Progress" },
-      { name: "description", content: "Learn, challenge & progress. Quitech helps you learn, challenge yourself, and track progress across technology, business, science, and general knowledge." },
+      {
+        name: "description",
+        content:
+          "Learn, challenge & progress. Quitech helps you learn, challenge yourself, and track progress across technology, business, science, and general knowledge.",
+      },
       { name: "application-name", content: "Quitech: Learn, Challenge & Progress" },
       { name: "author", content: "Quitech" },
       { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },

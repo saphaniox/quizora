@@ -48,7 +48,9 @@ export function downloadCertificatePdf(certificate: Certificate, verifyUrl: stri
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text(`${certificate.levelName}  -  ${certificate.category}`, width / 2, 290, { align: "center" });
+  doc.text(`${certificate.levelName}  -  ${certificate.category}`, width / 2, 290, {
+    align: "center",
+  });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);

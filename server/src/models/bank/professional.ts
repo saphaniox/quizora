@@ -10,7 +10,7 @@ const electricalBank = () => [
       if (kind === 0) {
         const current = Number((voltage / resistance).toFixed(2));
         return draft(
-          `A ${voltage} V supply is connected across a ${resistance} Î© resistor. What current flows?`,
+          `A ${voltage} V supply is connected across a ${resistance} Ω resistor. What current flows?`,
           `${current} A`,
           numericOptions(current, 3, 2).map((v) => `${v} A`),
           `Ohm's law: I = V / R = ${voltage} / ${resistance} = ${current} A.`,
@@ -23,26 +23,26 @@ const electricalBank = () => [
           `A load draws ${current} A from a ${voltage} V DC supply. What power does it consume?`,
           `${power} W`,
           numericOptions(power, Math.max(5, Math.round(power / 5))).map((v) => `${v} W`),
-          `P = VI = ${voltage} Ã— ${current} = ${power} W.`,
+          `P = VI = ${voltage} × ${current} = ${power} W.`,
         );
       }
       if (kind === 2) {
         const r2 = 2 + ((index * 3) % 40);
         const series = resistance + r2;
         return draft(
-          `Resistors of ${resistance} Î© and ${r2} Î© are connected in series. What is the total resistance?`,
-          `${series} Î©`,
-          numericOptions(series, Math.max(3, Math.round(series / 4))).map((v) => `${v} Î©`),
-          `Series resistances add: ${resistance} + ${r2} = ${series} Î©.`,
+          `Resistors of ${resistance} Ω and ${r2} Ω are connected in series. What is the total resistance?`,
+          `${series} Ω`,
+          numericOptions(series, Math.max(3, Math.round(series / 4))).map((v) => `${v} Ω`),
+          `Series resistances add: ${resistance} + ${r2} = ${series} Ω.`,
         );
       }
       const r2 = 2 + ((index * 5) % 40);
       const parallel = Number(((resistance * r2) / (resistance + r2)).toFixed(2));
       return draft(
-        `Resistors of ${resistance} Î© and ${r2} Î© are connected in parallel. What is the total resistance?`,
-        `${parallel} Î©`,
-        numericOptions(parallel, 4, 2).map((v) => `${v} Î©`),
-        `R = (R1Ã—R2)/(R1+R2) = (${resistance}Ã—${r2})/(${resistance + r2}) = ${parallel} Î©.`,
+        `Resistors of ${resistance} Ω and ${r2} Ω are connected in parallel. What is the total resistance?`,
+        `${parallel} Ω`,
+        numericOptions(parallel, 4, 2).map((v) => `${v} Ω`),
+        `R = (R1×R2)/(R1+R2) = (${resistance}×${r2})/(${resistance + r2}) = ${parallel} Ω.`,
       );
     },
     "professional-electrical",
@@ -131,7 +131,7 @@ const networkingBank = () => [
         `How many usable host addresses are in a /${prefix} IPv4 subnet?`,
         String(hosts),
         numericOptions(hosts, Math.max(2, Math.round(hosts / 2))),
-        `2^(32âˆ’${prefix}) âˆ’ 2 = ${hosts} usable addresses.`,
+        `2^(32−${prefix}) − 2 = ${hosts} usable addresses.`,
       );
     },
     "professional-it",
@@ -183,7 +183,7 @@ const financeBank = () => [
       const kind = index % 2;
       if (kind === 0) {
         const interest = Number(((principal * rate) / 100).toFixed(2));
-        return draft(`What is one year of simple interest on $${principal} at ${rate}% per year?`, `$${interest}`, numericOptions(interest, Math.round(interest / 4), 2).map((v) => `$${v}`), `Interest = ${principal} Ã— ${rate}% = $${interest}.`);
+        return draft(`What is one year of simple interest on $${principal} at ${rate}% per year?`, `$${interest}`, numericOptions(interest, Math.round(interest / 4), 2).map((v) => `$${v}`), `Interest = ${principal} × ${rate}% = $${interest}.`);
       }
       const years = 2 + (index % 4);
       const amount = Number((principal * Math.pow(1 + rate / 100, years)).toFixed(2));
@@ -191,7 +191,7 @@ const financeBank = () => [
         `What is $${principal} worth after ${years} years at ${rate}% compound interest?`,
         `$${amount}`,
         numericOptions(amount, Math.round(amount / 12), 2).map((v) => `$${v}`),
-        `A = P(1+r)^n = ${principal} Ã— (1+${rate / 100})^${years} = $${amount}.`,
+        `A = P(1+r)^n = ${principal} × (1+${rate / 100})^${years} = $${amount}.`,
       );
     },
     "professional-finance",
@@ -255,7 +255,7 @@ const safetyBank = () =>
       ["What is the least effective control in the hierarchy?", "Personal protective equipment"],
       ["What sign colour indicates prohibition?", "Red"],
       ["What sign colour indicates mandatory action?", "Blue"],
-      ["What extinguisher suits electrical fires?", "A COâ‚‚ extinguisher"],
+      ["What extinguisher suits electrical fires?", "A CO₂ extinguisher"],
       ["What extinguisher suits cooking oil fires?", "A wet chemical extinguisher"],
       ["What three things does fire need?", "Heat, fuel and oxygen"],
       ["What should be done first at an incident scene?", "Make the area safe"],

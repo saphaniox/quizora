@@ -21,7 +21,9 @@ export function ScoreRing({ percentage, size = "md", label }: ScoreRingProps) {
 
   return (
     <div className="flex flex-col items-center gap-3">
-      <div className={cn("relative flex items-center justify-center rounded-full", sizeClasses[size])}>
+      <div
+        className={cn("relative flex items-center justify-center rounded-full", sizeClasses[size])}
+      >
         <svg className="absolute inset-0 h-full w-full -rotate-90" viewBox="0 0 100 100">
           <circle
             cx="50"

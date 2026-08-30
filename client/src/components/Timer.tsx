@@ -39,7 +39,12 @@ export function Timer({ totalSeconds, onExpire, running, className }: TimerProps
   const isLow = remaining <= 10;
 
   return (
-    <div className={cn("flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm",
+        className,
+      )}
+    >
       <div className="relative flex h-10 w-10 items-center justify-center">
         <svg className="h-10 w-10 -rotate-90" viewBox="0 0 36 36">
           <path
@@ -50,7 +55,10 @@ export function Timer({ totalSeconds, onExpire, running, className }: TimerProps
             strokeWidth="3"
           />
           <path
-            className={cn("transition-all duration-1000 ease-linear", isLow ? "text-destructive" : "text-primary")}
+            className={cn(
+              "transition-all duration-1000 ease-linear",
+              isLow ? "text-destructive" : "text-primary",
+            )}
             d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831"
             fill="none"
             stroke="currentColor"
@@ -62,7 +70,12 @@ export function Timer({ totalSeconds, onExpire, running, className }: TimerProps
       </div>
       <div>
         <p className="text-xs font-medium text-muted-foreground">Time remaining</p>
-        <p className={cn("text-lg font-semibold tabular-nums tracking-tight", isLow && "text-destructive")}>
+        <p
+          className={cn(
+            "text-lg font-semibold tabular-nums tracking-tight",
+            isLow && "text-destructive",
+          )}
+        >
           {minutes.toString().padStart(2, "0")}:{seconds.toString().padStart(2, "0")}
         </p>
       </div>

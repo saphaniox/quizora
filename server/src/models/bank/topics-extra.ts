@@ -136,7 +136,7 @@ export const earlyExtraTopics: SectionDefinition[] = [
   genSection("early-take-away", "Taking Away", "Simple subtraction for first-time learners.", "Easy", (_i, random) => {
     const a = int(random, 2, 20);
     const b = int(random, 1, a - 1);
-    return draft(`What is ${a} âˆ’ ${b}?`, String(a - b), numericOptions(a - b, 3), `Taking ${b} away from ${a} leaves ${a - b}.`);
+    return draft(`What is ${a} − ${b}?`, String(a - b), numericOptions(a - b, 3), `Taking ${b} away from ${a} leaves ${a - b}.`);
   }),
   genSection("early-bigger-smaller", "Bigger and Smaller", "Comparing numbers and quantities.", "Easy", (index, random) => {
     const a = int(random, 1, 50);
@@ -238,7 +238,7 @@ const capitalFacts: [string, string][] = [
   ["What is the capital of Nigeria?", "Abuja"], ["What is the capital of Egypt?", "Cairo"],
   ["What is the capital of South Africa (legislative)?", "Cape Town"], ["What is the capital of Ghana?", "Accra"],
   ["What is the capital of France?", "Paris"], ["What is the capital of Japan?", "Tokyo"],
-  ["What is the capital of Brazil?", "BrasÃ­lia"], ["What is the capital of Canada?", "Ottawa"],
+  ["What is the capital of Brazil?", "Brasília"], ["What is the capital of Canada?", "Ottawa"],
   ["What is the capital of India?", "New Delhi"], ["What is the capital of China?", "Beijing"],
   ["What is the largest continent?", "Asia"], ["What is the longest river in Africa?", "The Nile"],
   ["What is the largest ocean?", "The Pacific Ocean"], ["What is the largest desert in Africa?", "The Sahara"],
@@ -250,12 +250,12 @@ export const primaryExtraTopics: SectionDefinition[] = [
   genSection("primary-times-tables", "Times Tables", "Multiplication facts from 2 to 12.", "Easy", (_i, random) => {
     const a = int(random, 2, 12);
     const b = int(random, 2, 12);
-    return draft(`What is ${a} Ã— ${b}?`, String(a * b), numericOptions(a * b, 6), `${a} times ${b} equals ${a * b}.`);
+    return draft(`What is ${a} × ${b}?`, String(a * b), numericOptions(a * b, 6), `${a} times ${b} equals ${a * b}.`);
   }),
   genSection("primary-division", "Division Facts", "Sharing equally and finding exact quotients.", "Easy", (_i, random) => {
     const b = int(random, 2, 12);
     const answer = int(random, 2, 12);
-    return draft(`What is ${b * answer} Ã· ${b}?`, String(answer), numericOptions(answer, 4), `${b} Ã— ${answer} = ${b * answer}, so the answer is ${answer}.`);
+    return draft(`What is ${b * answer} ÷ ${b}?`, String(answer), numericOptions(answer, 4), `${b} × ${answer} = ${b * answer}, so the answer is ${answer}.`);
   }),
   genSection("primary-fractions", "Fractions", "Halves, quarters and fractions of amounts.", "Medium", (_i, random) => {
     const denom = [2, 3, 4, 5, 10][int(random, 0, 4)] as number;
@@ -278,10 +278,10 @@ export const primaryExtraTopics: SectionDefinition[] = [
   genSection("primary-time", "Telling the Time", "Reading clocks and working with minutes.", "Easy", (index, random) => {
     const minutes = int(random, 1, 11) * 5;
     if (index % 2 === 0) {
-      return draft(`How many minutes are in ${minutes} Ã— 1 minute plus one hour?`, String(minutes + 60), numericOptions(minutes + 60, 10), `One hour is 60 minutes, plus ${minutes} makes ${minutes + 60}.`);
+      return draft(`How many minutes are in ${minutes} × 1 minute plus one hour?`, String(minutes + 60), numericOptions(minutes + 60, 10), `One hour is 60 minutes, plus ${minutes} makes ${minutes + 60}.`);
     }
     const hours = int(random, 1, 11);
-    return draft(`How many minutes are there in ${hours} hours?`, String(hours * 60), numericOptions(hours * 60, 30), `${hours} Ã— 60 = ${hours * 60} minutes.`);
+    return draft(`How many minutes are there in ${hours} hours?`, String(hours * 60), numericOptions(hours * 60, 30), `${hours} × 60 = ${hours * 60} minutes.`);
   }),
   genSection("primary-money", "Money & Shopping", "Change, totals and simple budgeting.", "Medium", (_i, random) => {
     const price = int(random, 2, 40) * 50;
@@ -291,7 +291,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
       `An item costs ${price}. You pay ${paid}. How much change do you get?`,
       String(change),
       numericOptions(change, 100),
-      `${paid} âˆ’ ${price} = ${change}.`,
+      `${paid} − ${price} = ${change}.`,
     );
   }),
   genSection("primary-rounding", "Rounding & Estimation", "Rounding to the nearest ten and hundred.", "Medium", (index, random) => {
@@ -313,15 +313,15 @@ export const primaryExtraTopics: SectionDefinition[] = [
 /* ============================== SECONDARY ================================ */
 
 const chemFacts: [string, string][] = [
-  ["What is the chemical formula of water?", "Hâ‚‚O"], ["What is the formula of carbon dioxide?", "COâ‚‚"],
-  ["What is the formula of table salt?", "NaCl"], ["What is the formula of methane?", "CHâ‚„"],
-  ["What is the formula of ammonia?", "NHâ‚ƒ"], ["What is the formula of sulfuric acid?", "Hâ‚‚SOâ‚„"],
+  ["What is the chemical formula of water?", "H₂O"], ["What is the formula of carbon dioxide?", "CO₂"],
+  ["What is the formula of table salt?", "NaCl"], ["What is the formula of methane?", "CH₄"],
+  ["What is the formula of ammonia?", "NH₃"], ["What is the formula of sulfuric acid?", "H₂SO₄"],
   ["What is the symbol for iron?", "Fe"], ["What is the symbol for potassium?", "K"],
   ["What is the symbol for sodium?", "Na"], ["What is the symbol for gold?", "Au"],
   ["What is the pH of a neutral solution?", "7"], ["What gas is produced when acid reacts with a metal?", "Hydrogen"],
   ["What is the process of a solid turning to gas directly?", "Sublimation"], ["What holds atoms together in a molecule?", "Chemical bonds"],
   ["What bond involves sharing electrons?", "A covalent bond"], ["What bond involves transferring electrons?", "An ionic bond"],
-  ["What is Avogadro's number approximately?", "6.02 Ã— 10Â²Â³"], ["What is the charge on an electron?", "Negative"],
+  ["What is Avogadro's number approximately?", "6.02 × 10²³"], ["What is the charge on an electron?", "Negative"],
   ["Which particle has no charge?", "The neutron"], ["What is the centre of an atom called?", "The nucleus"],
 ];
 
@@ -342,7 +342,7 @@ const historyFacts: [string, string][] = [
   ["In which year did the Second World War end?", "1945"], ["In which year did the First World War begin?", "1914"],
   ["Who was the first president of the United States?", "George Washington"], ["Who led India's non-violent independence movement?", "Mahatma Gandhi"],
   ["Who was South Africa's first black president?", "Nelson Mandela"], ["Which empire built the Colosseum?", "The Roman Empire"],
-  ["Which civilisation built the pyramids of Giza?", "Ancient Egypt"], ["Which conference divided Africa in 1884â€“85?", "The Berlin Conference"],
+  ["Which civilisation built the pyramids of Giza?", "Ancient Egypt"], ["Which conference divided Africa in 1884–85?", "The Berlin Conference"],
   ["In which year did Kenya gain independence?", "1963"], ["In which year did Uganda gain independence?", "1962"],
   ["What was the trade route linking Asia and Europe?", "The Silk Road"], ["What revolution began in Britain in the 1700s?", "The Industrial Revolution"],
   ["Which wall divided Berlin until 1989?", "The Berlin Wall"], ["Who discovered the sea route to India in 1498?", "Vasco da Gama"],
@@ -383,7 +383,7 @@ export const secondaryExtraTopics: SectionDefinition[] = [
     const [angle, sine] = angles[index % angles.length] as [number, string];
     const legA = int(random, 3, 12);
     if (index % 2 === 0) {
-      return draft(`What is sin ${angle}Â°?`, sine, angles.filter(([a]) => a !== angle).slice(0, 3).map(([, s]) => s), `sin ${angle}Â° = ${sine}.`);
+      return draft(`What is sin ${angle}°?`, sine, angles.filter(([a]) => a !== angle).slice(0, 3).map(([, s]) => s), `sin ${angle}° = ${sine}.`);
     }
     const legB = legA;
     const hyp = Math.round(Math.sqrt(legA * legA + legB * legB) * 100) / 100;
@@ -391,7 +391,7 @@ export const secondaryExtraTopics: SectionDefinition[] = [
       `A right triangle has two legs of ${legA} units. What is the hypotenuse (2 d.p.)?`,
       hyp.toFixed(2),
       numericOptions(hyp, 3, 2),
-      `âˆš(${legA}Â² + ${legB}Â²) = ${hyp.toFixed(2)}.`,
+      `√(${legA}² + ${legB}²) = ${hyp.toFixed(2)}.`,
     );
   }),
   genSection("secondary-statistics", "Statistics & Probability", "Mean, median, range and simple probability.", "Medium", (index, random) => {
@@ -403,7 +403,7 @@ export const secondaryExtraTopics: SectionDefinition[] = [
         `What is the mean of ${values.join(", ")}?`,
         mean.toFixed(2),
         numericOptions(mean, 3, 2),
-        `The total is ${total}; ${total} Ã· 4 = ${mean.toFixed(2)}.`,
+        `The total is ${total}; ${total} ÷ 4 = ${mean.toFixed(2)}.`,
       );
     }
     const favourable = int(random, 1, 5);
@@ -413,7 +413,7 @@ export const secondaryExtraTopics: SectionDefinition[] = [
       `A bag has ${favourable} red balls out of ${total}. What is the probability of picking red (3 d.p.)?`,
       probability,
       numericOptions(Number(probability), 1, 3),
-      `${favourable} Ã· ${total} = ${probability}.`,
+      `${favourable} ÷ ${total} = ${probability}.`,
     );
   }),
   genSection("secondary-physics-numeric", "Applied Physics", "Speed, force, work and electrical calculations.", "Hard", (index, random) => {
@@ -422,18 +422,18 @@ export const secondaryExtraTopics: SectionDefinition[] = [
       const distance = int(random, 10, 400);
       const time = int(random, 2, 20);
       const speed = Math.round((distance / time) * 100) / 100;
-      return draft(`An object travels ${distance} m in ${time} s. What is its speed (m/s, 2 d.p.)?`, speed.toFixed(2), numericOptions(speed, 3, 2), `Speed = distance Ã· time = ${distance} Ã· ${time}.`);
+      return draft(`An object travels ${distance} m in ${time} s. What is its speed (m/s, 2 d.p.)?`, speed.toFixed(2), numericOptions(speed, 3, 2), `Speed = distance ÷ time = ${distance} ÷ ${time}.`);
     }
     if (kind === 1) {
       const mass = int(random, 2, 40);
       const acceleration = int(random, 1, 10);
       const force = mass * acceleration;
-      return draft(`What force accelerates a ${mass} kg mass at ${acceleration} m/sÂ²?`, `${force} N`, numericOptions(force, 5).map((v) => `${v} N`), `F = ma = ${mass} Ã— ${acceleration} = ${force} N.`);
+      return draft(`What force accelerates a ${mass} kg mass at ${acceleration} m/s²?`, `${force} N`, numericOptions(force, 5).map((v) => `${v} N`), `F = ma = ${mass} × ${acceleration} = ${force} N.`);
     }
     const voltage = int(random, 3, 240);
     const resistance = int(random, 2, 40);
     const current = Math.round((voltage / resistance) * 100) / 100;
-    return draft(`What current flows when ${voltage} V is applied across ${resistance} Î©?`, `${current.toFixed(2)} A`, numericOptions(current, 3, 2).map((v) => `${v} A`), `I = V Ã· R = ${voltage} Ã· ${resistance}.`);
+    return draft(`What current flows when ${voltage} V is applied across ${resistance} Ω?`, `${current.toFixed(2)} A`, numericOptions(current, 3, 2).map((v) => `${v} A`), `I = V ÷ R = ${voltage} ÷ ${resistance}.`);
   }),
   factSection("secondary-chemistry-formulas", "Chemistry Essentials", "Formulas, symbols, bonding and atomic structure.", "Medium", chemFacts),
   factSection("secondary-human-biology", "Human Biology", "Cells, organs, systems and genetics.", "Medium", bioFacts),
@@ -494,7 +494,7 @@ const dsFacts: [string, string][] = [
   ["What data structure is last-in-first-out?", "A stack"],
   ["What data structure is first-in-first-out?", "A queue"],
   ["What is the average time complexity of binary search?", "O(log n)"],
-  ["What is the worst case of quicksort?", "O(nÂ²)"],
+  ["What is the worst case of quicksort?", "O(n²)"],
   ["What is the time complexity of merge sort?", "O(n log n)"],
   ["What structure stores key/value pairs with hashing?", "A hash table"],
   ["What structure has nodes with at most two children?", "A binary tree"],
@@ -594,7 +594,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
         `What is the determinant of the matrix [[${a}, ${b}], [${c}, ${d}]]?`,
         String(det),
         numericOptions(det, 5),
-        `det = ad âˆ’ bc = (${a}Ã—${d}) âˆ’ (${b}Ã—${c}) = ${det}.`,
+        `det = ad − bc = (${a}×${d}) − (${b}×${c}) = ${det}.`,
       );
     }
     const dot = a * c + b * d;
@@ -602,7 +602,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
       `What is the dot product of (${a}, ${b}) and (${c}, ${d})?`,
       String(dot),
       numericOptions(dot, 5),
-      `(${a}Ã—${c}) + (${b}Ã—${d}) = ${dot}.`,
+      `(${a}×${c}) + (${b}×${d}) = ${dot}.`,
     );
   }),
   genSection("college-probability", "Probability Theory", "Combinatorics, independence and expected value.", "Hard", (index, random) => {
@@ -618,7 +618,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
       `Two independent events have probabilities ${p1} and ${p2}. What is the probability both occur?`,
       joint.toFixed(3),
       numericOptions(joint, 1, 3),
-      `For independent events, P(A and B) = ${p1} Ã— ${p2} = ${joint.toFixed(3)}.`,
+      `For independent events, P(A and B) = ${p1} × ${p2} = ${joint.toFixed(3)}.`,
     );
   }),
   factSection("college-accounting", "Financial Accounting", "Statements, double entry, ratios and standards.", "Medium", accountingFacts),
@@ -632,7 +632,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
     const rate = int(random, 2, 15);
     if (index % 2 === 0) {
       const interest = (principal * rate) / 100;
-      return draft(`What is ${rate}% simple interest on ${principal} for one year?`, String(interest), numericOptions(interest, principal / 20), `${principal} Ã— ${rate}% = ${interest}.`);
+      return draft(`What is ${rate}% simple interest on ${principal} for one year?`, String(interest), numericOptions(interest, principal / 20), `${principal} × ${rate}% = ${interest}.`);
     }
     const years = int(random, 2, 5);
     const amount = Math.round(principal * (1 + rate / 100) ** years);
@@ -640,7 +640,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
       `What is ${principal} compounded at ${rate}% for ${years} years (nearest whole)?`,
       String(amount),
       numericOptions(amount, Math.round(principal / 10)),
-      `${principal} Ã— (1 + ${rate}/100)^${years} â‰ˆ ${amount}.`,
+      `${principal} × (1 + ${rate}/100)^${years} ≈ ${amount}.`,
     );
   }),
 ];
@@ -670,10 +670,10 @@ secondaryExtraTopics.push(
     const x = int(random, 1, 15);
     if (index % 2 === 0) {
       const c = a * x + b;
-      return draft(`Solve for x: ${a}x + ${b} = ${c}`, String(x), numericOptions(x, 4), `${c} âˆ’ ${b} = ${a * x}; ${a * x} Ã· ${a} = ${x}.`);
+      return draft(`Solve for x: ${a}x + ${b} = ${c}`, String(x), numericOptions(x, 4), `${c} − ${b} = ${a * x}; ${a * x} ÷ ${a} = ${x}.`);
     }
     const value = a * x - b;
-    return draft(`Evaluate ${a}x âˆ’ ${b} when x = ${x}.`, String(value), numericOptions(value, 5), `${a} Ã— ${x} âˆ’ ${b} = ${value}.`);
+    return draft(`Evaluate ${a}x − ${b} when x = ${x}.`, String(value), numericOptions(value, 5), `${a} × ${x} − ${b} = ${value}.`);
   }),
 );
 
@@ -686,7 +686,7 @@ collegeExtraTopics.push(
         `What is the derivative of ${coefficient}x^${power}?`,
         `${coefficient * power}x^${power - 1}`,
         [`${coefficient}x^${power - 1}`, `${coefficient * power}x^${power}`, `${coefficient + power}x^${power - 1}`],
-        `Bring down the power: ${coefficient} Ã— ${power} = ${coefficient * power}, then reduce the exponent by one.`,
+        `Bring down the power: ${coefficient} × ${power} = ${coefficient * power}, then reduce the exponent by one.`,
       );
     }
     return draft(

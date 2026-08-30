@@ -18,7 +18,9 @@ export function listAll(): Certificate[] {
 export function makeCode(quizId: string): string {
   const randomBytes = new Uint8Array(4);
   globalThis.crypto.getRandomValues(randomBytes);
-  const random = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, "0")).join("-").toUpperCase();
+  const random = Array.from(randomBytes, (byte) => byte.toString(16).padStart(2, "0"))
+    .join("-")
+    .toUpperCase();
   const prefix = quizId.split("-")[0]?.slice(0, 4).toUpperCase() ?? "QUIZ";
   return `${prefix}-${Date.now().toString(36).toUpperCase().slice(-5)}-${random}`;
 }

@@ -21,9 +21,15 @@ export const Route = createFileRoute("/quizzes/$id")({
   head: () => ({
     meta: [
       { title: "Take a quiz - Quitech" },
-      { name: "description", content: "Timed multiple-choice quiz with instant scoring, explanations and certificates." },
+      {
+        name: "description",
+        content: "Timed multiple-choice quiz with instant scoring, explanations and certificates.",
+      },
       { property: "og:title", content: "Take a quiz - Quitech" },
-      { property: "og:description", content: "Timed multiple-choice quiz with instant scoring and explanations." },
+      {
+        property: "og:description",
+        content: "Timed multiple-choice quiz with instant scoring and explanations.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -72,7 +78,12 @@ function QuizPage() {
     setSubmitError(null);
     const timeSpentSeconds = Math.max(1, Math.round((Date.now() - startedAt.current) / 1000));
     try {
-      const { result } = await submitAnswers({ quizId: quiz.id, playerName, answers, timeSpentSeconds });
+      const { result } = await submitAnswers({
+        quizId: quiz.id,
+        playerName,
+        answers,
+        timeSpentSeconds,
+      });
       saveAttempt({
         quizId: quiz.id,
         quizTitle: quiz.title,
@@ -161,19 +172,23 @@ function QuizPage() {
 
   const savedProgress = resumeState;
 
-
   if (!started) {
     return (
       <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
-        <Link to="/" className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground">
+        <Link
+          to="/"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
+        >
           <ArrowLeft className="h-4 w-4" /> All sections
         </Link>
 
         <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
-          <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">Before you begin</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">
+            Before you begin
+          </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter your name so we can score your attempt, place you on the leaderboard and issue a certificate if you
-            pass.
+            Enter your name so we can score your attempt, place you on the leaderboard and issue a
+            certificate if you pass.
           </p>
 
           <label htmlFor="player-name" className="mt-6 block text-sm font-medium text-foreground">
@@ -192,9 +207,21 @@ function QuizPage() {
           <div className="mt-3 grid gap-3">
             {(
               [
-                { value: 10, title: "Quick practice", copy: "10 shuffled questions. Great for a warm-up." },
-                { value: 25, title: "Focused practice", copy: "25 shuffled questions to build confidence." },
-                { value: 50, title: "Extended practice", copy: "50 shuffled questions for serious revision." },
+                {
+                  value: 10,
+                  title: "Quick practice",
+                  copy: "10 shuffled questions. Great for a warm-up.",
+                },
+                {
+                  value: 25,
+                  title: "Focused practice",
+                  copy: "25 shuffled questions to build confidence.",
+                },
+                {
+                  value: 50,
+                  title: "Extended practice",
+                  copy: "50 shuffled questions for serious revision.",
+                },
                 {
                   value: "full",
                   title: "Full section (certificate eligible)",
@@ -210,7 +237,9 @@ function QuizPage() {
                 className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <span>
-                  <span className="block text-sm font-semibold text-foreground">{option.title}</span>
+                  <span className="block text-sm font-semibold text-foreground">
+                    {option.title}
+                  </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{option.copy}</span>
                 </span>
                 {option.value === "full" ? (
@@ -225,8 +254,8 @@ function QuizPage() {
           {savedProgress && (
             <div className="mt-4 rounded-lg border border-primary/40 bg-primary/5 p-4">
               <p className="text-sm font-medium text-primary">
-                You have an unfinished attempt - {Object.keys(savedProgress.answers).length} answered, saved{" "}
-                {new Date(savedProgress.savedAt).toLocaleString()}.
+                You have an unfinished attempt - {Object.keys(savedProgress.answers).length}{" "}
+                answered, saved {new Date(savedProgress.savedAt).toLocaleString()}.
               </p>
               <button
                 type="button"
@@ -238,9 +267,10 @@ function QuizPage() {
             </div>
           )}
 
-
           {!playerName.trim() && (
-            <p className="mt-4 text-xs text-muted-foreground">Enter your name to unlock the start options.</p>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Enter your name to unlock the start options.
+            </p>
           )}
         </div>
       </div>
@@ -274,22 +304,35 @@ function QuizPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
         <div>
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{quiz.levelName}</p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{quiz.title}</h1>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            {quiz.levelName}
+          </p>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+            {quiz.title}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {answeredCount} of {questions.length} answered
             {quiz.certificateEligible ? " - certificate eligible" : " - practice run"}
           </p>
         </div>
         {quiz.timeLimitSeconds > 0 ? (
-          <Timer totalSeconds={quiz.timeLimitSeconds} running onExpire={() => void handleSubmit()} />
+          <Timer
+            totalSeconds={quiz.timeLimitSeconds}
+            running
+            onExpire={() => void handleSubmit()}
+          />
         ) : (
           <div className="rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
             <p className="text-xs font-medium text-muted-foreground">Self-paced - time on task</p>
             <p className="text-lg font-semibold tabular-nums tracking-tight text-foreground">
-              {Math.floor(elapsed / 3600).toString().padStart(2, "0")}:
-              {Math.floor((elapsed % 3600) / 60).toString().padStart(2, "0")}:
-              {(elapsed % 60).toString().padStart(2, "0")}
+              {Math.floor(elapsed / 3600)
+                .toString()
+                .padStart(2, "0")}
+              :
+              {Math.floor((elapsed % 3600) / 60)
+                .toString()
+                .padStart(2, "0")}
+              :{(elapsed % 60).toString().padStart(2, "0")}
             </p>
           </div>
         )}
@@ -303,7 +346,9 @@ function QuizPage() {
               questionNumber={index + 1}
               totalQuestions={questions.length}
               selectedOption={answers[current.id] ?? null}
-              onSelect={(optionIndex) => setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }))}
+              onSelect={(optionIndex) =>
+                setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }))
+              }
             />
           )}
 
@@ -322,7 +367,9 @@ function QuizPage() {
                 onClick={() =>
                   current &&
                   setFlagged((prev) =>
-                    prev.includes(current.id) ? prev.filter((qid) => qid !== current.id) : [...prev, current.id],
+                    prev.includes(current.id)
+                      ? prev.filter((qid) => qid !== current.id)
+                      : [...prev, current.id],
                   )
                 }
                 className={cn(
@@ -351,7 +398,11 @@ function QuizPage() {
                 disabled={submitting}
                 className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
               >
-                {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <ShieldCheck className="h-4 w-4" />}
+                {submitting ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ShieldCheck className="h-4 w-4" />
+                )}
                 Submit answers
               </button>
             )}
@@ -361,7 +412,9 @@ function QuizPage() {
         </div>
 
         <aside className="rounded-xl border border-border bg-card p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">Question map</p>
+          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+            Question map
+          </p>
           <div className="mt-3 grid grid-cols-6 gap-1.5 lg:grid-cols-5">
             {questions.map((question, questionIndex) => (
               <button
@@ -400,7 +453,6 @@ function QuizPage() {
           </button>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
             "Your answers are saved automatically on this device - resume this section any time."
-
           </p>
         </aside>
       </div>

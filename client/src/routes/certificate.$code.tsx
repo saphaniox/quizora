@@ -10,13 +10,15 @@ async function verify(code: string): Promise<{ certificate: Certificate }> {
   return getCertificate(code);
 }
 
-
 export const Route = createFileRoute("/certificate/$code")({
   ssr: false,
   head: () => ({
     meta: [
       { title: "Certificate of achievement - Quitech" },
-      { name: "description", content: "A verified Quitech certificate of achievement with holder, section and score." },
+      {
+        name: "description",
+        content: "A verified Quitech certificate of achievement with holder, section and score.",
+      },
       { property: "og:title", content: "Certificate of achievement - Quitech" },
       { property: "og:description", content: "A verified Quitech certificate of achievement." },
       { property: "og:type", content: "website" },
@@ -35,7 +37,11 @@ function CertificatePage() {
   });
 
   if (isLoading) {
-    return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Checking code...</div>;
+    return (
+      <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">
+        Checking code...
+      </div>
+    );
   }
 
   if (isError || !data) {
@@ -43,9 +49,13 @@ function CertificatePage() {
       <div className="mx-auto max-w-lg px-4 py-20 text-center">
         <h1 className="text-xl font-semibold text-foreground">We couldn't verify that code</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          No certificate matches <span className="font-mono">{code}</span>. Check the spelling and try again.
+          No certificate matches <span className="font-mono">{code}</span>. Check the spelling and
+          try again.
         </p>
-        <Link to="/certificate" className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+        <Link
+          to="/certificate"
+          className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
+        >
           Try another code
         </Link>
       </div>
@@ -89,7 +99,12 @@ function CertificatePage() {
         </button>
         <button
           type="button"
-          onClick={() => downloadCertificatePdf(certificate, `${window.location.origin}/certificate/${certificate.code}`)}
+          onClick={() =>
+            downloadCertificatePdf(
+              certificate,
+              `${window.location.origin}/certificate/${certificate.code}`,
+            )
+          }
           className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
         >
           <Download className="h-4 w-4" /> Download PDF

@@ -16,16 +16,29 @@ export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
         <caption className="sr-only">Top quiz scores</caption>
         <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
-            <th scope="col" className="px-4 py-3 font-medium">Rank</th>
-            <th scope="col" className="px-4 py-3 font-medium">Player</th>
-            <th scope="col" className="px-4 py-3 font-medium">Section</th>
-            <th scope="col" className="px-4 py-3 font-medium">Score</th>
-            <th scope="col" className="px-4 py-3 font-medium">Time</th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Rank
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Player
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Section
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Score
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Time
+            </th>
           </tr>
         </thead>
         <tbody>
           {entries.map((entry, index) => (
-            <tr key={entry.id} className="border-b border-border/60 last:border-0 hover:bg-accent/50">
+            <tr
+              key={entry.id}
+              className="border-b border-border/60 last:border-0 hover:bg-accent/50"
+            >
               <td className="px-4 py-3">
                 <span className="inline-flex items-center gap-1.5 font-medium text-foreground">
                   {index < 3 ? <Medal className={cn("h-4 w-4", medalColor[index])} /> : null}
@@ -41,7 +54,9 @@ export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
                 {entry.score}/{entry.maxScore}
                 <span className="ml-2 text-xs text-muted-foreground">{entry.percentage}%</span>
               </td>
-              <td className="px-4 py-3 tabular-nums text-muted-foreground">{formatTime(entry.timeSpentSeconds)}</td>
+              <td className="px-4 py-3 tabular-nums text-muted-foreground">
+                {formatTime(entry.timeSpentSeconds)}
+              </td>
             </tr>
           ))}
         </tbody>

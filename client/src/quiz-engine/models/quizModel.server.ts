@@ -41,7 +41,12 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
     tagline: "Fun foundational quizzes for young learners.",
     ageRange: "Ages 6–12",
     order: 2,
-    sections: [...primarySections, ...primaryExtraSections, ...primaryTopicSections, ...primaryExtraTopics],
+    sections: [
+      ...primarySections,
+      ...primaryExtraSections,
+      ...primaryTopicSections,
+      ...primaryExtraTopics,
+    ],
   },
   {
     id: "secondary",
@@ -49,7 +54,12 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
     tagline: "Exam-style practice across the core subjects.",
     ageRange: "Ages 13–18",
     order: 3,
-    sections: [...secondarySections, ...secondaryExtraSections, ...secondaryTopicSections, ...secondaryExtraTopics],
+    sections: [
+      ...secondarySections,
+      ...secondaryExtraSections,
+      ...secondaryTopicSections,
+      ...secondaryExtraTopics,
+    ],
   },
   {
     id: "college",
@@ -57,7 +67,12 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
     tagline: "Degree-level reasoning and applied problem solving.",
     ageRange: "Ages 18+",
     order: 4,
-    sections: [...collegeSections, ...collegeExtraSections, ...collegeTopicSections, ...collegeExtraTopics],
+    sections: [
+      ...collegeSections,
+      ...collegeExtraSections,
+      ...collegeTopicSections,
+      ...collegeExtraTopics,
+    ],
   },
   {
     id: "professional",
@@ -76,7 +91,6 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
     sections: popularTopicSections,
   },
 ];
-
 
 /**
  * Certificate sections are marathons: every section is grown to this many
@@ -138,7 +152,10 @@ const quizCache = new Map<string, Quiz>();
 function buildQuiz(meta: SectionMeta): Quiz {
   const cached = quizCache.get(meta.section.id);
   if (cached) return cached;
-  const questions = finalize(meta.section.id, expandTo(meta.section.id, meta.section.build(), meta.target));
+  const questions = finalize(
+    meta.section.id,
+    expandTo(meta.section.id, meta.section.build(), meta.target),
+  );
   const quiz: Quiz = {
     id: meta.section.id,
     title: meta.section.name,
@@ -238,4 +255,3 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
 export function totalQuestions(): number {
   return Array.from(metaIndex().values()).reduce((sum, meta) => sum + meta.target, 0);
 }
-

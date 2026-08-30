@@ -10,9 +10,15 @@ export const Route = createFileRoute("/leaderboard")({
   head: () => ({
     meta: [
       { title: "Leaderboard - Quitech" },
-      { name: "description", content: "See the top Quitech scores across every learning level and subject section." },
+      {
+        name: "description",
+        content: "See the top Quitech scores across every learning level and subject section.",
+      },
       { property: "og:title", content: "Leaderboard - Quitech" },
-      { property: "og:description", content: "Top Quitech scores across every learning level and subject section." },
+      {
+        property: "og:description",
+        content: "Top Quitech scores across every learning level and subject section.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -76,7 +82,9 @@ function LeaderboardPage() {
         ) : entries.length === 0 ? (
           <div className="rounded-xl border border-dashed border-border p-12 text-center">
             <p className="font-medium text-foreground">No scores here yet</p>
-            <p className="mt-1 text-sm text-muted-foreground">Be the first to complete a section on this level.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Be the first to complete a section on this level.
+            </p>
           </div>
         ) : (
           <LeaderboardTable entries={entries} />

@@ -10,10 +10,14 @@ export const Route = createFileRoute("/auth")({
       { title: "Sign in - Quitech certificate wallet" },
       {
         name: "description",
-        content: "Sign in to Quitech to sync quiz progress across devices and keep every certificate you earn in one wallet.",
+        content:
+          "Sign in to Quitech to sync quiz progress across devices and keep every certificate you earn in one wallet.",
       },
       { property: "og:title", content: "Sign in - Quitech certificate wallet" },
-      { property: "og:description", content: "Sync progress across devices and store your certificates." },
+      {
+        property: "og:description",
+        content: "Sync progress across devices and store your certificates.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -42,7 +46,10 @@ function AuthPage() {
   });
   const [error, setError] = useState<string | null>(null);
 
-  const next = typeof window !== "undefined" ? safeNext(new URLSearchParams(window.location.search).get("next")) : "/wallet";
+  const next =
+    typeof window !== "undefined"
+      ? safeNext(new URLSearchParams(window.location.search).get("next"))
+      : "/wallet";
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -51,7 +58,11 @@ function AuthPage() {
     setMessage(null);
     try {
       if (mode === "signup") {
-        await registerAccount({ email, password, displayName: displayName.trim() || email.split("@")[0] || "Player" });
+        await registerAccount({
+          email,
+          password,
+          displayName: displayName.trim() || email.split("@")[0] || "Player",
+        });
         void navigate({ to: next, replace: true });
       } else {
         await loginAccount({ email, password });
@@ -59,7 +70,11 @@ function AuthPage() {
       }
     } catch (failure) {
       const message = (failure as Error).message;
-      setError(message === "Failed to fetch" ? "Account services are offline. Start the API and PostgreSQL, then try again." : message);
+      setError(
+        message === "Failed to fetch"
+          ? "Account services are offline. Start the API and PostgreSQL, then try again."
+          : message,
+      );
     } finally {
       setBusy(false);
     }
@@ -72,11 +87,13 @@ function AuthPage() {
           {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Signing in keeps your progress synced across devices and stores every certificate you earn.
+          Signing in keeps your progress synced across devices and stores every certificate you
+          earn.
         </p>
 
         <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or use email <span className="h-px flex-1 bg-border" />
+          <span className="h-px flex-1 bg-border" /> or use email{" "}
+          <span className="h-px flex-1 bg-border" />
         </div>
 
         <form onSubmit={(event) => void submit(event)} className="space-y-4">
@@ -148,7 +165,7 @@ function AuthPage() {
       </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        You can keep practising without an account  - {" "}
+        You can keep practising without an account -{" "}
         <Link to="/" className="font-medium text-primary hover:underline">
           browse sections
         </Link>

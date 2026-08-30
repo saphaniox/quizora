@@ -44,13 +44,20 @@ const calculusBank = () =>
         );
       }
       const derivatives: [string, string][] = [
-        ["sin x", "cos x"], ["cos x", "−sin x"], ["e^x", "e^x"], ["ln x", "1/x"], ["tan x", "sec²x"],
+        ["sin x", "cos x"],
+        ["cos x", "−sin x"],
+        ["e^x", "e^x"],
+        ["ln x", "1/x"],
+        ["tan x", "sec²x"],
       ];
       const chosen = derivatives[index % derivatives.length] as [string, string];
       return draft(
         `What is the derivative of ${chosen[0]}?`,
         chosen[1],
-        derivatives.filter((d) => d[1] !== chosen[1]).map((d) => d[1]).slice(0, 3),
+        derivatives
+          .filter((d) => d[1] !== chosen[1])
+          .map((d) => d[1])
+          .slice(0, 3),
         `d/dx(${chosen[0]}) = ${chosen[1]}.`,
       );
     },
@@ -66,22 +73,40 @@ const statisticsBank = () => [
       const kind = index % 3;
       if (kind === 0) {
         const mean = Number((sum / values.length).toFixed(1));
-        return draft(`What is the mean of ${values.join(", ")}?`, String(mean), numericOptions(mean, 4, 1), `Sum = ${sum}; ${sum} ÷ 5 = ${mean}.`);
+        return draft(
+          `What is the mean of ${values.join(", ")}?`,
+          String(mean),
+          numericOptions(mean, 4, 1),
+          `Sum = ${sum}; ${sum} ÷ 5 = ${mean}.`,
+        );
       }
       if (kind === 1) {
         const sorted = [...values].sort((a, b) => a - b);
         const median = sorted[2] as number;
-        return draft(`What is the median of ${values.join(", ")}?`, String(median), numericOptions(median, 4), `Sorted: ${sorted.join(", ")}. The middle value is ${median}.`);
+        return draft(
+          `What is the median of ${values.join(", ")}?`,
+          String(median),
+          numericOptions(median, 4),
+          `Sorted: ${sorted.join(", ")}. The middle value is ${median}.`,
+        );
       }
       const sorted = [...values].sort((a, b) => a - b);
       const range = (sorted[4] as number) - (sorted[0] as number);
-      return draft(`What is the range of ${values.join(", ")}?`, String(range), numericOptions(range, 4), `Range = largest − smallest = ${sorted[4]} − ${sorted[0]} = ${range}.`);
+      return draft(
+        `What is the range of ${values.join(", ")}?`,
+        String(range),
+        numericOptions(range, 4),
+        `Range = largest − smallest = ${sorted[4]} − ${sorted[0]} = ${range}.`,
+      );
     },
     "college-statistics",
   ),
   ...fromMap(
     [
-      ["What does a p-value below 0.05 usually indicate?", "The result is statistically significant"],
+      [
+        "What does a p-value below 0.05 usually indicate?",
+        "The result is statistically significant",
+      ],
       ["What measures the spread of data around the mean?", "Standard deviation"],
       ["What distribution is bell-shaped and symmetric?", "The normal distribution"],
       ["What is a subset of a population called?", "A sample"],
@@ -151,7 +176,12 @@ const programmingBank = () => [
       const kind = index % 2;
       if (kind === 0) {
         const answer = Math.pow(2, n);
-        return draft(`How many different values can ${n} bits represent?`, String(answer), numericOptions(answer, Math.max(2, answer / 2)), `${n} bits give 2^${n} = ${answer} combinations.`);
+        return draft(
+          `How many different values can ${n} bits represent?`,
+          String(answer),
+          numericOptions(answer, Math.max(2, answer / 2)),
+          `${n} bits give 2^${n} = ${answer} combinations.`,
+        );
       }
       const answer = (n * (n + 1)) / 2;
       return draft(
@@ -205,12 +235,22 @@ const economicsBank = () => [
       const quantity = 5 + Math.floor(random() * 50);
       if (kind === 0) {
         const revenue = price * quantity;
-        return draft(`A firm sells ${quantity} units at $${price} each. What is total revenue?`, `$${revenue}`, numericOptions(revenue, Math.round(revenue / 8)).map((v) => `$${v}`), `Revenue = price × quantity = ${price} × ${quantity} = $${revenue}.`);
+        return draft(
+          `A firm sells ${quantity} units at $${price} each. What is total revenue?`,
+          `$${revenue}`,
+          numericOptions(revenue, Math.round(revenue / 8)).map((v) => `$${v}`),
+          `Revenue = price × quantity = ${price} × ${quantity} = $${revenue}.`,
+        );
       }
       if (kind === 1) {
         const cost = Math.round(price * 0.6);
         const profit = (price - cost) * quantity;
-        return draft(`Unit price is $${price}, unit cost is $${cost} and ${quantity} units are sold. What is the profit?`, `$${profit}`, numericOptions(profit, Math.max(3, Math.round(profit / 6))).map((v) => `$${v}`), `Profit per unit = ${price} − ${cost} = ${price - cost}; × ${quantity} = $${profit}.`);
+        return draft(
+          `Unit price is $${price}, unit cost is $${cost} and ${quantity} units are sold. What is the profit?`,
+          `$${profit}`,
+          numericOptions(profit, Math.max(3, Math.round(profit / 6))).map((v) => `$${v}`),
+          `Profit per unit = ${price} − ${cost} = ${price - cost}; × ${quantity} = $${profit}.`,
+        );
       }
       const rate = 2 + (index % 8);
       const answer = Number(((price * rate) / 100).toFixed(2));
@@ -233,15 +273,34 @@ const digitalLogicBank = () =>
       const value = 5 + Math.floor(random() * 250);
       if (kind === 0) {
         const answer = value.toString(2);
-        return draft(`Convert decimal ${value} to binary.`, answer, [(value + 1).toString(2), (value - 1).toString(2), (value * 2).toString(2)], `${value} in binary is ${answer}.`);
+        return draft(
+          `Convert decimal ${value} to binary.`,
+          answer,
+          [(value + 1).toString(2), (value - 1).toString(2), (value * 2).toString(2)],
+          `${value} in binary is ${answer}.`,
+        );
       }
       if (kind === 1) {
         const answer = value.toString(16).toUpperCase();
-        return draft(`Convert decimal ${value} to hexadecimal.`, answer, [(value + 1).toString(16).toUpperCase(), (value + 16).toString(16).toUpperCase(), (value - 2).toString(16).toUpperCase()], `${value} in hexadecimal is ${answer}.`);
+        return draft(
+          `Convert decimal ${value} to hexadecimal.`,
+          answer,
+          [
+            (value + 1).toString(16).toUpperCase(),
+            (value + 16).toString(16).toUpperCase(),
+            (value - 2).toString(16).toUpperCase(),
+          ],
+          `${value} in hexadecimal is ${answer}.`,
+        );
       }
       if (kind === 2) {
         const binary = value.toString(2);
-        return draft(`What is binary ${binary} in decimal?`, String(value), numericOptions(value, Math.max(3, Math.round(value / 5))), `Binary ${binary} = ${value} in decimal.`);
+        return draft(
+          `What is binary ${binary} in decimal?`,
+          String(value),
+          numericOptions(value, Math.max(3, Math.round(value / 5))),
+          `Binary ${binary} = ${value} in decimal.`,
+        );
       }
       if (kind === 3) {
         const gates: [string, string][] = [
@@ -256,7 +315,10 @@ const digitalLogicBank = () =>
         return draft(
           `How does a ${chosen[0]} gate behave?`,
           chosen[1],
-          gates.filter((g) => g[0] !== chosen[0]).map((g) => g[1]).slice(0, 3),
+          gates
+            .filter((g) => g[0] !== chosen[0])
+            .map((g) => g[1])
+            .slice(0, 3),
           `A ${chosen[0]} gate: ${chosen[1].toLowerCase()}.`,
         );
       }
@@ -307,11 +369,21 @@ const accountingBank = () => [
       const cost = Math.round(revenue * (0.4 + (index % 4) * 0.1));
       if (kind === 0) {
         const profit = revenue - cost;
-        return draft(`Revenue is $${revenue} and cost of sales is $${cost}. What is gross profit?`, `$${profit}`, numericOptions(profit, Math.round(profit / 5)).map((v) => `$${v}`), `${revenue} − ${cost} = $${profit}.`);
+        return draft(
+          `Revenue is $${revenue} and cost of sales is $${cost}. What is gross profit?`,
+          `$${profit}`,
+          numericOptions(profit, Math.round(profit / 5)).map((v) => `$${v}`),
+          `${revenue} − ${cost} = $${profit}.`,
+        );
       }
       if (kind === 1) {
         const margin = Number((((revenue - cost) / revenue) * 100).toFixed(1));
-        return draft(`Revenue is $${revenue} and cost of sales is $${cost}. What is the gross margin?`, `${margin}%`, numericOptions(margin, 6, 1).map((v) => `${v}%`), `Gross margin = (${revenue} − ${cost}) / ${revenue} × 100 = ${margin}%.`);
+        return draft(
+          `Revenue is $${revenue} and cost of sales is $${cost}. What is the gross margin?`,
+          `${margin}%`,
+          numericOptions(margin, 6, 1).map((v) => `${v}%`),
+          `Gross margin = (${revenue} − ${cost}) / ${revenue} × 100 = ${margin}%.`,
+        );
       }
       const life = 4 + (index % 6);
       const depreciation = Math.round(revenue / life);
@@ -327,10 +399,46 @@ const accountingBank = () => [
 ];
 
 export const collegeSections: SectionDefinition[] = [
-  { id: "college-calculus", name: "Calculus", description: "Differentiation, integration and limits.", difficulty: "Hard", build: calculusBank },
-  { id: "college-statistics", name: "Statistics", description: "Descriptive statistics, distributions and hypothesis testing.", difficulty: "Hard", build: statisticsBank },
-  { id: "college-programming", name: "Computer Programming", description: "Algorithms, data structures, OOP and web basics.", difficulty: "Hard", build: programmingBank },
-  { id: "college-economics", name: "Economics", description: "Micro and macro principles with applied calculations.", difficulty: "Hard", build: economicsBank },
-  { id: "college-digital-logic", name: "Digital Logic", description: "Number systems, logic gates and binary arithmetic.", difficulty: "Hard", build: digitalLogicBank },
-  { id: "college-accounting", name: "Accounting", description: "Financial statements, double entry and ratios.", difficulty: "Hard", build: accountingBank },
+  {
+    id: "college-calculus",
+    name: "Calculus",
+    description: "Differentiation, integration and limits.",
+    difficulty: "Hard",
+    build: calculusBank,
+  },
+  {
+    id: "college-statistics",
+    name: "Statistics",
+    description: "Descriptive statistics, distributions and hypothesis testing.",
+    difficulty: "Hard",
+    build: statisticsBank,
+  },
+  {
+    id: "college-programming",
+    name: "Computer Programming",
+    description: "Algorithms, data structures, OOP and web basics.",
+    difficulty: "Hard",
+    build: programmingBank,
+  },
+  {
+    id: "college-economics",
+    name: "Economics",
+    description: "Micro and macro principles with applied calculations.",
+    difficulty: "Hard",
+    build: economicsBank,
+  },
+  {
+    id: "college-digital-logic",
+    name: "Digital Logic",
+    description: "Number systems, logic gates and binary arithmetic.",
+    difficulty: "Hard",
+    build: digitalLogicBank,
+  },
+  {
+    id: "college-accounting",
+    name: "Accounting",
+    description: "Financial statements, double entry and ratios.",
+    difficulty: "Hard",
+    build: accountingBank,
+  },
 ];

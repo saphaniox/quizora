@@ -1,4 +1,11 @@
-import type { Quiz, QuizSummary, AnswerResult, LeaderboardEntry, Level, Certificate } from "@/types/quiz";
+import type {
+  Quiz,
+  QuizSummary,
+  AnswerResult,
+  LeaderboardEntry,
+  Level,
+  Certificate,
+} from "@/types/quiz";
 
 export interface AccountUser {
   id: string;
@@ -6,16 +13,38 @@ export interface AccountUser {
   displayName: string;
 }
 
-const API_BASE = (import.meta.env["VITE_API_URL"] as string | undefined)?.replace(/\/$/, "") ?? "";
 const LOCAL_CONTENT_API_BASE = "/api";
 const CONTENT_PATHS = ["/levels", "/quizzes", "/submit", "/leaderboard", "/certificates"];
+const API_BASE = normalizeApiBase(import.meta.env["VITE_API_URL"] as string | undefined);
+const CONTENT_API_BASE = API_BASE || LOCAL_CONTENT_API_BASE;
 
 function isContentPath(path: string): boolean {
-  return CONTENT_PATHS.some((prefix) => path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`));
+  return CONTENT_PATHS.some(
+    (prefix) => path === prefix || path.startsWith(`${prefix}/`) || path.startsWith(`${prefix}?`),
+  );
 }
 
-function canUseLocalContentFallback(path: string): boolean {
-  return import.meta.env.DEV && typeof window !== "undefined" && Boolean(API_BASE) && API_BASE !== LOCAL_CONTENT_API_BASE && isContentPath(path);
+function normalizeApiBase(value: string | undefined): string {
+  const raw = value?.trim().replace(/\/+$/, "");
+  if (!raw) return "";
+  if (raw.startsWith("/") || raw.startsWith("http://") || raw.startsWith("https://")) return raw;
+  if (raw.startsWith("localhost") || raw.startsWith("127.0.0.1")) return `http://${raw}`;
+  if (!raw.includes(".") && !raw.includes(":")) return "";
+  return `https://${raw}`;
+}
+
+function baseFor(path: string): string {
+  return isContentPath(path) ? CONTENT_API_BASE : API_BASE;
+}
+
+function canUseLocalContentFallback(path: string, attemptedBase: string): boolean {
+  return (
+    import.meta.env.DEV &&
+    typeof window !== "undefined" &&
+    Boolean(attemptedBase) &&
+    attemptedBase !== LOCAL_CONTENT_API_BASE &&
+    isContentPath(path)
+  );
 }
 
 function requestUrl(base: string, path: string): string {
@@ -29,16 +58,19 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
     ...options,
   };
   let response: Response;
+  const primaryBase = baseFor(path);
 
   try {
-    response = await fetch(requestUrl(API_BASE, path), requestInit);
+    response = await fetch(requestUrl(primaryBase, path), requestInit);
   } catch (error) {
-    if (!canUseLocalContentFallback(path)) throw error;
+    if (!canUseLocalContentFallback(path, primaryBase)) throw error;
     response = await fetch(requestUrl(LOCAL_CONTENT_API_BASE, path), requestInit);
   }
 
   if (!response.ok) {
-    const error = (await response.json().catch(() => ({ error: "Request failed" }))) as { error?: string };
+    const error = (await response.json().catch(() => ({ error: "Request failed" }))) as {
+      error?: string;
+    };
     throw new Error(error.error || `Request failed with status ${response.status}`);
   }
 
@@ -50,7 +82,9 @@ export async function getLevels(): Promise<{ levels: Level[]; totalQuestions: nu
 }
 
 export async function getQuizzes(levelId?: string): Promise<{ quizzes: QuizSummary[] }> {
-  return fetchJson<{ quizzes: QuizSummary[] }>(`/quizzes${levelId ? `?level=${encodeURIComponent(levelId)}` : ""}`);
+  return fetchJson<{ quizzes: QuizSummary[] }>(
+    `/quizzes${levelId ? `?level=${encodeURIComponent(levelId)}` : ""}`,
+  );
 }
 
 export async function getQuiz(id: string, limit?: number, seed?: string): Promise<{ quiz: Quiz }> {
@@ -91,12 +125,25 @@ export async function getCurrentUser(): Promise<{ user: AccountUser | null }> {
   return fetchJson<{ user: AccountUser | null }>("/auth/me");
 }
 
-export async function registerAccount(payload: { email: string; password: string; displayName: string }): Promise<{ user: AccountUser }> {
-  return fetchJson<{ user: AccountUser }>("/auth/register", { method: "POST", body: JSON.stringify(payload) });
+export async function registerAccount(payload: {
+  email: string;
+  password: string;
+  displayName: string;
+}): Promise<{ user: AccountUser }> {
+  return fetchJson<{ user: AccountUser }>("/auth/register", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
-export async function loginAccount(payload: { email: string; password: string }): Promise<{ user: AccountUser }> {
-  return fetchJson<{ user: AccountUser }>("/auth/login", { method: "POST", body: JSON.stringify(payload) });
+export async function loginAccount(payload: {
+  email: string;
+  password: string;
+}): Promise<{ user: AccountUser }> {
+  return fetchJson<{ user: AccountUser }>("/auth/login", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
 }
 
 export async function logoutAccount(): Promise<void> {

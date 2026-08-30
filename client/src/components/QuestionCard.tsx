@@ -67,9 +67,19 @@ export function QuestionCard({
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isCorrectOption && "border-emerald-500 bg-emerald-50 text-emerald-900",
                 isWrongSelection && "border-rose-500 bg-rose-50 text-rose-900",
-                !isCorrectOption && !isWrongSelection && isSelected && "border-primary bg-primary/5 text-foreground",
-                !isCorrectOption && !isWrongSelection && !isSelected && hoveredIndex === index && "border-primary/50 bg-accent",
-                !isCorrectOption && !isWrongSelection && !isSelected && "border-border bg-background hover:border-primary/50 hover:bg-accent"
+                !isCorrectOption &&
+                  !isWrongSelection &&
+                  isSelected &&
+                  "border-primary bg-primary/5 text-foreground",
+                !isCorrectOption &&
+                  !isWrongSelection &&
+                  !isSelected &&
+                  hoveredIndex === index &&
+                  "border-primary/50 bg-accent",
+                !isCorrectOption &&
+                  !isWrongSelection &&
+                  !isSelected &&
+                  "border-border bg-background hover:border-primary/50 hover:bg-accent",
               )}
             >
               <span className="font-medium">{option}</span>

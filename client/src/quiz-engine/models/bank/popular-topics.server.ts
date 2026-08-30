@@ -3,7 +3,11 @@ import { fromMap, type SectionDefinition } from "./helpers.server";
 type Facts = [string, string][];
 
 const facts = (entries: Facts) =>
-  fromMap(entries, (question) => question, (_question, answer) => `The correct answer is: ${answer}.`);
+  fromMap(
+    entries,
+    (question) => question,
+    (_question, answer) => `The correct answer is: ${answer}.`,
+  );
 
 const football: Facts = [
   ["Which country won the first FIFA World Cup in 1930?", "Uruguay"],
@@ -18,8 +22,14 @@ const football: Facts = [
   ["What is the restart from the corner of the pitch called?", "A corner kick"],
   ["What is awarded when the ball crosses the sideline?", "A throw-in"],
   ["Which player may use their hands inside their own penalty area?", "The goalkeeper"],
-  ["What is the rule that prevents an attacker gaining an unfair position near goal?", "The offside rule"],
-  ["What is the European club competition commonly called the Champions League?", "UEFA Champions League"],
+  [
+    "What is the rule that prevents an attacker gaining an unfair position near goal?",
+    "The offside rule",
+  ],
+  [
+    "What is the European club competition commonly called the Champions League?",
+    "UEFA Champions League",
+  ],
   ["Which country is home to the Premier League?", "England"],
   ["Which club plays home matches at Camp Nou?", "FC Barcelona"],
   ["Which club plays home matches at Anfield?", "Liverpool"],
@@ -27,7 +37,10 @@ const football: Facts = [
   ["Which nation has won the most men's FIFA World Cups?", "Brazil"],
   ["What is the final match of a tournament called?", "The final"],
   ["What is the official who enforces the laws during a match called?", "The referee"],
-  ["What is the area behind the goal where substitutes warm up often called?", "The touchline area"],
+  [
+    "What is the area behind the goal where substitutes warm up often called?",
+    "The touchline area",
+  ],
   ["What is a pass that directly creates a goal called?", "An assist"],
   ["What is a goal scored directly from a free kick called?", "A direct free-kick goal"],
   ["What is the system of players' positions used by a coach called?", "A formation"],
@@ -158,81 +171,197 @@ const gaming: Facts = [
 ];
 
 const footballSubtopicDefinitions: Array<readonly [string, string, string, Facts]> = [
-  ["popular-world-cup", "World Cup", "World Cup tournaments, nations, records and famous moments.", [
-    ["How often is the FIFA World Cup normally held?", "Every four years"], ["Which country hosted the first World Cup?", "Uruguay"],
-    ["Which nation has won the most men's World Cups?", "Brazil"], ["What is the World Cup trophy called?", "The FIFA World Cup Trophy"],
-    ["How many teams played at the 2022 men's World Cup?", "32"], ["What is the World Cup final?", "The match deciding the champion"],
-    ["Which continent hosted the 2010 World Cup?", "Africa"], ["What stage follows the group stage?", "The knockout stage"],
-  ]],
-  ["popular-premier-league", "Premier League", "English Premier League clubs, records, rules and rivalries.", [
-    ["In which country is the Premier League played?", "England"], ["How many clubs compete in a Premier League season?", "20"],
-    ["How many points is a league win worth?", "3"], ["What is the Premier League trophy awarded for?", "Finishing top of the league"],
-    ["Which club plays at Anfield?", "Liverpool"], ["Which club plays at Old Trafford?", "Manchester United"],
-    ["What happens to the bottom three clubs?", "They are relegated"], ["What is an English top-flight match between rivals called?", "A derby"],
-  ]],
-  ["popular-champions-league", "Champions League", "UEFA Champions League clubs, finals, history and European competition.", [
-    ["What does UEFA stand for?", "Union of European Football Associations"], ["Which clubs compete in the Champions League?", "Top European clubs"],
-    ["What does the winner receive?", "The Champions League trophy"], ["What stage follows the group or league phase?", "The knockout phase"],
-    ["Which club plays at the Santiago Bernabeu?", "Real Madrid"], ["Which club is based in Munich?", "Bayern Munich"],
-    ["What is the final match called?", "The Champions League final"], ["What does a two-leg tie contain?", "A first leg and a second leg"],
-  ]],
-  ["popular-la-liga", "La Liga", "Spanish league clubs, stadiums, players and football history.", [
-    ["In which country is La Liga played?", "Spain"], ["Which club plays at Camp Nou?", "FC Barcelona"],
-    ["Which club is based in Madrid and wears white traditionally?", "Real Madrid"], ["What is La Liga's top division called?", "Primera Division"],
-    ["What happens to clubs finishing at the bottom?", "They are relegated"], ["What is a Barcelona versus Real Madrid match called?", "El Clasico"],
-    ["What is a league table used to show?", "Club standings"], ["What is a win worth in the table?", "Three points"],
-  ]],
-  ["popular-serie-a", "Serie A", "Italian league clubs, stadiums, tactics and football traditions.", [
-    ["In which country is Serie A played?", "Italy"], ["Which club plays at San Siro?", "AC Milan and Inter Milan"],
-    ["What is an Inter Milan versus AC Milan match called?", "The Derby della Madonnina"], ["What does a league table rank?", "Teams by results and points"],
-    ["How many points does a Serie A win usually earn?", "3"], ["Which city is home to Juventus?", "Turin"],
-    ["What is the Italian top division called?", "Serie A"], ["What happens to the bottom clubs?", "They can be relegated"],
-  ]],
-  ["popular-bundesliga", "Bundesliga", "German league clubs, stadiums, supporters and football history.", [
-    ["In which country is the Bundesliga played?", "Germany"], ["Which club is based in Munich?", "Bayern Munich"],
-    ["What is the Bundesliga's highest division called?", "The German top flight"], ["How many points does a league win earn?", "3"],
-    ["What is a football club's home ground called?", "A stadium"], ["Which city is home to Borussia Dortmund?", "Dortmund"],
-    ["What does promotion mean?", "Moving to a higher division"], ["What is the German national cup called?", "DFB-Pokal"],
-  ]],
-  ["popular-african-football", "African Football", "African clubs, nations, competitions and football development.", [
-    ["What is Africa's main men's international tournament called?", "The Africa Cup of Nations"], ["What organisation governs African football?", "CAF"],
-    ["What does CAF stand for?", "Confederation of African Football"], ["What is a national team made up of?", "Players representing a country"],
-    ["What is Africa's leading club competition called?", "The CAF Champions League"], ["Which country hosted the 2010 World Cup?", "South Africa"],
-    ["What is a local football rivalry called?", "A derby"], ["What does a football academy develop?", "Young players"],
-  ]],
-  ["popular-womens-football", "Women's Football", "Women's football competitions, pioneers, clubs and international history.", [
-    ["What is the women's global international tournament called?", "The FIFA Women's World Cup"], ["Which body governs women's international football?", "FIFA"],
-    ["What is a women's national team?", "A team representing a country"], ["What is the main objective in a football match?", "Score more goals than the opponent"],
-    ["What is the referee responsible for?", "Enforcing the laws of the game"], ["What is a professional women's league?", "A competition for professional women's clubs"],
-    ["What is a penalty kick awarded for?", "A qualifying foul in the penalty area"], ["What is a hat-trick?", "Three goals by one player"],
-  ]],
-  ["popular-club-history", "Club History", "Football club origins, honours, rivalries, stadiums and traditions.", [
-    ["What is a club's founding date?", "The date it was established"], ["What is a club crest?", "Its identifying emblem"],
-    ["What is a club nickname?", "A familiar name used by supporters"], ["What is a home ground?", "The stadium where a club hosts matches"],
-    ["What is a club honour?", "A competition or title it has won"], ["What is a club legend?", "A highly celebrated former or current player"],
-    ["What is a rivalry?", "A longstanding competitive relationship"], ["What is a supporters' group?", "Organised fans of a club"],
-  ]],
-  ["popular-famous-players", "Famous Players", "Football legends, positions, records and playing styles.", [
-    ["What position usually protects the goal?", "Goalkeeper"], ["What does a striker primarily try to do?", "Score goals"],
-    ["What is a playmaker known for?", "Creating chances"], ["What is a defender's main task?", "Stopping attacks"],
-    ["What is a midfielder responsible for?", "Linking defence and attack"], ["What is a player's assist?", "A pass that directly leads to a goal"],
-    ["What is a clean sheet?", "Conceding no goals"], ["What is a player's cap?", "An appearance for a national team"],
-  ]],
-  ["popular-transfers", "Transfers", "Transfer windows, contracts, fees, scouting and player movement.", [
-    ["What is a football transfer?", "A player's move between clubs"], ["What is a transfer fee?", "Money paid by a club for a player's registration"],
-    ["What is a transfer window?", "A period when clubs can register transfers"], ["What is a free transfer?", "A move without a transfer fee after a contract ends"],
-    ["What is a loan move?", "A temporary move to another club"], ["What is a contract?", "A formal agreement between player and club"],
-    ["What is a medical in a transfer?", "A health assessment before signing"], ["What is a release clause?", "A contract condition allowing a transfer for a stated amount"],
-  ]],
-  ["popular-football-rules", "Football Rules", "The laws of football, fouls, restarts, officials and match decisions.", [
-    ["How many players start for one team?", "11"], ["What is offside designed to prevent?", "An unfair attacking advantage"],
-    ["What card cautions a player?", "Yellow"], ["What card sends a player off?", "Red"],
-    ["What restart follows the ball leaving over the sideline?", "A throw-in"], ["What restart follows an attacker touching the ball over their own goal line?", "A corner kick"],
-    ["Who keeps official match time?", "The referee"], ["What is a foul?", "An unfair infringement of the laws"],
-  ]],
+  [
+    "popular-world-cup",
+    "World Cup",
+    "World Cup tournaments, nations, records and famous moments.",
+    [
+      ["How often is the FIFA World Cup normally held?", "Every four years"],
+      ["Which country hosted the first World Cup?", "Uruguay"],
+      ["Which nation has won the most men's World Cups?", "Brazil"],
+      ["What is the World Cup trophy called?", "The FIFA World Cup Trophy"],
+      ["How many teams played at the 2022 men's World Cup?", "32"],
+      ["What is the World Cup final?", "The match deciding the champion"],
+      ["Which continent hosted the 2010 World Cup?", "Africa"],
+      ["What stage follows the group stage?", "The knockout stage"],
+    ],
+  ],
+  [
+    "popular-premier-league",
+    "Premier League",
+    "English Premier League clubs, records, rules and rivalries.",
+    [
+      ["In which country is the Premier League played?", "England"],
+      ["How many clubs compete in a Premier League season?", "20"],
+      ["How many points is a league win worth?", "3"],
+      ["What is the Premier League trophy awarded for?", "Finishing top of the league"],
+      ["Which club plays at Anfield?", "Liverpool"],
+      ["Which club plays at Old Trafford?", "Manchester United"],
+      ["What happens to the bottom three clubs?", "They are relegated"],
+      ["What is an English top-flight match between rivals called?", "A derby"],
+    ],
+  ],
+  [
+    "popular-champions-league",
+    "Champions League",
+    "UEFA Champions League clubs, finals, history and European competition.",
+    [
+      ["What does UEFA stand for?", "Union of European Football Associations"],
+      ["Which clubs compete in the Champions League?", "Top European clubs"],
+      ["What does the winner receive?", "The Champions League trophy"],
+      ["What stage follows the group or league phase?", "The knockout phase"],
+      ["Which club plays at the Santiago Bernabeu?", "Real Madrid"],
+      ["Which club is based in Munich?", "Bayern Munich"],
+      ["What is the final match called?", "The Champions League final"],
+      ["What does a two-leg tie contain?", "A first leg and a second leg"],
+    ],
+  ],
+  [
+    "popular-la-liga",
+    "La Liga",
+    "Spanish league clubs, stadiums, players and football history.",
+    [
+      ["In which country is La Liga played?", "Spain"],
+      ["Which club plays at Camp Nou?", "FC Barcelona"],
+      ["Which club is based in Madrid and wears white traditionally?", "Real Madrid"],
+      ["What is La Liga's top division called?", "Primera Division"],
+      ["What happens to clubs finishing at the bottom?", "They are relegated"],
+      ["What is a Barcelona versus Real Madrid match called?", "El Clasico"],
+      ["What is a league table used to show?", "Club standings"],
+      ["What is a win worth in the table?", "Three points"],
+    ],
+  ],
+  [
+    "popular-serie-a",
+    "Serie A",
+    "Italian league clubs, stadiums, tactics and football traditions.",
+    [
+      ["In which country is Serie A played?", "Italy"],
+      ["Which club plays at San Siro?", "AC Milan and Inter Milan"],
+      ["What is an Inter Milan versus AC Milan match called?", "The Derby della Madonnina"],
+      ["What does a league table rank?", "Teams by results and points"],
+      ["How many points does a Serie A win usually earn?", "3"],
+      ["Which city is home to Juventus?", "Turin"],
+      ["What is the Italian top division called?", "Serie A"],
+      ["What happens to the bottom clubs?", "They can be relegated"],
+    ],
+  ],
+  [
+    "popular-bundesliga",
+    "Bundesliga",
+    "German league clubs, stadiums, supporters and football history.",
+    [
+      ["In which country is the Bundesliga played?", "Germany"],
+      ["Which club is based in Munich?", "Bayern Munich"],
+      ["What is the Bundesliga's highest division called?", "The German top flight"],
+      ["How many points does a league win earn?", "3"],
+      ["What is a football club's home ground called?", "A stadium"],
+      ["Which city is home to Borussia Dortmund?", "Dortmund"],
+      ["What does promotion mean?", "Moving to a higher division"],
+      ["What is the German national cup called?", "DFB-Pokal"],
+    ],
+  ],
+  [
+    "popular-african-football",
+    "African Football",
+    "African clubs, nations, competitions and football development.",
+    [
+      ["What is Africa's main men's international tournament called?", "The Africa Cup of Nations"],
+      ["What organisation governs African football?", "CAF"],
+      ["What does CAF stand for?", "Confederation of African Football"],
+      ["What is a national team made up of?", "Players representing a country"],
+      ["What is Africa's leading club competition called?", "The CAF Champions League"],
+      ["Which country hosted the 2010 World Cup?", "South Africa"],
+      ["What is a local football rivalry called?", "A derby"],
+      ["What does a football academy develop?", "Young players"],
+    ],
+  ],
+  [
+    "popular-womens-football",
+    "Women's Football",
+    "Women's football competitions, pioneers, clubs and international history.",
+    [
+      ["What is the women's global international tournament called?", "The FIFA Women's World Cup"],
+      ["Which body governs women's international football?", "FIFA"],
+      ["What is a women's national team?", "A team representing a country"],
+      ["What is the main objective in a football match?", "Score more goals than the opponent"],
+      ["What is the referee responsible for?", "Enforcing the laws of the game"],
+      ["What is a professional women's league?", "A competition for professional women's clubs"],
+      ["What is a penalty kick awarded for?", "A qualifying foul in the penalty area"],
+      ["What is a hat-trick?", "Three goals by one player"],
+    ],
+  ],
+  [
+    "popular-club-history",
+    "Club History",
+    "Football club origins, honours, rivalries, stadiums and traditions.",
+    [
+      ["What is a club's founding date?", "The date it was established"],
+      ["What is a club crest?", "Its identifying emblem"],
+      ["What is a club nickname?", "A familiar name used by supporters"],
+      ["What is a home ground?", "The stadium where a club hosts matches"],
+      ["What is a club honour?", "A competition or title it has won"],
+      ["What is a club legend?", "A highly celebrated former or current player"],
+      ["What is a rivalry?", "A longstanding competitive relationship"],
+      ["What is a supporters' group?", "Organised fans of a club"],
+    ],
+  ],
+  [
+    "popular-famous-players",
+    "Famous Players",
+    "Football legends, positions, records and playing styles.",
+    [
+      ["What position usually protects the goal?", "Goalkeeper"],
+      ["What does a striker primarily try to do?", "Score goals"],
+      ["What is a playmaker known for?", "Creating chances"],
+      ["What is a defender's main task?", "Stopping attacks"],
+      ["What is a midfielder responsible for?", "Linking defence and attack"],
+      ["What is a player's assist?", "A pass that directly leads to a goal"],
+      ["What is a clean sheet?", "Conceding no goals"],
+      ["What is a player's cap?", "An appearance for a national team"],
+    ],
+  ],
+  [
+    "popular-transfers",
+    "Transfers",
+    "Transfer windows, contracts, fees, scouting and player movement.",
+    [
+      ["What is a football transfer?", "A player's move between clubs"],
+      ["What is a transfer fee?", "Money paid by a club for a player's registration"],
+      ["What is a transfer window?", "A period when clubs can register transfers"],
+      ["What is a free transfer?", "A move without a transfer fee after a contract ends"],
+      ["What is a loan move?", "A temporary move to another club"],
+      ["What is a contract?", "A formal agreement between player and club"],
+      ["What is a medical in a transfer?", "A health assessment before signing"],
+      ["What is a release clause?", "A contract condition allowing a transfer for a stated amount"],
+    ],
+  ],
+  [
+    "popular-football-rules",
+    "Football Rules",
+    "The laws of football, fouls, restarts, officials and match decisions.",
+    [
+      ["How many players start for one team?", "11"],
+      ["What is offside designed to prevent?", "An unfair attacking advantage"],
+      ["What card cautions a player?", "Yellow"],
+      ["What card sends a player off?", "Red"],
+      ["What restart follows the ball leaving over the sideline?", "A throw-in"],
+      [
+        "What restart follows an attacker touching the ball over their own goal line?",
+        "A corner kick",
+      ],
+      ["Who keeps official match time?", "The referee"],
+      ["What is a foul?", "An unfair infringement of the laws"],
+    ],
+  ],
 ];
 
-const topic = (id: string, name: string, description: string, entries: Facts): SectionDefinition => ({
+const topic = (
+  id: string,
+  name: string,
+  description: string,
+  entries: Facts,
+): SectionDefinition => ({
   id,
   name,
   description,
@@ -241,14 +370,34 @@ const topic = (id: string, name: string, description: string, entries: Facts): S
   build: () => facts(entries),
 });
 
-const footballSubtopics: SectionDefinition[] = footballSubtopicDefinitions.map(([id, name, description, entries]) =>
-  topic(id, name, description, entries),
+const footballSubtopics: SectionDefinition[] = footballSubtopicDefinitions.map(
+  ([id, name, description, entries]) => topic(id, name, description, entries),
 );
 
 export const popularTopicSections: SectionDefinition[] = [
-  topic("popular-football", "Football", "Clubs, competitions, rules, players and football history.", football),
+  topic(
+    "popular-football",
+    "Football",
+    "Clubs, competitions, rules, players and football history.",
+    football,
+  ),
   ...footballSubtopics,
-  topic("popular-general-knowledge", "General Knowledge", "A broad challenge across science, history, geography and everyday facts.", generalKnowledge),
-  topic("popular-movies-music", "Movies & Music", "Film language, music theory, performers and entertainment culture.", moviesAndMusic),
-  topic("popular-gaming", "Gaming", "Video game genres, mechanics, esports and gaming culture.", gaming),
+  topic(
+    "popular-general-knowledge",
+    "General Knowledge",
+    "A broad challenge across science, history, geography and everyday facts.",
+    generalKnowledge,
+  ),
+  topic(
+    "popular-movies-music",
+    "Movies & Music",
+    "Film language, music theory, performers and entertainment culture.",
+    moviesAndMusic,
+  ),
+  topic(
+    "popular-gaming",
+    "Gaming",
+    "Video game genres, mechanics, esports and gaming culture.",
+    gaming,
+  ),
 ];

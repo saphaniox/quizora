@@ -12,9 +12,15 @@ export const Route = createFileRoute("/results")({
   head: () => ({
     meta: [
       { title: "Your results - Quitech" },
-      { name: "description", content: "Review your score, answer breakdown, explanations and certificate status." },
+      {
+        name: "description",
+        content: "Review your score, answer breakdown, explanations and certificate status.",
+      },
       { property: "og:title", content: "Your results - Quitech" },
-      { property: "og:description", content: "Review your score, explanations and certificate status on Quitech." },
+      {
+        property: "og:description",
+        content: "Review your score, explanations and certificate status on Quitech.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -39,7 +45,10 @@ function ResultsPage() {
     enabled: Boolean(attempt),
   });
 
-  const topEntries = useMemo(() => (leaderboardData?.leaderboard ?? []).slice(0, 5), [leaderboardData]);
+  const topEntries = useMemo(
+    () => (leaderboardData?.leaderboard ?? []).slice(0, 5),
+    [leaderboardData],
+  );
 
   useEffect(() => {
     if (loaded && !attempt) void navigate({ to: "/" });
@@ -69,11 +78,16 @@ function ResultsPage() {
       <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
         <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">{attempt.levelName}</p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-card-foreground">{attempt.quizTitle}</h1>
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              {attempt.levelName}
+            </p>
+            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-card-foreground">
+              {attempt.quizTitle}
+            </h1>
             <p className="mt-2 text-sm text-muted-foreground">
-              Well done, {attempt.playerName}. You answered {result.score} of {result.maxScore} correctly in{" "}
-              {Math.floor(attempt.timeSpentSeconds / 60)}m {attempt.timeSpentSeconds % 60}s.
+              Well done, {attempt.playerName}. You answered {result.score} of {result.maxScore}{" "}
+              correctly in {Math.floor(attempt.timeSpentSeconds / 60)}m{" "}
+              {attempt.timeSpentSeconds % 60}s.
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Rank #{result.leaderboardRank} of {result.totalEntries} attempts on this section.
@@ -113,7 +127,8 @@ function ResultsPage() {
             <div>
               <h2 className="text-lg font-semibold text-foreground">Certificate earned</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {certificate.playerName}, you passed with {certificate.percentage}%. Your verification code is{" "}
+                {certificate.playerName}, you passed with {certificate.percentage}%. Your
+                verification code is{" "}
                 <span className="font-mono font-semibold text-foreground">{certificate.code}</span>.
               </p>
               <Link
@@ -136,7 +151,9 @@ function ResultsPage() {
 
       {topEntries.length > 0 && (
         <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
-          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">Top scores here</h2>
+          <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+            Top scores here
+          </h2>
           <ol className="mt-3 space-y-2">
             {topEntries.map((entry, position) => (
               <li key={entry.id} className="flex items-center justify-between text-sm">

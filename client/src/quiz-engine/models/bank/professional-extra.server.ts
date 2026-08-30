@@ -1,7 +1,12 @@
 import { draft, fromMap, generate, numericOptions, type SectionDefinition } from "./helpers.server";
 
 type Facts = [string, string][];
-const quiz = (facts: Facts) => fromMap(facts, (k) => k, (_k, v) => `The correct answer is: ${v}.`);
+const quiz = (facts: Facts) =>
+  fromMap(
+    facts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  );
 
 /* ------------------------------------------------------------------ IoT */
 
@@ -32,13 +37,19 @@ const iotFacts: Facts = [
   ["What is Zigbee?", "A low-power mesh networking standard"],
   ["What is a mesh network?", "A network where nodes relay data for each other"],
   ["What is telemetry?", "Automatic measurement and transmission of data"],
-  ["What is a time-series database used for in IoT?", "Storing timestamped sensor readings efficiently"],
+  [
+    "What is a time-series database used for in IoT?",
+    "Storing timestamped sensor readings efficiently",
+  ],
   ["Why do IoT devices use sleep modes?", "To extend battery life"],
   ["What is a watchdog timer?", "A timer that resets a hung device"],
   ["What is MQTT QoS 1?", "At-least-once message delivery"],
   ["What is a payload in messaging?", "The actual data carried in a message"],
   ["Which format is commonly used for IoT payloads?", "JSON"],
-  ["What is a real-time operating system used for?", "Meeting strict timing deadlines on embedded devices"],
+  [
+    "What is a real-time operating system used for?",
+    "Meeting strict timing deadlines on embedded devices",
+  ],
   ["What is an actuator?", "A device that converts a signal into physical action"],
   ["What is a smart meter?", "A meter that reports utility consumption remotely"],
   ["What is device shadow or twin state?", "A cloud copy of a device's last known state"],
@@ -237,14 +248,20 @@ const mechanicalFacts: Facts = [
   ["What is cavitation in a pump?", "Vapour bubbles forming and collapsing, damaging the impeller"],
   ["What is NPSH?", "Net positive suction head available to a pump"],
   ["What is a heat exchanger?", "A device transferring heat between two fluids"],
-  ["What are the main refrigeration cycle components?", "Compressor, condenser, expansion valve and evaporator"],
+  [
+    "What are the main refrigeration cycle components?",
+    "Compressor, condenser, expansion valve and evaporator",
+  ],
   ["What is viscosity?", "A fluid's resistance to flow"],
   ["What are the strokes of a four-stroke engine?", "Intake, compression, power and exhaust"],
   ["What is a flywheel used for?", "Storing rotational energy and smoothing speed"],
   ["What is an advantage of a belt drive?", "Quiet operation and shock absorption"],
   ["What is preventive maintenance?", "Servicing on a schedule before failure occurs"],
   ["What is condition monitoring?", "Tracking vibration, heat or oil to predict failure"],
-  ["What is vibration analysis useful for?", "Detecting imbalance, misalignment and bearing faults"],
+  [
+    "What is vibration analysis useful for?",
+    "Detecting imbalance, misalignment and bearing faults",
+  ],
   ["What is the main purpose of lubrication?", "Reducing friction and wear"],
   ["What is a tolerance stack-up?", "Accumulated variation across assembled parts"],
   ["What is a factor of safety?", "The ratio of design strength to expected load"],
@@ -335,7 +352,10 @@ const civilFacts: Facts = [
   ["What is a permit to work?", "Formal authorisation for high-risk tasks"],
   ["What is a project programme?", "A time schedule of construction activities"],
   ["What is a variation order?", "An approved change to the contracted works"],
-  ["What is retention in a construction contract?", "A held-back percentage released after defects liability"],
+  [
+    "What is retention in a construction contract?",
+    "A held-back percentage released after defects liability",
+  ],
   ["What is an as-built drawing?", "A drawing showing the works as actually constructed"],
 ];
 
@@ -395,7 +415,10 @@ const healthcareFacts: Facts = [
   ["What is a vaccine?", "A preparation that stimulates protective immunity"],
   ["What is the cold chain?", "Keeping vaccines within a safe temperature range"],
   ["What is informed consent?", "Agreement to treatment after understanding risks"],
-  ["What is patient confidentiality?", "Protecting patient information from unauthorised disclosure"],
+  [
+    "What is patient confidentiality?",
+    "Protecting patient information from unauthorised disclosure",
+  ],
   ["What are the five rights of medication?", "Right patient, drug, dose, route and time"],
   ["What is an adverse drug reaction?", "A harmful unintended response to a medicine"],
   ["What is the first-line treatment for anaphylaxis?", "Intramuscular adrenaline"],
@@ -415,7 +438,10 @@ const healthcareFacts: Facts = [
   ["What is the incubation period of a disease?", "Time between infection and first symptoms"],
   ["What is herd immunity?", "Protection of a population when enough people are immune"],
   ["What is a notifiable disease?", "A disease that must be reported to health authorities"],
-  ["What is a health information system used for?", "Collecting and using data for health decisions"],
+  [
+    "What is a health information system used for?",
+    "Collecting and using data for health decisions",
+  ],
   ["What is an epidemic?", "An unusual increase of a disease in an area"],
 ];
 
@@ -439,8 +465,14 @@ const agricultureFacts: Facts = [
   ["What is soil erosion?", "The removal of topsoil by wind or water"],
   ["What is contour ploughing for?", "Reducing runoff and erosion on slopes"],
   ["What is agroforestry?", "Combining trees with crops or livestock"],
-  ["What is integrated pest management?", "Combining biological, cultural and chemical pest control"],
-  ["What is a pesticide pre-harvest interval?", "The wait required between spraying and harvesting"],
+  [
+    "What is integrated pest management?",
+    "Combining biological, cultural and chemical pest control",
+  ],
+  [
+    "What is a pesticide pre-harvest interval?",
+    "The wait required between spraying and harvesting",
+  ],
   ["What is a herbicide used for?", "Controlling weeds"],
   ["What is a fungicide used for?", "Controlling fungal disease"],
   ["What is certified seed?", "Seed tested and approved for purity and germination"],
@@ -453,7 +485,10 @@ const agricultureFacts: Facts = [
   ["What is a ruminant?", "An animal with a multi-chamber stomach such as a cow"],
   ["What is silage?", "Fermented, high-moisture fodder stored for livestock"],
   ["Why is livestock deworming done?", "To control internal parasites"],
-  ["What is artificial insemination used for?", "Improving livestock genetics without keeping a bull"],
+  [
+    "What is artificial insemination used for?",
+    "Improving livestock genetics without keeping a bull",
+  ],
   ["What is the gestation period of a cow?", "About nine months"],
   ["What is poultry brooding?", "Keeping chicks warm in their first weeks"],
   ["What is a layer chicken raised for?", "Egg production"],
@@ -464,7 +499,10 @@ const agricultureFacts: Facts = [
   ["What is a farm record used for?", "Tracking costs, yields and decisions"],
   ["What is gross margin in farming?", "Revenue minus variable costs of an enterprise"],
   ["What is an agricultural cooperative?", "A member-owned group that markets and buys together"],
-  ["What is climate-smart agriculture?", "Farming that raises yields while adapting to climate change"],
+  [
+    "What is climate-smart agriculture?",
+    "Farming that raises yields while adapting to climate change",
+  ],
   ["What is conservation tillage?", "Minimum soil disturbance to protect soil structure"],
   ["What is greenhouse farming good for?", "Controlling growing conditions and extending seasons"],
   ["What is a soil test used for?", "Determining nutrient needs before fertilising"],
@@ -520,7 +558,10 @@ const hrFacts: Facts = [
   ["What is workforce planning?", "Matching future staffing supply with demand"],
   ["What is redundancy?", "A dismissal because the role is no longer needed"],
   ["What is talent management?", "Attracting, developing and retaining high performers"],
-  ["What is an employee value proposition?", "The package of rewards and experience offered to staff"],
+  [
+    "What is an employee value proposition?",
+    "The package of rewards and experience offered to staff",
+  ],
 ];
 
 const hrBank = () => quiz(hrFacts);
@@ -529,7 +570,10 @@ const hrBank = () => quiz(hrFacts);
 
 const lawFacts: Facts = [
   ["What is a contract?", "A legally binding agreement between parties"],
-  ["What are the essential elements of a contract?", "Offer, acceptance, consideration and intention"],
+  [
+    "What are the essential elements of a contract?",
+    "Offer, acceptance, consideration and intention",
+  ],
   ["What is consideration in contract law?", "Something of value exchanged between the parties"],
   ["What is a breach of contract?", "Failure to perform an agreed obligation"],
   ["What is the remedy of damages?", "Financial compensation for loss suffered"],
@@ -544,7 +588,10 @@ const lawFacts: Facts = [
   ["What does a patent protect?", "A new, inventive and industrially applicable invention"],
   ["What does a trademark protect?", "Signs distinguishing goods or services of a trader"],
   ["What is a trade secret?", "Confidential business information kept from competitors"],
-  ["What is a non-disclosure agreement?", "A contract restricting disclosure of confidential information"],
+  [
+    "What is a non-disclosure agreement?",
+    "A contract restricting disclosure of confidential information",
+  ],
   ["What is due diligence?", "Investigation of a matter before entering a transaction"],
   ["What is corporate governance?", "The system by which companies are directed and controlled"],
   ["What is a fiduciary duty?", "A duty to act in another party's best interests"],
@@ -557,7 +604,10 @@ const lawFacts: Facts = [
   ["What is a data processor?", "A party processing personal data on the controller's behalf"],
   ["What is data minimisation?", "Collecting only the personal data actually needed"],
   ["What is a data subject access request?", "A request to see the personal data held about you"],
-  ["What is the data breach notification duty?", "The obligation to report qualifying breaches promptly"],
+  [
+    "What is the data breach notification duty?",
+    "The obligation to report qualifying breaches promptly",
+  ],
   ["What is consumer protection law about?", "Fair treatment and safety of buyers"],
   ["What is a warranty?", "A promise about the quality or performance of goods"],
   ["What is an indemnity clause?", "A promise to cover another party's specified losses"],
@@ -595,7 +645,10 @@ const automotiveFacts: Facts = [
   ["What is an intercooler for?", "Cooling compressed intake air to increase density"],
   ["What does engine oil do?", "Lubricates, cools and cleans internal parts"],
   ["What does a timing belt control?", "Synchronisation of crankshaft and camshaft"],
-  ["What happens if a timing belt snaps on an interference engine?", "Valves and pistons can collide, causing major damage"],
+  [
+    "What happens if a timing belt snaps on an interference engine?",
+    "Valves and pistons can collide, causing major damage",
+  ],
   ["What does an alternator do?", "Charges the battery and powers electrics when running"],
   ["What is the usual car battery voltage?", "About 12 volts"],
   ["What is a starter motor for?", "Cranking the engine to begin combustion"],
@@ -605,7 +658,10 @@ const automotiveFacts: Facts = [
   ["What is a shock absorber's job?", "Damping suspension oscillation"],
   ["What is brake fade?", "Loss of braking power from overheating"],
   ["What fluid is used in hydraulic brakes?", "Brake fluid such as DOT 4"],
-  ["Why must brake fluid be replaced periodically?", "It absorbs moisture and lowers the boiling point"],
+  [
+    "Why must brake fluid be replaced periodically?",
+    "It absorbs moisture and lowers the boiling point",
+  ],
   ["What is a hybrid vehicle?", "A vehicle using both an engine and an electric motor"],
   ["What is regenerative braking?", "Recovering braking energy back into the battery"],
   ["Which battery chemistry dominates electric vehicles?", "Lithium-ion"],
@@ -694,15 +750,81 @@ const cloudFacts: Facts = [
 const cloudBank = () => quiz(cloudFacts);
 
 export const professionalExtraSections: SectionDefinition[] = [
-  { id: "professional-iot", name: "IoT & Embedded Systems", description: "Sensors, microcontrollers, MQTT, edge computing and device security.", difficulty: "Hard", build: iotBank },
-  { id: "professional-automation", name: "Automation & Control", description: "PLCs, SCADA, PID control, instrumentation and industrial safety.", difficulty: "Hard", build: automationBank },
-  { id: "professional-cybersecurity", name: "Cybersecurity", description: "Threats, cryptography, hardening, incident response and governance.", difficulty: "Hard", build: cyberBank },
-  { id: "professional-mechanical", name: "Mechanical Engineering", description: "Materials, machine elements, torque, stress and maintenance.", difficulty: "Hard", build: mechanicalBank },
-  { id: "professional-civil", name: "Civil & Structural Engineering", description: "Concrete, foundations, structures, surveying and site management.", difficulty: "Hard", build: civilBank },
-  { id: "professional-healthcare", name: "Healthcare & Nursing", description: "Vital signs, emergency care, infection control and patient safety.", difficulty: "Hard", build: healthcareBank },
-  { id: "professional-agriculture", name: "Agriculture & Agribusiness", description: "Soils, crops, livestock, post-harvest handling and farm economics.", difficulty: "Medium", build: agricultureBank },
-  { id: "professional-hr", name: "Human Resources", description: "Recruitment, performance, employment relations and HR policy.", difficulty: "Medium", build: hrBank },
-  { id: "professional-law", name: "Law, Ethics & Compliance", description: "Contracts, liability, data protection and regulatory compliance.", difficulty: "Hard", build: lawBank },
-  { id: "professional-automotive", name: "Automotive & Mechatronics", description: "Engines, diagnostics, braking, EV systems and servicing.", difficulty: "Hard", build: automotiveBank },
-  { id: "professional-cloud", name: "Cloud & DevOps", description: "Cloud models, containers, CI/CD, reliability and cloud security.", difficulty: "Hard", build: cloudBank },
+  {
+    id: "professional-iot",
+    name: "IoT & Embedded Systems",
+    description: "Sensors, microcontrollers, MQTT, edge computing and device security.",
+    difficulty: "Hard",
+    build: iotBank,
+  },
+  {
+    id: "professional-automation",
+    name: "Automation & Control",
+    description: "PLCs, SCADA, PID control, instrumentation and industrial safety.",
+    difficulty: "Hard",
+    build: automationBank,
+  },
+  {
+    id: "professional-cybersecurity",
+    name: "Cybersecurity",
+    description: "Threats, cryptography, hardening, incident response and governance.",
+    difficulty: "Hard",
+    build: cyberBank,
+  },
+  {
+    id: "professional-mechanical",
+    name: "Mechanical Engineering",
+    description: "Materials, machine elements, torque, stress and maintenance.",
+    difficulty: "Hard",
+    build: mechanicalBank,
+  },
+  {
+    id: "professional-civil",
+    name: "Civil & Structural Engineering",
+    description: "Concrete, foundations, structures, surveying and site management.",
+    difficulty: "Hard",
+    build: civilBank,
+  },
+  {
+    id: "professional-healthcare",
+    name: "Healthcare & Nursing",
+    description: "Vital signs, emergency care, infection control and patient safety.",
+    difficulty: "Hard",
+    build: healthcareBank,
+  },
+  {
+    id: "professional-agriculture",
+    name: "Agriculture & Agribusiness",
+    description: "Soils, crops, livestock, post-harvest handling and farm economics.",
+    difficulty: "Medium",
+    build: agricultureBank,
+  },
+  {
+    id: "professional-hr",
+    name: "Human Resources",
+    description: "Recruitment, performance, employment relations and HR policy.",
+    difficulty: "Medium",
+    build: hrBank,
+  },
+  {
+    id: "professional-law",
+    name: "Law, Ethics & Compliance",
+    description: "Contracts, liability, data protection and regulatory compliance.",
+    difficulty: "Hard",
+    build: lawBank,
+  },
+  {
+    id: "professional-automotive",
+    name: "Automotive & Mechatronics",
+    description: "Engines, diagnostics, braking, EV systems and servicing.",
+    difficulty: "Hard",
+    build: automotiveBank,
+  },
+  {
+    id: "professional-cloud",
+    name: "Cloud & DevOps",
+    description: "Cloud models, containers, CI/CD, reliability and cloud security.",
+    difficulty: "Hard",
+    build: cloudBank,
+  },
 ];

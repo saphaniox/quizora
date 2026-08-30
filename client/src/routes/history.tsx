@@ -9,9 +9,15 @@ export const Route = createFileRoute("/history")({
   head: () => ({
     meta: [
       { title: "My progress - Quitech" },
-      { name: "description", content: "Track every quiz attempt, your best scores and the certificates you earned." },
+      {
+        name: "description",
+        content: "Track every quiz attempt, your best scores and the certificates you earned.",
+      },
       { property: "og:title", content: "My progress - Quitech" },
-      { property: "og:description", content: "Track your quiz attempts, best scores and earned certificates." },
+      {
+        property: "og:description",
+        content: "Track your quiz attempts, best scores and earned certificates.",
+      },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -30,7 +36,9 @@ function HistoryPage() {
 
   const attempts = items.length;
   const best = attempts ? Math.max(...items.map((item) => item.percentage)) : 0;
-  const average = attempts ? Math.round(items.reduce((sum, item) => sum + item.percentage, 0) / attempts) : 0;
+  const average = attempts
+    ? Math.round(items.reduce((sum, item) => sum + item.percentage, 0) / attempts)
+    : 0;
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
@@ -38,7 +46,9 @@ function HistoryPage() {
         <HistoryIcon className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">My progress</h1>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">Saved privately on this device - no account needed.</p>
+      <p className="mt-2 text-sm text-muted-foreground">
+        Saved privately on this device - no account needed.
+      </p>
 
       <dl className="mt-6 grid grid-cols-3 gap-4">
         {[
@@ -97,7 +107,9 @@ function HistoryPage() {
       {attempts === 0 ? (
         <div className="mt-4 rounded-xl border border-dashed border-border p-12 text-center">
           <p className="font-medium text-foreground">Nothing here yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">Complete a section and your results will show up here.</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Complete a section and your results will show up here.
+          </p>
           <Link
             to="/"
             className="mt-4 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
@@ -118,7 +130,9 @@ function HistoryPage() {
                   {item.levelName} - {new Date(item.completedAt).toLocaleString()}
                 </p>
               </div>
-              <span className="tabular-nums text-sm font-semibold text-foreground">{item.percentage}%</span>
+              <span className="tabular-nums text-sm font-semibold text-foreground">
+                {item.percentage}%
+              </span>
             </li>
           ))}
         </ul>

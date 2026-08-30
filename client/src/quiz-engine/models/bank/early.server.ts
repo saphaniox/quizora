@@ -18,12 +18,22 @@ const countingBank = () =>
       }
       if (kind === 1) {
         const answer = n + 1;
-        return draft(`Which number comes after ${n}?`, String(answer), numericOptions(answer, 3), `${n} then ${answer}.`);
+        return draft(
+          `Which number comes after ${n}?`,
+          String(answer),
+          numericOptions(answer, 3),
+          `${n} then ${answer}.`,
+        );
       }
       if (kind === 2) {
         const base = 2 + n;
         const answer = base - 1;
-        return draft(`Which number comes before ${base}?`, String(answer), numericOptions(answer, 3), `${answer} comes just before ${base}.`);
+        return draft(
+          `Which number comes before ${base}?`,
+          String(answer),
+          numericOptions(answer, 3),
+          `${answer} comes just before ${base}.`,
+        );
       }
       if (kind === 3) {
         const step = 2 + (index % 3);
@@ -42,7 +52,9 @@ const countingBank = () =>
       return draft(
         `Which number is bigger: ${a} or ${b}?`,
         a === b ? "They are the same" : String(bigger),
-        a === b ? [String(a), String(a + 1), String(a - 1)] : [String(Math.min(a, b)), "They are the same", String(bigger + 1)],
+        a === b
+          ? [String(a), String(a + 1), String(a - 1)]
+          : [String(Math.min(a, b)), "They are the same", String(bigger + 1)],
         a === b ? `${a} and ${b} are equal.` : `${bigger} is bigger than ${Math.min(a, b)}.`,
       );
     },
@@ -50,23 +62,68 @@ const countingBank = () =>
   );
 
 const letters: [string, string][] = [
-  ["A", "Apple"], ["B", "Ball"], ["C", "Cat"], ["D", "Dog"], ["E", "Egg"],
-  ["F", "Fish"], ["G", "Goat"], ["H", "Hat"], ["I", "Ink"], ["J", "Jug"],
-  ["K", "Kite"], ["L", "Lion"], ["M", "Mango"], ["N", "Nest"], ["O", "Orange"],
-  ["P", "Pen"], ["Q", "Queen"], ["R", "Rat"], ["S", "Sun"], ["T", "Tree"],
-  ["U", "Umbrella"], ["V", "Van"], ["W", "Water"], ["X", "Box"], ["Y", "Yam"], ["Z", "Zebra"],
+  ["A", "Apple"],
+  ["B", "Ball"],
+  ["C", "Cat"],
+  ["D", "Dog"],
+  ["E", "Egg"],
+  ["F", "Fish"],
+  ["G", "Goat"],
+  ["H", "Hat"],
+  ["I", "Ink"],
+  ["J", "Jug"],
+  ["K", "Kite"],
+  ["L", "Lion"],
+  ["M", "Mango"],
+  ["N", "Nest"],
+  ["O", "Orange"],
+  ["P", "Pen"],
+  ["Q", "Queen"],
+  ["R", "Rat"],
+  ["S", "Sun"],
+  ["T", "Tree"],
+  ["U", "Umbrella"],
+  ["V", "Van"],
+  ["W", "Water"],
+  ["X", "Box"],
+  ["Y", "Yam"],
+  ["Z", "Zebra"],
 ];
 
 const soundWords: [string, string][] = [
-  ["cat", "c"], ["ball", "b"], ["dog", "d"], ["fan", "f"], ["hat", "h"],
-  ["jam", "j"], ["kite", "k"], ["lamp", "l"], ["milk", "m"], ["nose", "n"],
-  ["pen", "p"], ["rain", "r"], ["sun", "s"], ["top", "t"], ["van", "v"],
-  ["web", "w"], ["yes", "y"], ["zip", "z"], ["gate", "g"], ["egg", "e"],
+  ["cat", "c"],
+  ["ball", "b"],
+  ["dog", "d"],
+  ["fan", "f"],
+  ["hat", "h"],
+  ["jam", "j"],
+  ["kite", "k"],
+  ["lamp", "l"],
+  ["milk", "m"],
+  ["nose", "n"],
+  ["pen", "p"],
+  ["rain", "r"],
+  ["sun", "s"],
+  ["top", "t"],
+  ["van", "v"],
+  ["web", "w"],
+  ["yes", "y"],
+  ["zip", "z"],
+  ["gate", "g"],
+  ["egg", "e"],
 ];
 
 const alphabetBank = () => [
-  ...fromMap(letters, (k) => `Which word starts with the letter ${k}?`, (k, v) => `"${v}" starts with the letter ${k}.`),
-  ...fromMap(soundWords, (k) => `What is the first sound in the word "${k}"?`, (k, v) => `"${k}" begins with the "${v}" sound.`),
+  ...fromMap(
+    letters,
+    (k) => `Which word starts with the letter ${k}?`,
+    (k, v) => `"${v}" starts with the letter ${k}.`,
+  ),
+  ...fromMap(
+    soundWords,
+    (k) => `What is the first sound in the word "${k}"?`,
+    (k, v) => `"${k}" begins with the "${v}" sound.`,
+  ),
   ...generate(
     54,
     (index) => {
@@ -78,7 +135,11 @@ const alphabetBank = () => [
         return draft(
           `Which letter comes after ${letter[0]} in the alphabet?`,
           next[0],
-          [letter[0], (letters[(i + 3) % 26] as [string, string])[0], (letters[(i + 5) % 26] as [string, string])[0]],
+          [
+            letter[0],
+            (letters[(i + 3) % 26] as [string, string])[0],
+            (letters[(i + 5) % 26] as [string, string])[0],
+          ],
           `The alphabet order is ... ${letter[0]}, ${next[0]} ...`,
         );
       }
@@ -86,14 +147,20 @@ const alphabetBank = () => [
         return draft(
           `Is "${letter[0]}" a vowel or a consonant?`,
           "AEIOU".includes(letter[0]) ? "A vowel" : "A consonant",
-          "AEIOU".includes(letter[0]) ? ["A consonant", "A number", "A shape"] : ["A vowel", "A number", "A shape"],
+          "AEIOU".includes(letter[0])
+            ? ["A consonant", "A number", "A shape"]
+            : ["A vowel", "A number", "A shape"],
           `The vowels are A, E, I, O and U. Every other letter is a consonant.`,
         );
       }
       return draft(
         `What is the small (lowercase) letter for ${letter[0]}?`,
         letter[0].toLowerCase(),
-        [next[0].toLowerCase(), (letters[(i + 4) % 26] as [string, string])[0].toLowerCase(), (letters[(i + 7) % 26] as [string, string])[0].toLowerCase()],
+        [
+          next[0].toLowerCase(),
+          (letters[(i + 4) % 26] as [string, string])[0].toLowerCase(),
+          (letters[(i + 7) % 26] as [string, string])[0].toLowerCase(),
+        ],
         `The lowercase form of ${letter[0]} is ${letter[0].toLowerCase()}.`,
       );
     },
@@ -117,17 +184,35 @@ const shapeFacts: [string, string][] = [
 ];
 
 const colourFacts: [string, string][] = [
-  ["the sky on a clear day", "Blue"], ["grass and leaves", "Green"], ["the sun at noon", "Yellow"],
-  ["a ripe tomato", "Red"], ["snow and milk", "White"], ["charcoal at night", "Black"],
-  ["a ripe orange fruit", "Orange"], ["soil and tree bark", "Brown"], ["a ripe banana", "Yellow"],
-  ["clean water in a glass", "Clear"], ["a rain cloud", "Grey"], ["a ripe aubergine", "Purple"],
-  ["mixing red and yellow paint", "Orange"], ["mixing blue and yellow paint", "Green"],
-  ["mixing red and white paint", "Pink"], ["mixing black and white paint", "Grey"],
+  ["the sky on a clear day", "Blue"],
+  ["grass and leaves", "Green"],
+  ["the sun at noon", "Yellow"],
+  ["a ripe tomato", "Red"],
+  ["snow and milk", "White"],
+  ["charcoal at night", "Black"],
+  ["a ripe orange fruit", "Orange"],
+  ["soil and tree bark", "Brown"],
+  ["a ripe banana", "Yellow"],
+  ["clean water in a glass", "Clear"],
+  ["a rain cloud", "Grey"],
+  ["a ripe aubergine", "Purple"],
+  ["mixing red and yellow paint", "Orange"],
+  ["mixing blue and yellow paint", "Green"],
+  ["mixing red and white paint", "Pink"],
+  ["mixing black and white paint", "Grey"],
 ];
 
 const shapesBank = () => [
-  ...fromMap(shapeFacts, (k) => `What can you tell about ${k}?`, (k, v) => `${k.charAt(0).toUpperCase()}${k.slice(1)}: ${v.toLowerCase()}.`),
-  ...fromMap(colourFacts, (k) => `What colour is ${k}?`, (k, v) => `${k.charAt(0).toUpperCase()}${k.slice(1)} is ${v.toLowerCase()}.`),
+  ...fromMap(
+    shapeFacts,
+    (k) => `What can you tell about ${k}?`,
+    (k, v) => `${k.charAt(0).toUpperCase()}${k.slice(1)}: ${v.toLowerCase()}.`,
+  ),
+  ...fromMap(
+    colourFacts,
+    (k) => `What colour is ${k}?`,
+    (k, v) => `${k.charAt(0).toUpperCase()}${k.slice(1)} is ${v.toLowerCase()}.`,
+  ),
   ...generate(
     72,
     (index) => {
@@ -141,7 +226,9 @@ const shapesBank = () => [
           `How many sides does a ${shapes[i]} have?`,
           answer === 0 ? "None, it is round" : String(answer),
           answer === 0 ? ["3", "4", "1"] : numericOptions(answer, 2),
-          answer === 0 ? "A circle is round, so it has no straight sides." : `A ${shapes[i]} has ${answer} sides.`,
+          answer === 0
+            ? "A circle is round, so it has no straight sides."
+            : `A ${shapes[i]} has ${answer} sides.`,
         );
       }
       if (kind === 1) {
@@ -157,8 +244,13 @@ const shapesBank = () => [
       const start = index % 2;
       return draft(
         `Look at the pattern: ${pattern[start]}, ${pattern[1 - start]}, ${pattern[start]}, ... which colour comes next?`,
-        (pattern[1 - start] as string).charAt(0).toUpperCase() + (pattern[1 - start] as string).slice(1),
-        ["Green", "Yellow", (pattern[start] as string).charAt(0).toUpperCase() + (pattern[start] as string).slice(1)],
+        (pattern[1 - start] as string).charAt(0).toUpperCase() +
+          (pattern[1 - start] as string).slice(1),
+        [
+          "Green",
+          "Yellow",
+          (pattern[start] as string).charAt(0).toUpperCase() + (pattern[start] as string).slice(1),
+        ],
         `The pattern keeps repeating ${pattern[start]} then ${pattern[1 - start]}.`,
       );
     },
@@ -175,11 +267,21 @@ const additionBank = () =>
       const b = 1 + Math.floor(random() * 9);
       if (kind === 0) {
         const answer = a + b;
-        return draft(`What is ${a} + ${b}?`, String(answer), numericOptions(answer, 3), `${a} + ${b} = ${answer}.`);
+        return draft(
+          `What is ${a} + ${b}?`,
+          String(answer),
+          numericOptions(answer, 3),
+          `${a} + ${b} = ${answer}.`,
+        );
       }
       if (kind === 1) {
         const big = a + b;
-        return draft(`What is ${big} − ${a}?`, String(b), numericOptions(b, 3), `${big} − ${a} = ${b}.`);
+        return draft(
+          `What is ${big} − ${a}?`,
+          String(b),
+          numericOptions(b, 3),
+          `${big} − ${a} = ${b}.`,
+        );
       }
       if (kind === 2) {
         const answer = a + b;
@@ -236,17 +338,31 @@ const worldFacts: [string, string][] = [
 ];
 
 const worldBank = () => [
-  ...fromMap(worldFacts, (k) => k, (_k, v) => `The correct answer is: ${v}.`),
+  ...fromMap(
+    worldFacts,
+    (k) => k,
+    (_k, v) => `The correct answer is: ${v}.`,
+  ),
   ...generate(
     120,
     (index) => {
       const days = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
       const body = [
-        ["eyes", "see"], ["ears", "hear"], ["nose", "smell"], ["tongue", "taste"], ["hands", "touch and hold"],
-        ["legs", "walk and run"], ["mouth", "eat and speak"], ["teeth", "chew food"],
+        ["eyes", "see"],
+        ["ears", "hear"],
+        ["nose", "smell"],
+        ["tongue", "taste"],
+        ["hands", "touch and hold"],
+        ["legs", "walk and run"],
+        ["mouth", "eat and speak"],
+        ["teeth", "chew food"],
       ];
       const animals = [
-        ["cow", "milk"], ["hen", "eggs"], ["sheep", "wool"], ["bee", "honey"], ["goat", "milk"],
+        ["cow", "milk"],
+        ["hen", "eggs"],
+        ["sheep", "wool"],
+        ["bee", "honey"],
+        ["goat", "milk"],
       ];
       const kind = index % 3;
       if (kind === 0) {
@@ -264,7 +380,10 @@ const worldBank = () => [
         return draft(
           `What do we use our ${pair[0]} for?`,
           `To ${pair[1]}`,
-          body.filter((p) => p[0] !== pair[0]).slice(0, 3).map((p) => `To ${p[1]}`),
+          body
+            .filter((p) => p[0] !== pair[0])
+            .slice(0, 3)
+            .map((p) => `To ${p[1]}`),
           `We use our ${pair[0]} to ${pair[1]}.`,
         );
       }
@@ -272,7 +391,10 @@ const worldBank = () => [
       return draft(
         `What do we get from a ${pair[0]}?`,
         (pair[1] as string).charAt(0).toUpperCase() + (pair[1] as string).slice(1),
-        animals.filter((p) => p[1] !== pair[1]).slice(0, 3).map((p) => (p[1] as string).charAt(0).toUpperCase() + (p[1] as string).slice(1)),
+        animals
+          .filter((p) => p[1] !== pair[1])
+          .slice(0, 3)
+          .map((p) => (p[1] as string).charAt(0).toUpperCase() + (p[1] as string).slice(1)),
         `A ${pair[0]} gives us ${pair[1]}.`,
       );
     },
@@ -281,9 +403,39 @@ const worldBank = () => [
 ];
 
 export const earlySections: SectionDefinition[] = [
-  { id: "early-counting", name: "Counting & Numbers", description: "Counting objects, number order and comparing small numbers.", difficulty: "Easy", build: countingBank },
-  { id: "early-alphabet", name: "Alphabet & Sounds", description: "Letters, first sounds, vowels and lowercase letters.", difficulty: "Easy", build: alphabetBank },
-  { id: "early-shapes", name: "Shapes, Colours & Patterns", description: "Everyday shapes, colours and simple repeating patterns.", difficulty: "Easy", build: shapesBank },
-  { id: "early-addition", name: "First Adding & Taking Away", description: "Single digit addition and subtraction with picture stories.", difficulty: "Easy", build: additionBank },
-  { id: "early-world", name: "My World", description: "Days, senses, animals, manners and everyday living.", difficulty: "Easy", build: worldBank },
+  {
+    id: "early-counting",
+    name: "Counting & Numbers",
+    description: "Counting objects, number order and comparing small numbers.",
+    difficulty: "Easy",
+    build: countingBank,
+  },
+  {
+    id: "early-alphabet",
+    name: "Alphabet & Sounds",
+    description: "Letters, first sounds, vowels and lowercase letters.",
+    difficulty: "Easy",
+    build: alphabetBank,
+  },
+  {
+    id: "early-shapes",
+    name: "Shapes, Colours & Patterns",
+    description: "Everyday shapes, colours and simple repeating patterns.",
+    difficulty: "Easy",
+    build: shapesBank,
+  },
+  {
+    id: "early-addition",
+    name: "First Adding & Taking Away",
+    description: "Single digit addition and subtraction with picture stories.",
+    difficulty: "Easy",
+    build: additionBank,
+  },
+  {
+    id: "early-world",
+    name: "My World",
+    description: "Days, senses, animals, manners and everyday living.",
+    difficulty: "Easy",
+    build: worldBank,
+  },
 ];

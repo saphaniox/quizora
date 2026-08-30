@@ -12,39 +12,39 @@ const calculusBank = () =>
           `Differentiate f(x) = ${a}x^${n} with respect to x.`,
           `${a * n}x^${n - 1}`,
           [`${a}x^${n - 1}`, `${a * n}x^${n}`, `${a / 2}x^${n + 1}`],
-          `Using the power rule, d/dx(${a}x^${n}) = ${a} Ã— ${n} x^${n - 1} = ${a * n}x^${n - 1}.`,
+          `Using the power rule, d/dx(${a}x^${n}) = ${a} × ${n} x^${n - 1} = ${a * n}x^${n - 1}.`,
         );
       }
       if (kind === 1) {
         return draft(
-          `Find âˆ« ${a}x^${n} dx.`,
+          `Find ∫ ${a}x^${n} dx.`,
           `(${a}/${n + 1})x^${n + 1} + C`,
           [`${a * n}x^${n - 1} + C`, `(${a}/${n})x^${n} + C`, `${a}x^${n + 1} + C`],
-          `âˆ«ax^n dx = a x^(n+1)/(n+1) + C = (${a}/${n + 1})x^${n + 1} + C.`,
+          `∫ax^n dx = a x^(n+1)/(n+1) + C = (${a}/${n + 1})x^${n + 1} + C.`,
         );
       }
       if (kind === 2) {
         const x0 = 1 + (index % 5);
         const value = a * n * Math.pow(x0, n - 1);
         return draft(
-          `If f(x) = ${a}x^${n}, what is fâ€²(${x0})?`,
+          `If f(x) = ${a}x^${n}, what is f′(${x0})?`,
           String(value),
           numericOptions(value, Math.max(2, Math.round(value / 4))),
-          `fâ€²(x) = ${a * n}x^${n - 1}, so fâ€²(${x0}) = ${a * n} Ã— ${Math.pow(x0, n - 1)} = ${value}.`,
+          `f′(x) = ${a * n}x^${n - 1}, so f′(${x0}) = ${a * n} × ${Math.pow(x0, n - 1)} = ${value}.`,
         );
       }
       if (kind === 3) {
         const b = 1 + (index % 7);
         const limit = a * b;
         return draft(
-          `Evaluate lim(xâ†’${b}) of ${a}x.`,
+          `Evaluate lim(x→${b}) of ${a}x.`,
           String(limit),
           numericOptions(limit, 5),
-          `The function is continuous, so substitute x = ${b}: ${a} Ã— ${b} = ${limit}.`,
+          `The function is continuous, so substitute x = ${b}: ${a} × ${b} = ${limit}.`,
         );
       }
       const derivatives: [string, string][] = [
-        ["sin x", "cos x"], ["cos x", "âˆ’sin x"], ["e^x", "e^x"], ["ln x", "1/x"], ["tan x", "secÂ²x"],
+        ["sin x", "cos x"], ["cos x", "−sin x"], ["e^x", "e^x"], ["ln x", "1/x"], ["tan x", "sec²x"],
       ];
       const chosen = derivatives[index % derivatives.length] as [string, string];
       return draft(
@@ -66,7 +66,7 @@ const statisticsBank = () => [
       const kind = index % 3;
       if (kind === 0) {
         const mean = Number((sum / values.length).toFixed(1));
-        return draft(`What is the mean of ${values.join(", ")}?`, String(mean), numericOptions(mean, 4, 1), `Sum = ${sum}; ${sum} Ã· 5 = ${mean}.`);
+        return draft(`What is the mean of ${values.join(", ")}?`, String(mean), numericOptions(mean, 4, 1), `Sum = ${sum}; ${sum} ÷ 5 = ${mean}.`);
       }
       if (kind === 1) {
         const sorted = [...values].sort((a, b) => a - b);
@@ -75,7 +75,7 @@ const statisticsBank = () => [
       }
       const sorted = [...values].sort((a, b) => a - b);
       const range = (sorted[4] as number) - (sorted[0] as number);
-      return draft(`What is the range of ${values.join(", ")}?`, String(range), numericOptions(range, 4), `Range = largest âˆ’ smallest = ${sorted[4]} âˆ’ ${sorted[0]} = ${range}.`);
+      return draft(`What is the range of ${values.join(", ")}?`, String(range), numericOptions(range, 4), `Range = largest − smallest = ${sorted[4]} − ${sorted[0]} = ${range}.`);
     },
     "college-statistics",
   ),
@@ -205,12 +205,12 @@ const economicsBank = () => [
       const quantity = 5 + Math.floor(random() * 50);
       if (kind === 0) {
         const revenue = price * quantity;
-        return draft(`A firm sells ${quantity} units at $${price} each. What is total revenue?`, `$${revenue}`, numericOptions(revenue, Math.round(revenue / 8)).map((v) => `$${v}`), `Revenue = price Ã— quantity = ${price} Ã— ${quantity} = $${revenue}.`);
+        return draft(`A firm sells ${quantity} units at $${price} each. What is total revenue?`, `$${revenue}`, numericOptions(revenue, Math.round(revenue / 8)).map((v) => `$${v}`), `Revenue = price × quantity = ${price} × ${quantity} = $${revenue}.`);
       }
       if (kind === 1) {
         const cost = Math.round(price * 0.6);
         const profit = (price - cost) * quantity;
-        return draft(`Unit price is $${price}, unit cost is $${cost} and ${quantity} units are sold. What is the profit?`, `$${profit}`, numericOptions(profit, Math.max(3, Math.round(profit / 6))).map((v) => `$${v}`), `Profit per unit = ${price} âˆ’ ${cost} = ${price - cost}; Ã— ${quantity} = $${profit}.`);
+        return draft(`Unit price is $${price}, unit cost is $${cost} and ${quantity} units are sold. What is the profit?`, `$${profit}`, numericOptions(profit, Math.max(3, Math.round(profit / 6))).map((v) => `$${v}`), `Profit per unit = ${price} − ${cost} = ${price - cost}; × ${quantity} = $${profit}.`);
       }
       const rate = 2 + (index % 8);
       const answer = Number(((price * rate) / 100).toFixed(2));
@@ -266,7 +266,7 @@ const digitalLogicBank = () =>
         `What is the largest unsigned value stored in ${bits} bits?`,
         String(answer),
         numericOptions(answer, Math.max(2, Math.round(answer / 3))),
-        `2^${bits} âˆ’ 1 = ${answer}.`,
+        `2^${bits} − 1 = ${answer}.`,
       );
     },
     "college-digital-logic",
@@ -290,7 +290,7 @@ const accountingBank = () => [
       ["What lists all ledger balances for checking?", "The trial balance"],
       ["What is stock held for sale called?", "Inventory"],
       ["What is capital contributed by owners?", "Equity"],
-      ["What ratio is current assets Ã· current liabilities?", "The current ratio"],
+      ["What ratio is current assets ÷ current liabilities?", "The current ratio"],
       ["What is profit kept in the business called?", "Retained earnings"],
       ["What is an independent review of accounts?", "An audit"],
       ["What is a cost that does not change with output?", "A fixed cost"],
@@ -307,11 +307,11 @@ const accountingBank = () => [
       const cost = Math.round(revenue * (0.4 + (index % 4) * 0.1));
       if (kind === 0) {
         const profit = revenue - cost;
-        return draft(`Revenue is $${revenue} and cost of sales is $${cost}. What is gross profit?`, `$${profit}`, numericOptions(profit, Math.round(profit / 5)).map((v) => `$${v}`), `${revenue} âˆ’ ${cost} = $${profit}.`);
+        return draft(`Revenue is $${revenue} and cost of sales is $${cost}. What is gross profit?`, `$${profit}`, numericOptions(profit, Math.round(profit / 5)).map((v) => `$${v}`), `${revenue} − ${cost} = $${profit}.`);
       }
       if (kind === 1) {
         const margin = Number((((revenue - cost) / revenue) * 100).toFixed(1));
-        return draft(`Revenue is $${revenue} and cost of sales is $${cost}. What is the gross margin?`, `${margin}%`, numericOptions(margin, 6, 1).map((v) => `${v}%`), `Gross margin = (${revenue} âˆ’ ${cost}) / ${revenue} Ã— 100 = ${margin}%.`);
+        return draft(`Revenue is $${revenue} and cost of sales is $${cost}. What is the gross margin?`, `${margin}%`, numericOptions(margin, 6, 1).map((v) => `${v}%`), `Gross margin = (${revenue} − ${cost}) / ${revenue} × 100 = ${margin}%.`);
       }
       const life = 4 + (index % 6);
       const depreciation = Math.round(revenue / life);
@@ -319,7 +319,7 @@ const accountingBank = () => [
         `An asset costing $${revenue} is depreciated straight-line over ${life} years with no residual value. What is the annual charge?`,
         `$${depreciation}`,
         numericOptions(depreciation, Math.round(depreciation / 4)).map((v) => `$${v}`),
-        `${revenue} Ã· ${life} = about $${depreciation} per year.`,
+        `${revenue} ÷ ${life} = about $${depreciation} per year.`,
       );
     },
     "college-accounting",

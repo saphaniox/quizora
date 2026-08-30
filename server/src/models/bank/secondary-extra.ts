@@ -166,7 +166,7 @@ const businessBank = () => [
           `An item costs ${cost} and is marked up by ${margin}%. What is the selling price?`,
           String(selling),
           numericOptions(selling, Math.max(10, Math.round(selling / 8))),
-          `${cost} Ã— (1 + ${margin}/100) = ${selling}.`,
+          `${cost} × (1 + ${margin}/100) = ${selling}.`,
         );
       }
       const selling = cost + 50 * (1 + (index % 6));
@@ -176,7 +176,7 @@ const businessBank = () => [
         `An item bought for ${cost} is sold for ${selling}. What is the percentage profit?`,
         `${percent}%`,
         numericOptions(percent, 6, 1).map((v) => `${v}%`),
-        `Profit = ${profit}; ${profit}/${cost} Ã— 100 = ${percent}%.`,
+        `Profit = ${profit}; ${profit}/${cost} × 100 = ${percent}%.`,
       );
     },
     "secondary-business",

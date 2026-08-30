@@ -10,7 +10,11 @@ const answerSchema = z.object({
   answers: z
     .record(z.string().max(120), z.number().int().min(0).max(20))
     .refine((answers) => Object.keys(answers).length <= 500, "Too many answers"),
-  timeSpentSeconds: z.number().int().min(0).max(60 * 60 * 12),
+  timeSpentSeconds: z
+    .number()
+    .int()
+    .min(0)
+    .max(60 * 60 * 12),
 });
 
 export function submitAnswers(payload: unknown): ControllerResult {

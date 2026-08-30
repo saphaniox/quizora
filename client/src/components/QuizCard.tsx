@@ -30,7 +30,9 @@ export function QuizCard({ quiz }: { quiz: QuizSummary }) {
         </span>
       </div>
 
-      <h3 className="mt-4 text-lg font-semibold tracking-tight text-card-foreground">{quiz.title}</h3>
+      <h3 className="mt-4 text-lg font-semibold tracking-tight text-card-foreground">
+        {quiz.title}
+      </h3>
       <p className="mt-2 line-clamp-2 flex-1 text-sm text-muted-foreground">{quiz.description}</p>
 
       <div className="mt-5 flex items-center gap-4 text-xs text-muted-foreground">
@@ -40,7 +42,9 @@ export function QuizCard({ quiz }: { quiz: QuizSummary }) {
         </span>
         <span className="inline-flex items-center gap-1.5">
           <Clock className="h-3.5 w-3.5" />
-          {quiz.timeLimitSeconds > 0 ? `${Math.ceil(quiz.timeLimitSeconds / 60)} min` : "Self-paced"}
+          {quiz.timeLimitSeconds > 0
+            ? `${Math.ceil(quiz.timeLimitSeconds / 60)} min`
+            : "Self-paced"}
         </span>
       </div>
 

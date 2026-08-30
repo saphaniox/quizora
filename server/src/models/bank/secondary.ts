@@ -10,24 +10,24 @@ const algebraBank = () =>
       const x = 1 + Math.floor(random() * 12);
       if (kind === 0) {
         const c = a * x + b;
-        return draft(`Solve for x: ${a}x + ${b} = ${c}`, String(x), numericOptions(x), `${a}x = ${c} âˆ’ ${b} = ${a * x}, so x = ${x}.`);
+        return draft(`Solve for x: ${a}x + ${b} = ${c}`, String(x), numericOptions(x), `${a}x = ${c} − ${b} = ${a * x}, so x = ${x}.`);
       }
       if (kind === 1) {
         const c = a * x - b;
-        return draft(`Solve for x: ${a}x âˆ’ ${b} = ${c}`, String(x), numericOptions(x), `${a}x = ${c} + ${b} = ${a * x}, so x = ${x}.`);
+        return draft(`Solve for x: ${a}x − ${b} = ${c}`, String(x), numericOptions(x), `${a}x = ${c} + ${b} = ${a * x}, so x = ${x}.`);
       }
       if (kind === 2) {
         const answer = a * x * x + b;
-        return draft(`Evaluate ${a}xÂ² + ${b} when x = ${x}.`, String(answer), numericOptions(answer, 6), `${a}(${x})Â² + ${b} = ${a * x * x} + ${b} = ${answer}.`);
+        return draft(`Evaluate ${a}x² + ${b} when x = ${x}.`, String(answer), numericOptions(answer, 6), `${a}(${x})² + ${b} = ${a * x * x} + ${b} = ${answer}.`);
       }
       if (kind === 3) {
         const sum = a + b;
         const product = a * b;
         return draft(
-          `The roots of xÂ² âˆ’ ${sum}x + ${product} = 0 are:`,
+          `The roots of x² − ${sum}x + ${product} = 0 are:`,
           `${a} and ${b}`,
           [`${a} and ${-b}`, `${-a} and ${-b}`, `${sum} and ${product}`],
-          `The factors are (x âˆ’ ${a})(x âˆ’ ${b}), so the roots are ${a} and ${b}.`,
+          `The factors are (x − ${a})(x − ${b}), so the roots are ${a} and ${b}.`,
         );
       }
       const m = a;
@@ -52,7 +52,7 @@ const geometryBank = () =>
       const b = 2 + Math.floor(random() * 18);
       if (kind === 0) {
         const area = a * b;
-        return draft(`A rectangle measures ${a} cm by ${b} cm. What is its area?`, `${area} cmÂ²`, numericOptions(area, 7).map((v) => `${v} cmÂ²`), `Area = length Ã— width = ${a} Ã— ${b} = ${area} cmÂ².`);
+        return draft(`A rectangle measures ${a} cm by ${b} cm. What is its area?`, `${area} cm²`, numericOptions(area, 7).map((v) => `${v} cm²`), `Area = length × width = ${a} × ${b} = ${area} cm².`);
       }
       if (kind === 1) {
         const perimeter = 2 * (a + b);
@@ -60,20 +60,20 @@ const geometryBank = () =>
       }
       if (kind === 2) {
         const area = (a * b) / 2;
-        return draft(`A triangle has base ${a} cm and height ${b} cm. What is its area?`, `${area} cmÂ²`, numericOptions(area, 5, area % 1 === 0 ? 0 : 1).map((v) => `${v} cmÂ²`), `Area = Â½ Ã— base Ã— height = Â½ Ã— ${a} Ã— ${b} = ${area} cmÂ².`);
+        return draft(`A triangle has base ${a} cm and height ${b} cm. What is its area?`, `${area} cm²`, numericOptions(area, 5, area % 1 === 0 ? 0 : 1).map((v) => `${v} cm²`), `Area = ½ × base × height = ½ × ${a} × ${b} = ${area} cm².`);
       }
       if (kind === 3) {
         const angle = 20 + ((index * 7) % 120);
         const answer = 180 - angle;
-        return draft(`Two angles are supplementary. If one is ${angle}Â°, what is the other?`, `${answer}Â°`, numericOptions(answer, 10).map((v) => `${v}Â°`), `Supplementary angles add to 180Â°, so 180 âˆ’ ${angle} = ${answer}Â°.`);
+        return draft(`Two angles are supplementary. If one is ${angle}°, what is the other?`, `${answer}°`, numericOptions(answer, 10).map((v) => `${v}°`), `Supplementary angles add to 180°, so 180 − ${angle} = ${answer}°.`);
       }
       const radius = 1 + (index % 12);
       const circumference = Number((2 * Math.PI * radius).toFixed(2));
       return draft(
-        `What is the circumference of a circle with radius ${radius} cm? (Ï€ â‰ˆ 3.14)`,
+        `What is the circumference of a circle with radius ${radius} cm? (π ≈ 3.14)`,
         `${circumference} cm`,
         numericOptions(circumference, 4, 2).map((v) => `${v} cm`),
-        `C = 2Ï€r = 2 Ã— 3.14 Ã— ${radius} â‰ˆ ${circumference} cm.`,
+        `C = 2πr = 2 × 3.14 × ${radius} ≈ ${circumference} cm.`,
       );
     },
     "secondary-geometry",
@@ -88,12 +88,12 @@ const elements: [string, string][] = [
 ];
 
 const chemistryFacts: [string, string][] = [
-  ["What is the pH of a neutral solution at 25 Â°C?", "7"],
+  ["What is the pH of a neutral solution at 25 °C?", "7"],
   ["What particle carries a negative charge?", "The electron"],
   ["What particle has no charge?", "The neutron"],
   ["Where is nearly all the mass of an atom found?", "In the nucleus"],
   ["What is the chemical formula of table salt?", "NaCl"],
-  ["What is the chemical formula of methane?", "CHâ‚„"],
+  ["What is the chemical formula of methane?", "CH₄"],
   ["What is produced when an acid reacts with a base?", "A salt and water"],
   ["What is the process of a solid turning directly into gas?", "Sublimation"],
   ["Which gas turns limewater milky?", "Carbon dioxide"],
@@ -101,7 +101,7 @@ const chemistryFacts: [string, string][] = [
   ["Which bond involves sharing electrons?", "A covalent bond"],
   ["Which bond involves transferring electrons?", "An ionic bond"],
   ["What is the relative atomic mass of carbon-12?", "12"],
-  ["What is Avogadro's number (approximately)?", "6.02 Ã— 10Â²Â³"],
+  ["What is Avogadro's number (approximately)?", "6.02 × 10²³"],
   ["What is the name of a reaction that releases heat?", "Exothermic"],
   ["Which acid is found in the stomach?", "Hydrochloric acid"],
   ["What is rusting chemically?", "Oxidation of iron"],
@@ -111,7 +111,7 @@ const chemistryFacts: [string, string][] = [
   ["What is the charge on a proton?", "Positive"],
   ["Which state of matter has a fixed volume but no fixed shape?", "Liquid"],
   ["What is a mixture of a metal with another element called?", "An alloy"],
-  ["What is the formula of sulphuric acid?", "Hâ‚‚SOâ‚„"],
+  ["What is the formula of sulphuric acid?", "H₂SO₄"],
   ["What is the term for the number of protons in an atom?", "Atomic number"],
 ];
 
@@ -123,12 +123,12 @@ const chemistryBank = () => [
 const physicsFacts: [string, string][] = [
   ["What is the SI unit of force?", "The newton"], ["What is the SI unit of energy?", "The joule"],
   ["What is the SI unit of power?", "The watt"], ["What is the SI unit of frequency?", "The hertz"],
-  ["What is the SI unit of pressure?", "The pascal"], ["What is the acceleration due to gravity on earth?", "9.8 m/sÂ²"],
-  ["What is the speed of light in a vacuum?", "3 Ã— 10â¸ m/s"], ["Which law states that every action has an equal and opposite reaction?", "Newton's third law"],
+  ["What is the SI unit of pressure?", "The pascal"], ["What is the acceleration due to gravity on earth?", "9.8 m/s²"],
+  ["What is the speed of light in a vacuum?", "3 × 10⁸ m/s"], ["Which law states that every action has an equal and opposite reaction?", "Newton's third law"],
   ["What does an ammeter measure?", "Electric current"], ["What does a voltmeter measure?", "Potential difference"],
   ["What kind of wave is sound?", "A longitudinal wave"], ["What kind of wave is light?", "A transverse wave"],
   ["What is the transfer of heat through a fluid called?", "Convection"], ["What is the transfer of heat through a solid called?", "Conduction"],
-  ["Which lens converges light rays?", "A convex lens"], ["What quantity is mass Ã— velocity?", "Momentum"],
+  ["Which lens converges light rays?", "A convex lens"], ["What quantity is mass × velocity?", "Momentum"],
   ["What machine changes the size of a force?", "A lever"], ["What is energy stored due to position called?", "Potential energy"],
   ["What is the resistance formula from Ohm's law?", "R = V / I"], ["What does a transformer change?", "The voltage of an AC supply"],
 ];
@@ -143,15 +143,15 @@ const physicsBank = () => [
       const a = 2 + Math.floor(random() * 9);
       if (kind === 0) {
         const f = m * a;
-        return draft(`A mass of ${m} kg accelerates at ${a} m/sÂ². What force acts on it?`, `${f} N`, numericOptions(f, 6).map((v) => `${v} N`), `F = ma = ${m} Ã— ${a} = ${f} N.`);
+        return draft(`A mass of ${m} kg accelerates at ${a} m/s². What force acts on it?`, `${f} N`, numericOptions(f, 6).map((v) => `${v} N`), `F = ma = ${m} × ${a} = ${f} N.`);
       }
       if (kind === 1) {
         const work = m * a * 2;
-        return draft(`A force of ${m * a} N moves an object 2 m in the direction of the force. How much work is done?`, `${work} J`, numericOptions(work, 8).map((v) => `${v} J`), `Work = force Ã— distance = ${m * a} Ã— 2 = ${work} J.`);
+        return draft(`A force of ${m * a} N moves an object 2 m in the direction of the force. How much work is done?`, `${work} J`, numericOptions(work, 8).map((v) => `${v} J`), `Work = force × distance = ${m * a} × 2 = ${work} J.`);
       }
       const v = a * 3;
       const ke = 0.5 * m * v * v;
-      return draft(`What is the kinetic energy of a ${m} kg object moving at ${v} m/s?`, `${ke} J`, numericOptions(ke, 20, ke % 1 === 0 ? 0 : 1).map((x) => `${x} J`), `KE = Â½mvÂ² = Â½ Ã— ${m} Ã— ${v}Â² = ${ke} J.`);
+      return draft(`What is the kinetic energy of a ${m} kg object moving at ${v} m/s?`, `${ke} J`, numericOptions(ke, 20, ke % 1 === 0 ? 0 : 1).map((x) => `${x} J`), `KE = ½mv² = ½ × ${m} × ${v}² = ${ke} J.`);
     },
     "secondary-physics",
   ),
@@ -200,8 +200,8 @@ const geographyFacts: [string, string][] = [
   ["Which is the longest river in Africa?", "The Nile"], ["Which is the largest desert in the world?", "The Sahara"],
   ["Which is the highest mountain on earth?", "Mount Everest"], ["Which is the deepest ocean trench?", "The Mariana Trench"],
   ["What is molten rock below the surface called?", "Magma"], ["What instrument measures earthquakes?", "A seismograph"],
-  ["What is the imaginary line at 0Â° longitude?", "The Prime Meridian"], ["What causes day and night?", "The earth's rotation"],
-  ["How long does the earth take to orbit the sun?", "365Â¼ days"], ["What is a narrow strip of land joining two land masses?", "An isthmus"],
+  ["What is the imaginary line at 0° longitude?", "The Prime Meridian"], ["What causes day and night?", "The earth's rotation"],
+  ["How long does the earth take to orbit the sun?", "365¼ days"], ["What is a narrow strip of land joining two land masses?", "An isthmus"],
   ["What is rain that is chemically polluted called?", "Acid rain"], ["What type of rock forms from cooling magma?", "Igneous rock"],
   ["What type of rock forms from compressed sediment?", "Sedimentary rock"], ["What is the wearing away of land by water or wind?", "Erosion"],
   ["What is a large area of flat, high land called?", "A plateau"], ["Which layer of the earth is the hottest?", "The inner core"],
@@ -221,7 +221,7 @@ const geographyBank = () => [
       ["Japan", "Tokyo"], ["Kenya", "Nairobi"], ["Norway", "Oslo"], ["Peru", "Lima"], ["Turkey", "Ankara"],
       ["Vietnam", "Hanoi"], ["Portugal", "Lisbon"], ["Argentina", "Buenos Aires"], ["Poland", "Warsaw"], ["Greece", "Athens"],
       ["Sweden", "Stockholm"], ["Thailand", "Bangkok"], ["Zambia", "Lusaka"], ["Rwanda", "Kigali"], ["Senegal", "Dakar"],
-      ["Chile", "Santiago"], ["Colombia", "BogotÃ¡"], ["Netherlands", "Amsterdam"], ["Switzerland", "Bern"], ["Indonesia", "Jakarta"],
+      ["Chile", "Santiago"], ["Colombia", "Bogotá"], ["Netherlands", "Amsterdam"], ["Switzerland", "Bern"], ["Indonesia", "Jakarta"],
     ] as [string, string][],
     (k) => `What is the capital city of ${k}?`,
     (k, v) => `${v} is the capital of ${k}.`,

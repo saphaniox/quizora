@@ -15,7 +15,7 @@ const linearAlgebraBank = () => [
           `What is the determinant of the matrix [[${a}, ${b}], [${c}, ${d}]]?`,
           String(det),
           numericOptions(det, 5),
-          `det = ad âˆ’ bc = (${a}Ã—${d}) âˆ’ (${b}Ã—${c}) = ${det}.`,
+          `det = ad − bc = (${a}×${d}) − (${b}×${c}) = ${det}.`,
         );
       }
       if (kind === 1) {
@@ -32,7 +32,7 @@ const linearAlgebraBank = () => [
         `What is the dot product of vectors (${a}, ${b}) and (${c}, ${d})?`,
         String(dot),
         numericOptions(dot, 6),
-        `(${a}Ã—${c}) + (${b}Ã—${d}) = ${dot}.`,
+        `(${a}×${c}) + (${b}×${d}) = ${dot}.`,
       );
     },
     "college-linear-algebra",
@@ -42,7 +42,7 @@ const linearAlgebraBank = () => [
       ["What is a singular matrix?", "A matrix with determinant zero"],
       ["What is the identity matrix?", "A square matrix with ones on the diagonal and zeros elsewhere"],
       ["What is the transpose of a matrix?", "The matrix with rows and columns interchanged"],
-      ["What is an eigenvalue?", "A scalar Î» where Av = Î»v for some non-zero v"],
+      ["What is an eigenvalue?", "A scalar λ where Av = λv for some non-zero v"],
       ["What is the rank of a matrix?", "The number of linearly independent rows or columns"],
       ["When is a set of vectors linearly dependent?", "When one vector is a combination of the others"],
       ["What is a basis of a vector space?", "A linearly independent set that spans the space"],
@@ -134,10 +134,10 @@ const engPhysicsBank = () => [
       if (kind === 0) {
         const f = m * a;
         return draft(
-          `A mass of ${m} kg accelerates at ${a} m/sÂ². What resultant force acts on it?`,
+          `A mass of ${m} kg accelerates at ${a} m/s². What resultant force acts on it?`,
           `${f} N`,
           numericOptions(f, Math.max(3, Math.round(f / 5))).map((v) => `${v} N`),
-          `F = ma = ${m} Ã— ${a} = ${f} N.`,
+          `F = ma = ${m} × ${a} = ${f} N.`,
         );
       }
       if (kind === 1) {
@@ -147,16 +147,16 @@ const engPhysicsBank = () => [
           `What is the kinetic energy of a ${m} kg body moving at ${v} m/s?`,
           `${ke} J`,
           numericOptions(ke, Math.max(5, Math.round(ke / 6)), 1).map((x) => `${x} J`),
-          `KE = Â½mvÂ² = 0.5 Ã— ${m} Ã— ${v}Â² = ${ke} J.`,
+          `KE = ½mv² = 0.5 × ${m} × ${v}² = ${ke} J.`,
         );
       }
       const h = 2 + (index % 15);
       const pe = Number((m * 9.81 * h).toFixed(1));
       return draft(
-        `What is the gravitational potential energy of a ${m} kg mass at ${h} m (g = 9.81 m/sÂ²)?`,
+        `What is the gravitational potential energy of a ${m} kg mass at ${h} m (g = 9.81 m/s²)?`,
         `${pe} J`,
         numericOptions(pe, Math.max(10, Math.round(pe / 6)), 1).map((x) => `${x} J`),
-        `PE = mgh = ${m} Ã— 9.81 Ã— ${h} = ${pe} J.`,
+        `PE = mgh = ${m} × 9.81 × ${h} = ${pe} J.`,
       );
     },
     "college-engineering-physics",
@@ -239,7 +239,7 @@ const managementBank = () => [
           `Fixed costs are ${fixed}, price per unit is ${price} and variable cost per unit is ${variable}. What is the break-even quantity?`,
           `${units} units`,
           numericOptions(units, Math.max(5, Math.round(units / 5))).map((v) => `${v} units`),
-          `Break-even = fixed / (price âˆ’ variable) = ${fixed} / ${price - variable} = ${units} units.`,
+          `Break-even = fixed / (price − variable) = ${fixed} / ${price - variable} = ${units} units.`,
         );
       }
       const margin = Number((((price - variable) / price) * 100).toFixed(1));
@@ -247,7 +247,7 @@ const managementBank = () => [
         `A product sells for ${price} with a variable cost of ${variable}. What is the contribution margin ratio?`,
         `${margin}%`,
         numericOptions(margin, 7, 1).map((v) => `${v}%`),
-        `(${price} âˆ’ ${variable}) / ${price} Ã— 100 = ${margin}%.`,
+        `(${price} − ${variable}) / ${price} × 100 = ${margin}%.`,
       );
     },
     "college-management",

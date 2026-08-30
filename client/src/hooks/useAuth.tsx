@@ -14,11 +14,13 @@ export function useAuth(): AuthState {
 
   useEffect(() => {
     let active = true;
-    void getCurrentUser().then(({ user }) => {
-      if (!active) return;
-      setSession(user);
-      setLoading(false);
-    }).catch(() => active && setLoading(false));
+    void getCurrentUser()
+      .then(({ user }) => {
+        if (!active) return;
+        setSession(user);
+        setLoading(false);
+      })
+      .catch(() => active && setLoading(false));
     return () => {
       active = false;
     };

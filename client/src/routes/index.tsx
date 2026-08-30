@@ -1,7 +1,18 @@
 import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Search, Sparkles, GraduationCap, Award, Users, Trophy, BookOpen, Gamepad2, Globe2, Layers3 } from "lucide-react";
+import {
+  Search,
+  Sparkles,
+  GraduationCap,
+  Award,
+  Users,
+  Trophy,
+  BookOpen,
+  Gamepad2,
+  Globe2,
+  Layers3,
+} from "lucide-react";
 import { getLevels } from "@/lib/api";
 import { QuizCard } from "@/components/QuizCard";
 import { cn } from "@/lib/utils";
@@ -18,7 +29,8 @@ export const Route = createFileRoute("/")({
       { property: "og:title", content: "Quitech Online: Learn, Challenge & Progress" },
       {
         property: "og:description",
-        content: "Timed quizzes, instant feedback, leaderboards, and verifiable certificates from quitech.online.",
+        content:
+          "Timed quizzes, instant feedback, leaderboards, and verifiable certificates from quitech.online.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -60,25 +72,35 @@ function HomePage() {
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
-            {data ? `${data.totalQuestions.toLocaleString()} questions` : "Thousands of questions"} across every level
+            {data
+              ? `${data.totalQuestions.toLocaleString()} questions`
+              : "Thousands of questions"}{" "}
+            across every level
           </span>
           <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
             Learn online, challenge yourself, and grow from beginner to expert.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Quitech online helps learners build confidence across primary, secondary, college, and professional tracks.
-            Practice at your own pace, take timed quizzes, and earn a verifiable certificate when you reach the pass mark.
+            Quitech online helps learners build confidence across primary, secondary, college, and
+            professional tracks. Practice at your own pace, take timed quizzes, and earn a
+            verifiable certificate when you reach the pass mark.
           </p>
 
           <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               { icon: GraduationCap, label: "Learning levels", value: levels.length || "5" },
-              { icon: Users, label: "Subject sections", value: levels.reduce((n, l) => n + l.sections.length, 0) || "-" },
+              {
+                icon: Users,
+                label: "Subject sections",
+                value: levels.reduce((n, l) => n + l.sections.length, 0) || "-",
+              },
               { icon: Award, label: "Certificate pass mark", value: "80%" },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
                 <Icon className="h-5 w-5 text-primary" />
-                <dt className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">{label}</dt>
+                <dt className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                  {label}
+                </dt>
                 <dd className="text-2xl font-semibold text-card-foreground">{value}</dd>
               </div>
             ))}
@@ -103,7 +125,10 @@ function HomePage() {
         {isLoading && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
-              <div key={index} className="h-52 animate-pulse rounded-xl border border-border bg-muted/50" />
+              <div
+                key={index}
+                className="h-52 animate-pulse rounded-xl border border-border bg-muted/50"
+              />
             ))}
           </div>
         )}
@@ -112,38 +137,59 @@ function HomePage() {
           <>
             <div className="flex flex-col gap-6">
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Browse the catalogue</p>
-                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">Choose a category</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Pick what you want to learn, practise, or challenge yourself on.</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">
+                  Browse the catalogue
+                </p>
+                <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
+                  Choose a category
+                </h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Pick what you want to learn, practise, or challenge yourself on.
+                </p>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3" role="tablist" aria-label="Quiz categories">
+              <div
+                className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                role="tablist"
+                aria-label="Quiz categories"
+              >
                 {levels.map((level, index) => {
                   const Icon = categoryIcons[index % categoryIcons.length] ?? Layers3;
                   const selected = level.id === currentLevelId;
                   return (
-                  <button
-                    key={level.id}
-                    role="tab"
-                    aria-selected={selected}
-                    onClick={() => setActiveLevel(level.id)}
-                    className={cn(
-                      "group flex items-center gap-3 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-                      selected
-                        ? "border-primary bg-primary text-primary-foreground shadow-sm"
-                        : "border-border bg-card text-foreground hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm",
-                    )}
-                  >
-                    <span className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-lg", selected ? "bg-primary-foreground/15" : "bg-secondary")}>
-                      <Icon className="h-5 w-5" />
-                    </span>
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-semibold">{level.name}</span>
-                      <span className={cn("mt-1 block text-xs", selected ? "text-primary-foreground/75" : "text-muted-foreground")}>
-                        {level.sections.length} quizzes - {level.questionCount.toLocaleString()} questions
+                    <button
+                      key={level.id}
+                      role="tab"
+                      aria-selected={selected}
+                      onClick={() => setActiveLevel(level.id)}
+                      className={cn(
+                        "group flex items-center gap-3 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        selected
+                          ? "border-primary bg-primary text-primary-foreground shadow-sm"
+                          : "border-border bg-card text-foreground hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm",
+                      )}
+                    >
+                      <span
+                        className={cn(
+                          "flex h-10 w-10 shrink-0 items-center justify-center rounded-lg",
+                          selected ? "bg-primary-foreground/15" : "bg-secondary",
+                        )}
+                      >
+                        <Icon className="h-5 w-5" />
                       </span>
-                    </span>
-                  </button>
+                      <span className="min-w-0">
+                        <span className="block truncate text-sm font-semibold">{level.name}</span>
+                        <span
+                          className={cn(
+                            "mt-1 block text-xs",
+                            selected ? "text-primary-foreground/75" : "text-muted-foreground",
+                          )}
+                        >
+                          {level.sections.length} quizzes - {level.questionCount.toLocaleString()}{" "}
+                          questions
+                        </span>
+                      </span>
+                    </button>
                   );
                 })}
               </div>
@@ -165,13 +211,17 @@ function HomePage() {
               <div className="mt-8">
                 <div className="flex items-end justify-between gap-4">
                   <div>
-                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">{currentLevel.name} quizzes</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {currentLevel.tagline} - {currentLevel.ageRange} -{" "}
-                  {currentLevel.questionCount.toLocaleString()} questions
-                </p>
+                    <h2 className="text-2xl font-semibold tracking-tight text-foreground">
+                      {currentLevel.name} quizzes
+                    </h2>
+                    <p className="mt-1 text-sm text-muted-foreground">
+                      {currentLevel.tagline} - {currentLevel.ageRange} -{" "}
+                      {currentLevel.questionCount.toLocaleString()} questions
+                    </p>
                   </div>
-                  <span className="hidden text-sm font-medium text-muted-foreground sm:block">{sections.length} available</span>
+                  <span className="hidden text-sm font-medium text-muted-foreground sm:block">
+                    {sections.length} available
+                  </span>
                 </div>
               </div>
             )}

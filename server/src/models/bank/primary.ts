@@ -20,25 +20,25 @@ const mathBank = (): ReturnType<SectionDefinition["build"]> => {
       if (kind === 1) {
         const big = a + b;
         const answer = big - b;
-        return draft(`What is ${big} âˆ’ ${b}?`, String(answer), numericOptions(answer), `${big} âˆ’ ${b} = ${answer}.`);
+        return draft(`What is ${big} − ${b}?`, String(answer), numericOptions(answer), `${big} − ${b} = ${answer}.`);
       }
       if (kind === 2) {
         const answer = b * (2 + (index % 9));
         return draft(
-          `What is ${b} Ã— ${2 + (index % 9)}?`,
+          `What is ${b} × ${2 + (index % 9)}?`,
           String(answer),
           numericOptions(answer),
-          `${b} Ã— ${2 + (index % 9)} = ${answer}.`,
+          `${b} × ${2 + (index % 9)} = ${answer}.`,
         );
       }
       if (kind === 3) {
         const divisor = 2 + (index % 8);
         const answer = b + 1;
         return draft(
-          `What is ${divisor * answer} Ã· ${divisor}?`,
+          `What is ${divisor * answer} ÷ ${divisor}?`,
           String(answer),
           numericOptions(answer),
-          `${divisor} Ã— ${answer} = ${divisor * answer}, so the answer is ${answer}.`,
+          `${divisor} × ${answer} = ${divisor * answer}, so the answer is ${answer}.`,
         );
       }
       if (kind === 4) {
@@ -48,7 +48,7 @@ const mathBank = (): ReturnType<SectionDefinition["build"]> => {
           `What is one quarter (1/4) of ${whole}?`,
           String(answer),
           numericOptions(answer),
-          `${whole} Ã· 4 = ${answer}.`,
+          `${whole} ÷ 4 = ${answer}.`,
         );
       }
       const value = 100 + index * 7;
@@ -141,7 +141,7 @@ const scienceBank = () => [
 
 const capitals: [string, string][] = [
   ["Kenya", "Nairobi"], ["Nigeria", "Abuja"], ["Ghana", "Accra"], ["Egypt", "Cairo"], ["South Africa", "Pretoria"],
-  ["France", "Paris"], ["Japan", "Tokyo"], ["Brazil", "BrasÃ­lia"], ["Canada", "Ottawa"], ["India", "New Delhi"],
+  ["France", "Paris"], ["Japan", "Tokyo"], ["Brazil", "Brasília"], ["Canada", "Ottawa"], ["India", "New Delhi"],
   ["Italy", "Rome"], ["Spain", "Madrid"], ["Germany", "Berlin"], ["China", "Beijing"], ["Australia", "Canberra"],
   ["Tanzania", "Dodoma"], ["Uganda", "Kampala"], ["Ethiopia", "Addis Ababa"], ["Morocco", "Rabat"], ["Mexico", "Mexico City"],
 ];

@@ -17,6 +17,7 @@ import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
+import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLeaderboardRouteImport } from './routes/api/leaderboard'
 import { Route as ApiLevelsRouteImport } from './routes/api/levels'
 import { Route as ApiSubmitRouteImport } from './routes/api/submit'
@@ -65,6 +66,11 @@ const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiHealthRoute = ApiHealthRouteImport.update({
+  id: '/api/health',
+  path: '/api/health',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiLeaderboardRoute = ApiLeaderboardRouteImport.update({
   id: '/api/leaderboard',
@@ -120,6 +126,7 @@ export interface FileRoutesByFullPath {
   '/results': typeof ResultsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
   '/api/levels': typeof ApiLevelsRoute
   '/api/submit': typeof ApiSubmitRoute
@@ -138,6 +145,7 @@ export interface FileRoutesByTo {
   '/results': typeof ResultsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
   '/api/levels': typeof ApiLevelsRoute
   '/api/submit': typeof ApiSubmitRoute
@@ -158,6 +166,7 @@ export interface FileRoutesById {
   '/results': typeof ResultsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
   '/api/levels': typeof ApiLevelsRoute
   '/api/submit': typeof ApiSubmitRoute
@@ -178,6 +187,7 @@ export interface FileRouteTypes {
     | '/results'
     | '/admin'
     | '/wallet'
+    | '/api/health'
     | '/api/leaderboard'
     | '/api/levels'
     | '/api/submit'
@@ -196,6 +206,7 @@ export interface FileRouteTypes {
     | '/results'
     | '/admin'
     | '/wallet'
+    | '/api/health'
     | '/api/leaderboard'
     | '/api/levels'
     | '/api/submit'
@@ -215,6 +226,7 @@ export interface FileRouteTypes {
     | '/results'
     | '/_authenticated/admin'
     | '/_authenticated/wallet'
+    | '/api/health'
     | '/api/leaderboard'
     | '/api/levels'
     | '/api/submit'
@@ -233,6 +245,7 @@ export interface RootRouteChildren {
   HistoryRoute: typeof HistoryRoute
   LeaderboardRoute: typeof LeaderboardRoute
   ResultsRoute: typeof ResultsRoute
+  ApiHealthRoute: typeof ApiHealthRoute
   ApiLeaderboardRoute: typeof ApiLeaderboardRoute
   ApiLevelsRoute: typeof ApiLevelsRoute
   ApiSubmitRoute: typeof ApiSubmitRoute
@@ -301,6 +314,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/wallet'
       preLoaderRoute: typeof AuthenticatedWalletRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/health': {
+      id: '/api/health'
+      path: '/api/health'
+      fullPath: '/api/health'
+      preLoaderRoute: typeof ApiHealthRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/leaderboard': {
       id: '/api/leaderboard'
@@ -388,6 +408,7 @@ const rootRouteChildren: RootRouteChildren = {
   HistoryRoute: HistoryRoute,
   LeaderboardRoute: LeaderboardRoute,
   ResultsRoute: ResultsRoute,
+  ApiHealthRoute: ApiHealthRoute,
   ApiLeaderboardRoute: ApiLeaderboardRoute,
   ApiLevelsRoute: ApiLevelsRoute,
   ApiSubmitRoute: ApiSubmitRoute,

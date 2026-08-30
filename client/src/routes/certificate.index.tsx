@@ -6,7 +6,10 @@ export const Route = createFileRoute("/certificate/")({
   head: () => ({
     meta: [
       { title: "Verify a certificate - Quitech" },
-      { name: "description", content: "Enter a Quitech certificate code to verify the holder, section and score." },
+      {
+        name: "description",
+        content: "Enter a Quitech certificate code to verify the holder, section and score.",
+      },
       { property: "og:title", content: "Verify a certificate - Quitech" },
       { property: "og:description", content: "Verify a Quitech certificate code in seconds." },
       { property: "og:type", content: "website" },
@@ -24,7 +27,9 @@ function VerifyPage() {
     <div className="mx-auto max-w-lg px-4 py-16 sm:px-6 lg:px-8">
       <div className="rounded-xl border border-border bg-card p-8 shadow-sm">
         <BadgeCheck className="h-7 w-7 text-primary" />
-        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-card-foreground">Verify a certificate</h1>
+        <h1 className="mt-4 text-2xl font-semibold tracking-tight text-card-foreground">
+          Verify a certificate
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Every Quitech certificate carries a unique code. Enter it below to confirm it is genuine.
         </p>

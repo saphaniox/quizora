@@ -115,34 +115,34 @@ export interface SectionDefinition {
   name: string;
   description: string;
   difficulty: Difficulty;
-  /** How many questions the finished section should contain (300â€“500). */
+  /** How many questions the finished section should contain (300–500). */
   target?: number;
   build: () => Draft[];
 }
 
 /* ---------------------------------------------------------------------- */
-/* Section expansion: grow an authored core into a full 300â€“500 question   */
+/* Section expansion: grow an authored core into a full 300–500 question   */
 /* section by re-asking each fact in several genuinely different ways.     */
 /* ---------------------------------------------------------------------- */
 
 const FRAMINGS = [
   "",
-  "Concept check â€” ",
-  "Revision â€” ",
-  "Exam practice â€” ",
-  "Recall drill â€” ",
-  "Applied check â€” ",
-  "Module review â€” ",
-  "Self-paced practice â€” ",
-  "Mastery check â€” ",
-  "Final review â€” ",
-  "Warm-up â€” ",
-  "Progress check â€” ",
+  "Concept check — ",
+  "Revision — ",
+  "Exam practice — ",
+  "Recall drill — ",
+  "Applied check — ",
+  "Module review — ",
+  "Self-paced practice — ",
+  "Mastery check — ",
+  "Final review — ",
+  "Warm-up — ",
+  "Progress check — ",
 ];
 
 function stem(text: string): string {
   const clean = text.replace(/\s+/g, " ").trim().replace(/[?:.]+$/, "");
-  return clean.length > 90 ? `${clean.slice(0, 87)}â€¦` : clean;
+  return clean.length > 90 ? `${clean.slice(0, 87)}…` : clean;
 }
 
 function fill(list: string[], avoid: string, seed: string): string[] {
@@ -214,7 +214,7 @@ export function expandTo(sectionId: string, base: Draft[], target: number): Draf
   let extra = 1;
   while (out.length < target) {
     const item = core[out.length % core.length] as Draft;
-    const text = `Practice set ${extra} Â· Q${out.length + 1} â€” ${item.text}`;
+    const text = `Practice set ${extra} · Q${out.length + 1} — ${item.text}`;
     if (!seen.has(text)) {
       seen.add(text);
       out.push(draft(text, item.correct, fill(answers, item.correct, `${sectionId}-x${out.length}`), item.explanation));
