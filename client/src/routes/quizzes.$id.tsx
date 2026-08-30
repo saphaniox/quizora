@@ -301,17 +301,25 @@ function QuizPage() {
           />
 
           <div className="mt-5">
-            <CountrySelect
-              id="attempt-country"
-              label="Country (optional)"
-              value={attemptCountry}
-              onChange={setAttemptCountry}
-              placeholder="Add country to leaderboard"
-              allowEmpty
-            />
-            <p className="mt-1.5 text-xs text-muted-foreground">
-              Shown on leaderboards only when you choose one.
-            </p>
+            <div className="rounded-lg border border-border bg-secondary/40 p-4">
+              <div className="flex gap-3">
+                <Flag className="mt-1 h-4 w-4 shrink-0 text-primary" />
+                <div className="min-w-0 flex-1">
+                  <CountrySelect
+                    id="attempt-country"
+                    label="Visitor country (optional)"
+                    value={attemptCountry}
+                    onChange={setAttemptCountry}
+                    placeholder="Choose a country or leave blank"
+                    allowEmpty
+                  />
+                  <p className="mt-2 text-xs leading-5 text-muted-foreground">
+                    Visitors can skip this. If you choose a country, it appears beside your name on
+                    leaderboards and certificates; leave it blank to keep no country shown.
+                  </p>
+                </div>
+              </div>
+            </div>
           </div>
 
           <p className="mt-6 text-sm font-medium text-foreground">Choose how you want to take it</p>

@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { HeartHandshake, LifeBuoy, ShieldCheck } from "lucide-react";
+import { ExternalLink, HeartHandshake, LifeBuoy, ShieldCheck } from "lucide-react";
 
 const links = [
   { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
@@ -22,6 +22,18 @@ export function Footer() {
           </div>
           <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
             Learn, challenge & progress with practical quizzes for learners 13 and older.
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Powered by{" "}
+            <a
+              href="https://www.saptechug.com"
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
+            >
+              SAPTech Uganda
+              <ExternalLink className="h-3 w-3" />
+            </a>
           </p>
         </div>
 
