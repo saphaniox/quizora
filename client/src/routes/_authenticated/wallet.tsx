@@ -9,12 +9,12 @@ import type { Certificate } from "@/types/quiz";
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
     meta: [
-      { title: "Certificate wallet — Quizora" },
+      { title: "Certificate wallet - Quitech" },
       {
         name: "description",
-        content: "Every Quizora certificate you've earned, with a shareable verification link and a downloadable PDF.",
+        content: "Every Quitech certificate you've earned, with a shareable verification link and a downloadable PDF.",
       },
-      { property: "og:title", content: "Certificate wallet — Quizora" },
+      { property: "og:title", content: "Certificate wallet - Quitech" },
       { property: "og:description", content: "Share verifiable certificate links and download PDFs." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -85,7 +85,7 @@ function WalletPage() {
           quiz_id: item.quizId ?? "unknown",
   }, []);
   const share = async (code: string) => {
-        await navigator.share({ title: "My Quizora certificate", url });
+        await navigator.share({ title: "My Quitech certificate", url });
       setCopied(code);
           </p>
   export const Route = createFileRoute("/_authenticated/wallet")({
@@ -160,7 +160,7 @@ function WalletPage() {
 
               <p className="mt-4 font-mono text-xs text-muted-foreground">{certificate.code}</p>
               <p className="text-xs text-muted-foreground">
-                Issued {new Date(certificate.issuedAt).toLocaleDateString()} · {certificate.score}/
+                Issued {new Date(certificate.issuedAt).toLocaleDateString()} - {certificate.score}/
                 {certificate.maxScore} correct
               </p>
 

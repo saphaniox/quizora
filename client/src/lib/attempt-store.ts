@@ -1,10 +1,10 @@
 import type { AnswerResult, Certificate } from "@/types/quiz";
 
-const ATTEMPT_KEY = "quizora-current-attempt";
-const HISTORY_KEY = "quizora-history";
-const PROFILE_KEY = "quizora-player-name";
-const PROGRESS_PREFIX = "quizora-progress-";
-const CERTS_KEY = "quizora-certificates";
+const ATTEMPT_KEY = "quitech-current-attempt";
+const HISTORY_KEY = "quitech-history";
+const PROFILE_KEY = "quitech-player-name";
+const PROGRESS_PREFIX = "quitech-progress-";
+const CERTS_KEY = "quitech-certificates";
 
 export interface StoredQuestion {
   id: string;
@@ -57,7 +57,7 @@ function write(key: string, value: unknown): void {
   try {
     localStorage.setItem(key, JSON.stringify(value));
   } catch {
-    /* storage full or blocked — non-fatal */
+    /* storage full or blocked - non-fatal */
   }
 }
 

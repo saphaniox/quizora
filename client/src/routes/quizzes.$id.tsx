@@ -20,9 +20,9 @@ export const Route = createFileRoute("/quizzes/$id")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Take a quiz — Quizora" },
+      { title: "Take a quiz - Quitech" },
       { name: "description", content: "Timed multiple-choice quiz with instant scoring, explanations and certificates." },
-      { property: "og:title", content: "Take a quiz — Quizora" },
+      { property: "og:title", content: "Take a quiz - Quitech" },
       { property: "og:description", content: "Timed multiple-choice quiz with instant scoring and explanations." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -198,7 +198,7 @@ function QuizPage() {
                 {
                   value: "full",
                   title: "Full section (certificate eligible)",
-                  copy: "All 300–500 questions, untimed and self-paced. Save and rest any time; score 80%+ to earn a certificate.",
+                  copy: "All 300-500 questions, untimed and self-paced. Save and rest any time; score 80%+ to earn a certificate.",
                 },
               ] as { value: Mode; title: string; copy: string }[]
             ).map((option) => (
@@ -225,7 +225,7 @@ function QuizPage() {
           {savedProgress && (
             <div className="mt-4 rounded-lg border border-primary/40 bg-primary/5 p-4">
               <p className="text-sm font-medium text-primary">
-                You have an unfinished attempt — {Object.keys(savedProgress.answers).length} answered, saved{" "}
+                You have an unfinished attempt - {Object.keys(savedProgress.answers).length} answered, saved{" "}
                 {new Date(savedProgress.savedAt).toLocaleString()}.
               </p>
               <button
@@ -278,14 +278,14 @@ function QuizPage() {
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">{quiz.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">
             {answeredCount} of {questions.length} answered
-            {quiz.certificateEligible ? " · certificate eligible" : " · practice run"}
+            {quiz.certificateEligible ? " - certificate eligible" : " - practice run"}
           </p>
         </div>
         {quiz.timeLimitSeconds > 0 ? (
           <Timer totalSeconds={quiz.timeLimitSeconds} running onExpire={() => void handleSubmit()} />
         ) : (
           <div className="rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
-            <p className="text-xs font-medium text-muted-foreground">Self-paced · time on task</p>
+            <p className="text-xs font-medium text-muted-foreground">Self-paced - time on task</p>
             <p className="text-lg font-semibold tabular-nums tracking-tight text-foreground">
               {Math.floor(elapsed / 3600).toString().padStart(2, "0")}:
               {Math.floor((elapsed % 3600) / 60).toString().padStart(2, "0")}:
@@ -399,7 +399,7 @@ function QuizPage() {
             Save &amp; rest
           </button>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            "Your answers are saved automatically on this device — resume this section any time."
+            "Your answers are saved automatically on this device - resume this section any time."
 
           </p>
         </aside>

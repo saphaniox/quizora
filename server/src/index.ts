@@ -12,7 +12,7 @@ export async function createApp() {
     credentials: true,
   });
   await app.register(helmet);
-  app.get("/health", async () => ({ status: "ok", service: "quiz-master-api" }));
+  app.get("/health", async () => ({ status: "ok", service: "quitech-api" }));
   await app.register(routes);
   return app;
 }
@@ -24,7 +24,7 @@ if (process.env["NODE_ENV"] !== "test") {
   const app = await createApp();
   await checkDatabase();
   await app.listen({ port, host });
-  app.log.info(`Quiz API listening on ${host}:${port}`);
+  app.log.info(`Quitech API listening on ${host}:${port}`);
   const shutdown = async () => {
     await app.close();
     await closeDatabase();

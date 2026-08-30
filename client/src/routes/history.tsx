@@ -8,9 +8,9 @@ export const Route = createFileRoute("/history")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "My progress — Quizora" },
+      { title: "My progress - Quitech" },
       { name: "description", content: "Track every quiz attempt, your best scores and the certificates you earned." },
-      { property: "og:title", content: "My progress — Quizora" },
+      { property: "og:title", content: "My progress - Quitech" },
       { property: "og:description", content: "Track your quiz attempts, best scores and earned certificates." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -38,7 +38,7 @@ function HistoryPage() {
         <HistoryIcon className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">My progress</h1>
       </div>
-      <p className="mt-2 text-sm text-muted-foreground">Saved privately on this device — no account needed.</p>
+      <p className="mt-2 text-sm text-muted-foreground">Saved privately on this device - no account needed.</p>
 
       <dl className="mt-6 grid grid-cols-3 gap-4">
         {[
@@ -63,7 +63,7 @@ function HistoryPage() {
                 className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
               >
                 <span className="text-foreground">
-                  {certificate.quizTitle} — {certificate.percentage}%
+                  {certificate.quizTitle} - {certificate.percentage}%
                 </span>
                 <Link
                   to="/certificate/$code"
@@ -115,7 +115,7 @@ function HistoryPage() {
               <div>
                 <p className="text-sm font-medium text-foreground">{item.quizTitle}</p>
                 <p className="text-xs text-muted-foreground">
-                  {item.levelName} · {new Date(item.completedAt).toLocaleString()}
+                  {item.levelName} - {new Date(item.completedAt).toLocaleString()}
                 </p>
               </div>
               <span className="tabular-nums text-sm font-semibold text-foreground">{item.percentage}%</span>

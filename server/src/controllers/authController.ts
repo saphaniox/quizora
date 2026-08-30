@@ -8,7 +8,7 @@ const credentials = z.object({
   displayName: z.string().trim().min(1).max(80).optional(),
 });
 
-const cookie = "quizora_session";
+const cookie = "quitech_session";
 const cookieOptions = `Path=/; HttpOnly; SameSite=Lax; ${process.env["NODE_ENV"] === "production" ? "Secure; " : ""}Max-Age=2592000`;
 
 function setSession(reply: FastifyReply, token: string): void {

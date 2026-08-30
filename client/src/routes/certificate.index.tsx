@@ -5,10 +5,10 @@ import { BadgeCheck } from "lucide-react";
 export const Route = createFileRoute("/certificate/")({
   head: () => ({
     meta: [
-      { title: "Verify a certificate — Quizora" },
-      { name: "description", content: "Enter a Quizora certificate code to verify the holder, section and score." },
-      { property: "og:title", content: "Verify a certificate — Quizora" },
-      { property: "og:description", content: "Verify a Quizora certificate code in seconds." },
+      { title: "Verify a certificate - Quitech" },
+      { name: "description", content: "Enter a Quitech certificate code to verify the holder, section and score." },
+      { property: "og:title", content: "Verify a certificate - Quitech" },
+      { property: "og:description", content: "Verify a Quitech certificate code in seconds." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -26,7 +26,7 @@ function VerifyPage() {
         <BadgeCheck className="h-7 w-7 text-primary" />
         <h1 className="mt-4 text-2xl font-semibold tracking-tight text-card-foreground">Verify a certificate</h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Every Quizora certificate carries a unique code. Enter it below to confirm it is genuine.
+          Every Quitech certificate carries a unique code. Enter it below to confirm it is genuine.
         </p>
         <form
           className="mt-6 flex gap-2"

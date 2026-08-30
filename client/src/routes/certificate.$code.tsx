@@ -15,10 +15,10 @@ export const Route = createFileRoute("/certificate/$code")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Certificate of achievement — Quizora" },
-      { name: "description", content: "A verified Quizora certificate of achievement with holder, section and score." },
-      { property: "og:title", content: "Certificate of achievement — Quizora" },
-      { property: "og:description", content: "A verified Quizora certificate of achievement." },
+      { title: "Certificate of achievement - Quitech" },
+      { name: "description", content: "A verified Quitech certificate of achievement with holder, section and score." },
+      { property: "og:title", content: "Certificate of achievement - Quitech" },
+      { property: "og:description", content: "A verified Quitech certificate of achievement." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -35,7 +35,7 @@ function CertificatePage() {
   });
 
   if (isLoading) {
-    return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Checking code…</div>;
+    return <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">Checking code...</div>;
   }
 
   if (isError || !data) {
@@ -67,7 +67,7 @@ function CertificatePage() {
         <p className="mt-4 text-sm text-muted-foreground">has successfully completed</p>
         <p className="mt-2 text-xl font-semibold text-card-foreground">{certificate.quizTitle}</p>
         <p className="mt-1 text-sm text-muted-foreground">
-          {certificate.levelName} · {certificate.category}
+          {certificate.levelName} - {certificate.category}
         </p>
         <p className="mt-6 text-lg font-semibold text-emerald-600 dark:text-emerald-400">
           Score {certificate.score}/{certificate.maxScore} ({certificate.percentage}%)

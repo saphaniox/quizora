@@ -19,7 +19,7 @@ export function Header() {
           <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
             Q
           </span>
-          <span>Quizora</span>
+          <span>Quitech</span>
         </Link>
 
         <nav className="hidden items-center gap-1 md:flex" aria-label="Main">

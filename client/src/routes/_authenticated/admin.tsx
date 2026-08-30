@@ -24,13 +24,13 @@ import type { Difficulty, LeaderboardEntry, Level, QuizSummary } from "@/types/q
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
     meta: [
-      { title: "Admin dashboard - Quizora" },
+      { title: "Admin dashboard - Quitech" },
       {
         name: "description",
-        content: "Monitor Quizora catalogue coverage, learner activity, content quality, and production readiness.",
+        content: "Monitor Quitech catalogue coverage, learner activity, content quality, and production readiness.",
       },
-      { property: "og:title", content: "Admin dashboard - Quizora" },
-      { property: "og:description", content: "Operational dashboard for Quizora catalogue and learning activity." },
+      { property: "og:title", content: "Admin dashboard - Quitech" },
+      { property: "og:description", content: "Operational dashboard for Quitech catalogue and learning activity." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],

@@ -11,10 +11,10 @@ export const Route = createFileRoute("/results")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Your results — Quizora" },
+      { title: "Your results - Quitech" },
       { name: "description", content: "Review your score, answer breakdown, explanations and certificate status." },
-      { property: "og:title", content: "Your results — Quizora" },
-      { property: "og:description", content: "Review your score, explanations and certificate status on Quizora." },
+      { property: "og:title", content: "Your results - Quitech" },
+      { property: "og:description", content: "Review your score, explanations and certificate status on Quitech." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
@@ -51,9 +51,9 @@ function ResultsPage() {
   const certificate = result.certificate;
 
   const share = async () => {
-    const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quizora!`;
+    const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quitech!`;
     try {
-      if (navigator.share) await navigator.share({ title: "Quizora result", text });
+      if (navigator.share) await navigator.share({ title: "Quitech result", text });
       else {
         await navigator.clipboard.writeText(text);
         setCopied(true);
@@ -181,7 +181,7 @@ function ResultsPage() {
                 }`}
               >
                 {questionIndex + 1}
-                {answered ? (correct ? "✓" : "✕") : ""}
+                {answered ? (correct ? "✓" : "×") : ""}
               </a>
             );
           })}

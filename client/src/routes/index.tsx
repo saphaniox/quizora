@@ -9,13 +9,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Quizora: Learn, Challenge & Progress" },
+      { title: "Quitech: Learn, Challenge & Progress" },
       {
         name: "description",
         content:
           "Thousands of quiz questions across early learning, primary, secondary, college and professional tracks. Score 80% on a full section to earn a verifiable certificate.",
       },
-      { property: "og:title", content: "Quizora: Learn, Challenge & Progress" },
+      { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
       {
         property: "og:description",
         content: "Timed quizzes, instant explanations, leaderboards and verifiable certificates for every level.",
@@ -63,17 +63,17 @@ function HomePage() {
             {data ? `${data.totalQuestions.toLocaleString()} questions` : "Thousands of questions"} across every level
           </span>
           <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Learn, test and get certified — from first letters to industry expertise.
+            Learn, challenge, and progress from first letters to industry expertise.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Quizora guides early learners through primary, secondary, college and professional tracks. Practice at your
+            Quitech guides early learners through primary, secondary, college and professional tracks. Practice at your
             own pace, take the timed full section, and earn a verifiable certificate when you score 80% or more.
           </p>
 
           <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
             {[
               { icon: GraduationCap, label: "Learning levels", value: levels.length || "5" },
-              { icon: Users, label: "Subject sections", value: levels.reduce((n, l) => n + l.sections.length, 0) || "—" },
+              { icon: Users, label: "Subject sections", value: levels.reduce((n, l) => n + l.sections.length, 0) || "-" },
               { icon: Award, label: "Certificate pass mark", value: "80%" },
             ].map(({ icon: Icon, label, value }) => (
               <div key={label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
@@ -140,7 +140,7 @@ function HomePage() {
                     <span className="min-w-0">
                       <span className="block truncate text-sm font-semibold">{level.name}</span>
                       <span className={cn("mt-1 block text-xs", selected ? "text-primary-foreground/75" : "text-muted-foreground")}>
-                        {level.sections.length} quizzes · {level.questionCount.toLocaleString()} questions
+                        {level.sections.length} quizzes - {level.questionCount.toLocaleString()} questions
                       </span>
                     </span>
                   </button>
@@ -154,7 +154,7 @@ function HomePage() {
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search quizzes or topics…"
+                  placeholder="Search quizzes or topics..."
                   aria-label="Search quizzes or topics"
                   className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
@@ -167,7 +167,7 @@ function HomePage() {
                   <div>
                     <h2 className="text-2xl font-semibold tracking-tight text-foreground">{currentLevel.name} quizzes</h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {currentLevel.tagline} · {currentLevel.ageRange} ·{" "}
+                  {currentLevel.tagline} - {currentLevel.ageRange} -{" "}
                   {currentLevel.questionCount.toLocaleString()} questions
                 </p>
                   </div>
@@ -184,7 +184,7 @@ function HomePage() {
 
             {sections.length === 0 && (
               <p className="mt-10 text-center text-sm text-muted-foreground">
-                No sections match “{search}”. Try a different search.
+                No sections match "{search}". Try a different search.
               </p>
             )}
           </>

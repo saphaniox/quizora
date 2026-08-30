@@ -78,15 +78,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Quizora: Learn, Challenge & Progress" },
-      { name: "description", content: "Test Your Knowledge. Master Your Future. Quizora helps you learn, play, and score across technology, business, science, and general knowledge." },
-      { name: "application-name", content: "Quizora: Learn, Challenge & Progress" },
-      { name: "author", content: "Quizora" },
-      { property: "og:title", content: "Quizora: Learn, Challenge & Progress" },
-      { property: "og:description", content: "Test Your Knowledge. Master Your Future." },
+      { title: "Quitech: Learn, Challenge & Progress" },
+      { name: "description", content: "Learn, challenge & progress. Quitech helps you learn, challenge yourself, and track progress across technology, business, science, and general knowledge." },
+      { name: "application-name", content: "Quitech: Learn, Challenge & Progress" },
+      { name: "author", content: "Quitech" },
+      { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
+      { property: "og:description", content: "Learn, challenge & progress." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
-      { name: "twitter:site", content: "@Quizora" },
+      { name: "twitter:site", content: "@Quitech" },
     ],
     links: [
       {

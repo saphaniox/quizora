@@ -1,8 +1,8 @@
-# Quizora: Learn, Play & Score
+# Quitech: Learn, Challenge & Progress
 
-**Test Your Knowledge. Master Your Future.**
+**Learn, challenge & progress.**
 
-Quizora is a professional quiz platform with a React client and one client-hosted quiz API.
+Quitech is a professional quiz platform with a React client and API routes for quiz catalogue, results, leaderboards, certificates, and accounts.
 
 ## Architecture
 
@@ -12,7 +12,7 @@ Quizora is a professional quiz platform with a React client and one client-hoste
 
 ## Development
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+Prefer working locally? You need Node.js and npm - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
 
 ```sh
 git clone <this-repository-url>
@@ -21,7 +21,7 @@ npm i
 npm run dev
 ```
 
-All quiz, result, leaderboard, certificate, and account requests use the PostgreSQL Fastify API. Set `VITE_API_URL` to its public VPS URL before building the client.
+The deployed client can use its own `/api/*` routes. The separate `server/` app is available if you want to run the Fastify/PostgreSQL API from a VPS instead.
 
 ### PostgreSQL server setup
 

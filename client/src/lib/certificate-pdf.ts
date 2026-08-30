@@ -48,7 +48,7 @@ export function downloadCertificatePdf(certificate: Certificate, verifyUrl: stri
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text(`${certificate.levelName}  ·  ${certificate.category}`, width / 2, 290, { align: "center" });
+  doc.text(`${certificate.levelName}  -  ${certificate.category}`, width / 2, 290, { align: "center" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
@@ -75,5 +75,5 @@ export function downloadCertificatePdf(certificate: Certificate, verifyUrl: stri
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.text("Verification code", width - 80, height - 62, { align: "right" });
 
-  doc.save(`Quizora-certificate-${certificate.code}.pdf`);
+  doc.save(`Quitech-certificate-${certificate.code}.pdf`);
 }

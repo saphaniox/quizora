@@ -7,12 +7,12 @@ export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Sign in — Quizora certificate wallet" },
+      { title: "Sign in - Quitech certificate wallet" },
       {
         name: "description",
-        content: "Sign in to Quizora to sync quiz progress across devices and keep every certificate you earn in one wallet.",
+        content: "Sign in to Quitech to sync quiz progress across devices and keep every certificate you earn in one wallet.",
       },
-      { property: "og:title", content: "Sign in — Quizora certificate wallet" },
+      { property: "og:title", content: "Sign in - Quitech certificate wallet" },
       { property: "og:description", content: "Sync progress across devices and store your certificates." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -136,7 +136,7 @@ function AuthPage() {
         </form>
 
         <p className="mt-5 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? "New to Quizora?" : "Already have an account?"}{" "}
+          {mode === "signin" ? "New to Quitech?" : "Already have an account?"}{" "}
           <button
             type="button"
             onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
@@ -148,7 +148,7 @@ function AuthPage() {
       </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
-        You can keep practising without an account —{" "}
+        You can keep practising without an account  - {" "}
         <Link to="/" className="font-medium text-primary hover:underline">
           browse sections
         </Link>
