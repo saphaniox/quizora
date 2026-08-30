@@ -6,6 +6,7 @@ import { ScoreRing } from "@/components/ScoreRing";
 import { QuestionCard } from "@/components/QuestionCard";
 import { getLeaderboard } from "@/lib/api";
 import { loadAttempt, type StoredAttempt } from "@/lib/attempt-store";
+import { countryFlag } from "@/lib/countries";
 
 export const Route = createFileRoute("/results")({
   ssr: false,
@@ -92,6 +93,11 @@ function ResultsPage() {
             <p className="mt-1 text-sm text-muted-foreground">
               Rank #{result.leaderboardRank} of {result.totalEntries} attempts on this section.
             </p>
+            {attempt.countryName && (
+              <p className="mt-1 text-sm text-muted-foreground">
+                {countryFlag(attempt.countryCode ?? "")} {attempt.countryName}
+              </p>
+            )}
           </div>
           <ScoreRing percentage={result.percentage} size="lg" label="Final score" />
         </div>
@@ -156,9 +162,16 @@ function ResultsPage() {
           </h2>
           <ol className="mt-3 space-y-2">
             {topEntries.map((entry, position) => (
-              <li key={entry.id} className="flex items-center justify-between text-sm">
-                <span className="text-foreground">
-                  {position + 1}. {entry.playerName}
+              <li key={entry.id} className="flex items-center justify-between gap-3 text-sm">
+                <span className="min-w-0 text-foreground">
+                  <span className="font-medium">
+                    {position + 1}. {entry.playerName}
+                  </span>
+                  {entry.countryName && (
+                    <span className="ml-2 text-xs text-muted-foreground">
+                      {countryFlag(entry.countryCode ?? "")} {entry.countryName}
+                    </span>
+                  )}
                 </span>
                 <span className="tabular-nums text-muted-foreground">{entry.percentage}%</span>
               </li>

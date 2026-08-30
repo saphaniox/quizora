@@ -53,6 +53,8 @@ export interface Certificate {
   quizTitle: string;
   levelName: string;
   category: string;
+  countryCode?: string | null;
+  countryName?: string | null;
   score: number;
   maxScore: number;
   percentage: number;
@@ -60,6 +62,9 @@ export interface Certificate {
 }
 
 export interface AnswerResult {
+  playerName: string;
+  countryCode?: string | null;
+  countryName?: string | null;
   score: number;
   maxScore: number;
   percentage: number;
@@ -81,6 +86,8 @@ export interface LeaderboardEntry {
   levelId: string;
   quizTitle: string;
   levelName: string;
+  countryCode?: string | null;
+  countryName?: string | null;
   score: number;
   maxScore: number;
   percentage: number;

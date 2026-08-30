@@ -14,14 +14,16 @@ const SESSION_DAYS = 30;
 export type UserRole = "user" | "admin";
 export type User = {
   id: string;
-  email: string;
+  email: string | null;
+  phoneE164: string | null;
   displayName: string;
   role: UserRole;
 };
 
 type UserRow = {
   id: string;
-  email: string;
+  email: string | null;
+  phone_e164: string | null;
   display_name: string;
   role: string;
 };
@@ -30,9 +32,15 @@ function toUser(row: UserRow): User {
   return {
     id: row.id,
     email: row.email,
+    phoneE164: row.phone_e164,
     displayName: row.display_name,
     role: row.role === "admin" ? "admin" : "user",
   };
+}
+
+function normalizePhone(value: string): string | null {
+  const phone = value.trim().replace(/[().\s-]/g, "");
+  return /^\+[1-9]\d{7,14}$/.test(phone) ? phone : null;
 }
 
 function hashToken(token: string): string {
@@ -57,26 +65,35 @@ async function verifyPassword(
 }
 
 export async function register(
-  email: string,
+  contact: { email?: string | undefined; phoneE164?: string | undefined },
   password: string,
   displayName: string,
 ): Promise<{ user: User; token: string }> {
   const passwordHash = await hashPassword(password);
   const id = randomUUID();
+  const email = contact.email?.trim().toLowerCase() || null;
+  const phoneE164 = contact.phoneE164
+    ? normalizePhone(contact.phoneE164)
+    : null;
   const result = await pool.query<UserRow>(
-    "INSERT INTO users (id, email, password_hash, display_name) VALUES ($1, $2, $3, $4) RETURNING id, email, display_name, role",
-    [id, email.toLowerCase(), passwordHash, displayName],
+    "INSERT INTO users (id, email, phone_e164, password_hash, display_name) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, phone_e164, display_name, role",
+    [id, email, phoneE164, passwordHash, displayName],
   );
   return createSession(toUser(result.rows[0]));
 }
 
 export async function login(
-  email: string,
+  identifier: string,
   password: string,
 ): Promise<{ user: User; token: string } | null> {
+  const trimmedIdentifier = identifier.trim();
+  const email = trimmedIdentifier.includes("@")
+    ? trimmedIdentifier.toLowerCase()
+    : null;
+  const phoneE164 = normalizePhone(trimmedIdentifier);
   const result = await pool.query<UserRow & { password_hash: string }>(
-    "SELECT id, email, password_hash, display_name, role FROM users WHERE email = $1",
-    [email.toLowerCase()],
+    "SELECT id, email, phone_e164, password_hash, display_name, role FROM users WHERE ($1::text IS NOT NULL AND email = $1) OR ($2::text IS NOT NULL AND phone_e164 = $2)",
+    [email, phoneE164],
   );
   const row = result.rows[0];
   if (!row || !(await verifyPassword(password, row.password_hash))) return null;
@@ -98,7 +115,7 @@ async function createSession(
 export async function getUser(token: string | undefined): Promise<User | null> {
   if (!token) return null;
   const result = await pool.query<UserRow>(
-    "SELECT u.id, u.email, u.display_name, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = $1 AND s.expires_at > NOW()",
+    "SELECT u.id, u.email, u.phone_e164, u.display_name, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = $1 AND s.expires_at > NOW()",
     [hashToken(token)],
   );
   const row = result.rows[0];

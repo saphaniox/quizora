@@ -26,7 +26,7 @@ const terms = [
   },
   {
     title: "Accounts",
-    body: "Keep your login details private and use accurate information when creating an account or certificate. You are responsible for activity that happens through your account.",
+    body: "Keep your login details private and use accurate information when creating an account or certificate. Optional country details may appear on public leaderboards when you submit them.",
   },
   {
     title: "Learning content",

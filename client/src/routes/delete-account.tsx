@@ -35,7 +35,7 @@ function DeleteAccountRequestPage() {
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           This public resource is for account deletion requests outside the app. Signed-in users can
           delete their account from the certificate wallet. If you cannot sign in, contact privacy
-          support from the email connected to your Quitech account.
+          support with the email address or phone number connected to your Quitech account.
         </p>
       </div>
 

@@ -6,16 +6,35 @@ import type {
   Level,
   Certificate,
 } from "@/types/quiz";
+import type { SavedProgress } from "@/lib/attempt-store";
 
 export interface AccountUser {
   id: string;
-  email: string;
+  email: string | null;
+  phoneE164: string | null;
   displayName: string;
   role: "user" | "admin";
 }
 
+export interface HealthStatus {
+  status: string;
+  service: string;
+}
+
+export interface AccountProgress extends SavedProgress {
+  version: number;
+  deviceLabel: string | null;
+}
+
 const LOCAL_CONTENT_API_BASE = "/api";
-const CONTENT_PATHS = ["/levels", "/quizzes", "/submit", "/leaderboard", "/certificates"];
+const CONTENT_PATHS = [
+  "/health",
+  "/levels",
+  "/quizzes",
+  "/submit",
+  "/leaderboard",
+  "/certificates",
+];
 const API_BASE = normalizeApiBase(import.meta.env["VITE_API_URL"] as string | undefined);
 const CONTENT_API_BASE = API_BASE || LOCAL_CONTENT_API_BASE;
 
@@ -50,6 +69,15 @@ function canUseLocalContentFallback(path: string, attemptedBase: string): boolea
 
 function requestUrl(base: string, path: string): string {
   return `${base}${path}`;
+}
+
+function deviceLabel(): string {
+  if (typeof navigator === "undefined") return "This device";
+  const userAgent = navigator.userAgent;
+  if (/iPhone|iPad|Android/i.test(userAgent)) return "Mobile device";
+  if (/Mac/i.test(userAgent)) return "Mac";
+  if (/Windows/i.test(userAgent)) return "Windows PC";
+  return "This device";
 }
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
@@ -99,6 +127,8 @@ export async function getQuiz(id: string, limit?: number, seed?: string): Promis
 export async function submitAnswers(payload: {
   quizId: string;
   playerName: string;
+  countryCode?: string | null;
+  countryName?: string | null;
   answers: Record<string, number>;
   timeSpentSeconds: number;
 }): Promise<{ result: AnswerResult }> {
@@ -122,12 +152,52 @@ export async function getCertificate(code: string): Promise<{ certificate: Certi
   return fetchJson<{ certificate: Certificate }>(`/certificates/${encodeURIComponent(code)}`);
 }
 
+export async function getHealth(): Promise<HealthStatus> {
+  return fetchJson<HealthStatus>("/health");
+}
+
 export async function getCurrentUser(): Promise<{ user: AccountUser | null }> {
   return fetchJson<{ user: AccountUser | null }>("/auth/me");
 }
 
+export async function getMyActivity(): Promise<{
+  history: LeaderboardEntry[];
+  certificates: Certificate[];
+}> {
+  return fetchJson<{ history: LeaderboardEntry[]; certificates: Certificate[] }>(
+    "/auth/me/activity",
+  );
+}
+
+export async function getAccountProgress(
+  quizId: string,
+): Promise<{ progress: AccountProgress | null }> {
+  return fetchJson<{ progress: AccountProgress | null }>(
+    `/auth/me/progress/${encodeURIComponent(quizId)}`,
+  );
+}
+
+export async function saveAccountProgress(
+  progress: SavedProgress,
+): Promise<{ progress: AccountProgress }> {
+  return fetchJson<{ progress: AccountProgress }>(
+    `/auth/me/progress/${encodeURIComponent(progress.quizId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({ ...progress, deviceLabel: deviceLabel() }),
+    },
+  );
+}
+
+export async function deleteAccountProgress(quizId: string): Promise<void> {
+  await fetchJson<{ ok: true }>(`/auth/me/progress/${encodeURIComponent(quizId)}`, {
+    method: "DELETE",
+  });
+}
+
 export async function registerAccount(payload: {
-  email: string;
+  email?: string;
+  phoneE164?: string;
   password: string;
   displayName: string;
 }): Promise<{ user: AccountUser }> {
@@ -138,7 +208,7 @@ export async function registerAccount(payload: {
 }
 
 export async function loginAccount(payload: {
-  email: string;
+  identifier: string;
   password: string;
 }): Promise<{ user: AccountUser }> {
   return fetchJson<{ user: AccountUser }>("/auth/login", {

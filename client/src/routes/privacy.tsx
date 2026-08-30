@@ -25,11 +25,11 @@ export const Route = createFileRoute("/privacy")({
 const collectedData = [
   {
     title: "Account data",
-    body: "When you create an account, Quitech stores your email address, display name, password hash, session records, and account timestamps.",
+    body: "When you create an account, Quitech stores your email address or phone number, display name, password hash, session records, and account timestamps.",
   },
   {
     title: "Quiz activity",
-    body: "Quitech stores quiz submissions, scores, time spent, leaderboard entries, and certificate records needed to show results and verify certificates.",
+    body: "Quitech stores quiz submissions, scores, time spent, optional country selection, leaderboard entries, and certificate records needed to show results and verify certificates.",
   },
   {
     title: "Device and usage data",
@@ -37,7 +37,7 @@ const collectedData = [
   },
   {
     title: "Support messages",
-    body: "If you contact support, Quitech may process your email address and the information you include so the team can respond.",
+    body: "If you contact support, Quitech may process your contact details and the information you include so the team can respond.",
   },
   {
     title: "Advertising data",
@@ -119,8 +119,8 @@ function PrivacyPage() {
             infrastructure to protect account data. We keep account and quiz records while your
             account is active or while they are needed for security, support, certificate
             verification, legal, or abuse-prevention reasons. Signed-in users can delete their
-            account from the certificate wallet. If you cannot sign in, email privacy support from
-            your account email.
+            account from the certificate wallet. If you cannot sign in, email privacy support with
+            the email address or phone number connected to your account.
           </p>
         </div>
 

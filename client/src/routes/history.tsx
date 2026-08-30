@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { History as HistoryIcon, Trash2 } from "lucide-react";
 import { clearHistory, loadCertificates, loadHistory, type HistoryItem } from "@/lib/attempt-store";
-import type { Certificate } from "@/types/quiz";
+import { getMyActivity } from "@/lib/api";
+import { countryFlag } from "@/lib/countries";
+import type { Certificate, LeaderboardEntry } from "@/types/quiz";
 
 export const Route = createFileRoute("/history")({
   ssr: false,
@@ -28,10 +30,29 @@ export const Route = createFileRoute("/history")({
 function HistoryPage() {
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [accountSynced, setAccountSynced] = useState(false);
 
   useEffect(() => {
-    setItems(loadHistory());
-    setCertificates(loadCertificates());
+    let active = true;
+    const localHistory = loadHistory();
+    const localCertificates = loadCertificates();
+    setItems(localHistory);
+    setCertificates(localCertificates);
+
+    void getMyActivity()
+      .then(({ history, certificates }) => {
+        if (!active) return;
+        setAccountSynced(true);
+        setItems(mergeHistory(history.map(historyFromEntry), localHistory));
+        setCertificates(mergeCertificates(certificates, localCertificates));
+      })
+      .catch(() => {
+        if (active) setAccountSynced(false);
+      });
+
+    return () => {
+      active = false;
+    };
   }, []);
 
   const attempts = items.length;
@@ -47,7 +68,9 @@ function HistoryPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">My progress</h1>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Saved privately on this device - no account needed.
+        {accountSynced
+          ? "Saved to your Quitech account and available across devices."
+          : "Saved privately on this device - no account needed."}
       </p>
 
       <dl className="mt-6 grid grid-cols-3 gap-4">
@@ -75,6 +98,11 @@ function HistoryPage() {
                 <span className="text-foreground">
                   {certificate.quizTitle} - {certificate.percentage}%
                 </span>
+                {certificate.countryName && (
+                  <span className="text-xs text-muted-foreground">
+                    {countryFlag(certificate.countryCode ?? "")} {certificate.countryName}
+                  </span>
+                )}
                 <Link
                   to="/certificate/$code"
                   params={{ code: certificate.code }}
@@ -90,7 +118,7 @@ function HistoryPage() {
 
       <div className="mt-10 flex items-center justify-between">
         <h2 className="text-lg font-semibold text-foreground">Recent attempts</h2>
-        {attempts > 0 && (
+        {attempts > 0 && !accountSynced && (
           <button
             type="button"
             onClick={() => {
@@ -129,6 +157,11 @@ function HistoryPage() {
                 <p className="text-xs text-muted-foreground">
                   {item.levelName} - {new Date(item.completedAt).toLocaleString()}
                 </p>
+                {item.countryName && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    {countryFlag(item.countryCode ?? "")} {item.countryName}
+                  </p>
+                )}
               </div>
               <span className="tabular-nums text-sm font-semibold text-foreground">
                 {item.percentage}%
@@ -139,4 +172,45 @@ function HistoryPage() {
       )}
     </div>
   );
+}
+
+function historyFromEntry(entry: LeaderboardEntry): HistoryItem {
+  return {
+    quizId: entry.quizId,
+    quizTitle: entry.quizTitle,
+    levelName: entry.levelName,
+    score: entry.score,
+    maxScore: entry.maxScore,
+    percentage: entry.percentage,
+    ...(entry.countryCode && entry.countryName
+      ? { countryCode: entry.countryCode, countryName: entry.countryName }
+      : {}),
+    timeSpentSeconds: entry.timeSpentSeconds,
+    completedAt: entry.completedAt,
+  };
+}
+
+function mergeHistory(accountItems: HistoryItem[], localItems: HistoryItem[]): HistoryItem[] {
+  const seen = new Set<string>();
+  return [...accountItems, ...localItems]
+    .filter((item) => {
+      const key = `${item.quizId}-${item.completedAt}-${item.score}-${item.maxScore}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    })
+    .sort((a, b) => new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime())
+    .slice(0, 100);
+}
+
+function mergeCertificates(accountCertificates: Certificate[], localCertificates: Certificate[]) {
+  const seen = new Set<string>();
+  return [...accountCertificates, ...localCertificates]
+    .filter((certificate) => {
+      if (seen.has(certificate.code)) return false;
+      seen.add(certificate.code);
+      return true;
+    })
+    .sort((a, b) => new Date(b.issuedAt).getTime() - new Date(a.issuedAt).getTime())
+    .slice(0, 50);
 }

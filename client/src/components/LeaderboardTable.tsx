@@ -1,5 +1,6 @@
 import { Medal } from "lucide-react";
 import type { LeaderboardEntry } from "@/types/quiz";
+import { countryFlag } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
 function formatTime(seconds: number) {
@@ -9,10 +10,15 @@ function formatTime(seconds: number) {
 
 const medalColor = ["text-amber-500", "text-slate-400", "text-amber-700"];
 
+function countryDisplay(entry: LeaderboardEntry): string {
+  if (!entry.countryName) return "-";
+  return `${countryFlag(entry.countryCode ?? "")} ${entry.countryName}`.trim();
+}
+
 export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
   return (
     <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-      <table className="w-full text-left text-sm">
+      <table className="w-full min-w-[760px] text-left text-sm">
         <caption className="sr-only">Top quiz scores</caption>
         <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
@@ -21,6 +27,9 @@ export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
             </th>
             <th scope="col" className="px-4 py-3 font-medium">
               Player
+            </th>
+            <th scope="col" className="px-4 py-3 font-medium">
+              Country
             </th>
             <th scope="col" className="px-4 py-3 font-medium">
               Section
@@ -46,6 +55,7 @@ export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
                 </span>
               </td>
               <td className="px-4 py-3 font-medium text-foreground">{entry.playerName}</td>
+              <td className="px-4 py-3 text-muted-foreground">{countryDisplay(entry)}</td>
               <td className="px-4 py-3 text-muted-foreground">
                 <span className="block">{entry.quizTitle}</span>
                 <span className="text-xs">{entry.levelName}</span>

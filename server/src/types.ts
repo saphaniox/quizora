@@ -76,6 +76,9 @@ export interface LeaderboardEntry {
   levelId: string;
   quizTitle: string;
   levelName: string;
+  userId?: string | null;
+  countryCode?: string | null;
+  countryName?: string | null;
   score: number;
   maxScore: number;
   percentage: number;
@@ -90,6 +93,9 @@ export interface Certificate {
   quizTitle: string;
   levelName: string;
   category: string;
+  userId?: string | null;
+  countryCode?: string | null;
+  countryName?: string | null;
   score: number;
   maxScore: number;
   percentage: number;
@@ -100,10 +106,15 @@ export interface AnswerPayload {
   quizId: string;
   playerName: string;
   answers: Record<string, number>;
+  countryCode?: string | null;
+  countryName?: string | null;
   timeSpentSeconds: number;
 }
 
 export interface AnswerResult {
+  playerName: string;
+  countryCode?: string | null;
+  countryName?: string | null;
   score: number;
   maxScore: number;
   percentage: number;
@@ -116,4 +127,17 @@ export interface AnswerResult {
   totalEntries: number;
   certificate: Certificate | null;
   certificateMessage: string;
+}
+
+export interface AccountProgress {
+  quizId: string;
+  mode: number | "full";
+  seed: string;
+  answers: Record<string, number>;
+  flagged: string[];
+  currentIndex: number;
+  elapsedSeconds: number;
+  savedAt: string;
+  version: number;
+  deviceLabel: string | null;
 }

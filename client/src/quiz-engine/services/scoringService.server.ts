@@ -15,10 +15,11 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
       const answer = payload.answers[id];
       return answer === undefined || answer >= (questionById.get(id)?.options.length ?? 0);
     })
-  )
+  ) {
     return null;
-  const graded = quiz.questions;
+  }
 
+  const graded = quiz.questions;
   const correctAnswers: Record<string, boolean> = {};
   const correctOptionIndices: Record<string, number> = {};
   const explanations: Record<string, string> = {};
@@ -35,14 +36,18 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   const maxScore = graded.length;
   const percentage = Math.round((score / maxScore) * 100);
   const playerName = payload.playerName.trim() || "Anonymous";
+  const countryCode = payload.countryCode ?? null;
+  const countryName = payload.countryName ?? null;
 
   const entry: LeaderboardEntry = {
     id: `lb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
     playerName,
     quizId: quiz.id,
     levelId: quiz.levelId,
-    quizTitle: `${quiz.levelName} — ${quiz.title}`,
+    quizTitle: `${quiz.levelName} - ${quiz.title}`,
     levelName: quiz.levelName,
+    countryCode,
+    countryName,
     score,
     maxScore,
     percentage,
@@ -64,6 +69,8 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
       quizTitle: quiz.title,
       levelName: quiz.levelName,
       category: quiz.category,
+      countryCode,
+      countryName,
       score,
       maxScore,
       percentage,
@@ -77,6 +84,9 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   }
 
   return {
+    playerName,
+    countryCode,
+    countryName,
     score,
     maxScore,
     percentage,

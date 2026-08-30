@@ -4,18 +4,38 @@ import * as leaderboardModel from "../models/leaderboardModel.server";
 import * as certificateModel from "../models/certificateModel.server";
 import type { ControllerResult } from "./quizController.server";
 
-const answerSchema = z.object({
-  quizId: z.string().min(1).max(120),
-  playerName: z.string().trim().min(1, "Name is required").max(50),
-  answers: z
-    .record(z.string().max(120), z.number().int().min(0).max(20))
-    .refine((answers) => Object.keys(answers).length <= 500, "Too many answers"),
-  timeSpentSeconds: z
-    .number()
-    .int()
-    .min(0)
-    .max(60 * 60 * 12),
-});
+const optionalCountryCode = z.preprocess(
+  (value) =>
+    typeof value === "string" && value.trim() !== "" ? value.trim().toUpperCase() : undefined,
+  z
+    .string()
+    .regex(/^[A-Z]{2}$/)
+    .optional(),
+);
+const optionalCountryName = z.preprocess(
+  (value) => (typeof value === "string" && value.trim() !== "" ? value.trim() : undefined),
+  z.string().max(80).optional(),
+);
+
+const answerSchema = z
+  .object({
+    quizId: z.string().min(1).max(120),
+    playerName: z.string().trim().max(50).optional().default(""),
+    countryCode: optionalCountryCode,
+    countryName: optionalCountryName,
+    answers: z
+      .record(z.string().max(120), z.number().int().min(0).max(20))
+      .refine((answers) => Object.keys(answers).length <= 500, "Too many answers"),
+    timeSpentSeconds: z
+      .number()
+      .int()
+      .min(0)
+      .max(60 * 60 * 12),
+  })
+  .refine((value) => Boolean(value.countryCode) === Boolean(value.countryName), {
+    message: "Country code and country name must be submitted together",
+    path: ["countryCode"],
+  });
 
 export function submitAnswers(payload: unknown): ControllerResult {
   const parsed = answerSchema.safeParse(payload);

@@ -2,18 +2,30 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, ArrowRight, Award, Flag, Loader2, ShieldCheck } from "lucide-react";
-import { getQuiz, submitAnswers } from "@/lib/api";
+import { CountrySelect } from "@/components/CountrySelect";
+import {
+  deleteAccountProgress,
+  getAccountProgress,
+  getCurrentUser,
+  getQuiz,
+  saveAccountProgress,
+  submitAnswers,
+} from "@/lib/api";
 import { QuestionCard } from "@/components/QuestionCard";
 import { Timer } from "@/components/Timer";
 import {
   clearProgress,
   loadProgress,
+  loadPlayerCountry,
   loadPlayerName,
   saveAttempt,
+  savePlayerCountry,
   savePlayerName,
   saveProgress,
+  type PlayerCountry,
   type SavedProgress,
 } from "@/lib/attempt-store";
+import { findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/quizzes/$id")({
@@ -39,12 +51,50 @@ export const Route = createFileRoute("/quizzes/$id")({
 
 type Mode = 10 | 25 | 50 | "full";
 
+function storedCountryToOption(country: PlayerCountry | null): CountryDialCode | null {
+  if (!country) return null;
+  return findCountryByIso(country.iso) ?? { iso: country.iso, name: country.name, dialCode: "" };
+}
+
+function progressAnswerCount(progress: SavedProgress): number {
+  return Object.keys(progress.answers).length;
+}
+
+function chooseBestProgress(
+  local: SavedProgress | null,
+  remote: SavedProgress | null,
+): SavedProgress | null {
+  if (!local) return remote;
+  if (!remote) return local;
+  const localCount = progressAnswerCount(local);
+  const remoteCount = progressAnswerCount(remote);
+  if (remoteCount !== localCount) return remoteCount > localCount ? remote : local;
+  return remote.savedAt > local.savedAt ? remote : local;
+}
+
+function progressSaveKey(progress: SavedProgress): string {
+  const answerKey = Object.entries(progress.answers)
+    .sort(([left], [right]) => left.localeCompare(right))
+    .map(([questionId, answer]) => `${questionId}:${answer}`)
+    .join(",");
+  return [
+    progress.quizId,
+    progress.mode,
+    progress.seed,
+    progress.currentIndex,
+    progress.flagged.join(","),
+    answerKey,
+  ].join("|");
+}
+
 function QuizPage() {
   const { id } = Route.useParams();
   const navigate = useNavigate();
 
   const [started, setStarted] = useState(false);
   const [playerName, setPlayerName] = useState("");
+  const [attemptCountry, setAttemptCountry] = useState<CountryDialCode | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [mode, setMode] = useState<Mode>(10);
   const [seed, setSeed] = useState("start");
   const [answers, setAnswers] = useState<Record<string, number>>({});
@@ -54,11 +104,27 @@ function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const startedAt = useRef<number>(0);
+  const lastAccountSaveAt = useRef(0);
+  const lastAccountSaveKey = useRef("");
   const [resumeState, setResume] = useState<SavedProgress | null>(null);
+
+  const { data: accountData } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => getCurrentUser(),
+    retry: false,
+  });
+  const account = accountData?.user ?? null;
 
   useEffect(() => {
     setPlayerName(loadPlayerName());
+    setAttemptCountry(storedCountryToOption(loadPlayerCountry()));
+    setProfileLoaded(true);
   }, []);
+
+  useEffect(() => {
+    if (!profileLoaded || playerName.trim() || !account?.displayName) return;
+    setPlayerName(account.displayName);
+  }, [account?.displayName, playerName, profileLoaded]);
 
   const limit = mode === "full" ? undefined : mode;
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -81,9 +147,12 @@ function QuizPage() {
       const { result } = await submitAnswers({
         quizId: quiz.id,
         playerName,
+        countryCode: attemptCountry?.iso ?? null,
+        countryName: attemptCountry?.name ?? null,
         answers,
         timeSpentSeconds,
       });
+      const savedPlayerName = result.playerName || playerName.trim() || "Anonymous";
       saveAttempt({
         quizId: quiz.id,
         quizTitle: quiz.title,
@@ -91,8 +160,10 @@ function QuizPage() {
         quizCategory: quiz.category,
         quizDifficulty: quiz.difficulty,
         levelName: quiz.levelName,
+        countryCode: result.countryCode ?? attemptCountry?.iso ?? null,
+        countryName: result.countryName ?? attemptCountry?.name ?? null,
         timeLimitSeconds: quiz.timeLimitSeconds,
-        playerName,
+        playerName: savedPlayerName,
         answers,
         timeSpentSeconds,
         result,
@@ -104,13 +175,14 @@ function QuizPage() {
         completedAt: new Date().toISOString(),
       });
       clearProgress(quiz.id);
+      if (account?.id) await deleteAccountProgress(quiz.id).catch(() => undefined);
 
       void navigate({ to: "/results" });
     } catch (submitFailure) {
       setSubmitError((submitFailure as Error).message);
       setSubmitting(false);
     }
-  }, [quiz, submitting, playerName, answers, questions, navigate]);
+  }, [quiz, submitting, playerName, attemptCountry, answers, questions, account?.id, navigate]);
 
   // Persist in-progress state locally on every change.
   useEffect(() => {
@@ -126,7 +198,15 @@ function QuizPage() {
       savedAt: new Date().toISOString(),
     };
     saveProgress(snapshot);
-  }, [started, quiz, mode, seed, answers, flagged, index, elapsed]);
+    if (!account?.id) return;
+    const now = Date.now();
+    const saveKey = progressSaveKey(snapshot);
+    const meaningfulChange = saveKey !== lastAccountSaveKey.current;
+    if (!meaningfulChange && now - lastAccountSaveAt.current < 15000) return;
+    lastAccountSaveAt.current = now;
+    lastAccountSaveKey.current = saveKey;
+    void saveAccountProgress(snapshot).catch(() => undefined);
+  }, [started, quiz, mode, seed, answers, flagged, index, elapsed, account?.id]);
 
   useEffect(() => {
     if (!started) return;
@@ -134,19 +214,32 @@ function QuizPage() {
     return () => clearInterval(tick);
   }, [started]);
 
-  // Look for a resumable attempt on this device.
+  // Look for a resumable attempt locally and in the signed-in account.
   useEffect(() => {
     let active = true;
-    void Promise.resolve({ best: loadProgress(id) }).then((choice) => {
-      if (!active) return;
-      setResume(choice.best);
-    });
+    const local = loadProgress(id);
+    setResume(local);
+    if (!account?.id) {
+      return () => {
+        active = false;
+      };
+    }
+
+    void getAccountProgress(id)
+      .then(({ progress }) => {
+        if (!active) return;
+        const best = chooseBestProgress(local, progress);
+        if (best) saveProgress(best);
+        setResume(best);
+      })
+      .catch(() => undefined);
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [account?.id, id]);
 
   const beginQuiz = (selectedMode: Mode) => {
+    const savedName = playerName.trim() || account?.displayName || "Anonymous";
     setMode(selectedMode);
     setSeed(Date.now().toString(36));
     setAnswers({});
@@ -154,7 +247,11 @@ function QuizPage() {
     setIndex(0);
     setElapsed(0);
     startedAt.current = Date.now();
-    savePlayerName(playerName.trim());
+    setPlayerName(savedName);
+    savePlayerName(savedName);
+    savePlayerCountry(
+      attemptCountry ? { iso: attemptCountry.iso, name: attemptCountry.name } : null,
+    );
     setStarted(true);
   };
 
@@ -187,8 +284,8 @@ function QuizPage() {
             Set up your practice
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Add the name you want on your score and certificate. Then choose the kind of round that
-            fits your energy right now.
+            Add the name and country you want on your score. Then choose the kind of round that fits
+            your energy right now.
           </p>
 
           <label htmlFor="player-name" className="mt-6 block text-sm font-medium text-foreground">
@@ -199,9 +296,23 @@ function QuizPage() {
             value={playerName}
             maxLength={50}
             onChange={(event) => setPlayerName(event.target.value)}
-            placeholder="e.g. Amina Yusuf"
+            placeholder="e.g. Kamanzi Delvin"
             className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           />
+
+          <div className="mt-5">
+            <CountrySelect
+              id="attempt-country"
+              label="Country (optional)"
+              value={attemptCountry}
+              onChange={setAttemptCountry}
+              placeholder="Add country to leaderboard"
+              allowEmpty
+            />
+            <p className="mt-1.5 text-xs text-muted-foreground">
+              Shown on leaderboards only when you choose one.
+            </p>
+          </div>
 
           <p className="mt-6 text-sm font-medium text-foreground">Choose how you want to take it</p>
           <div className="mt-3 grid gap-3">

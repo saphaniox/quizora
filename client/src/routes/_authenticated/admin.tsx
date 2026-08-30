@@ -13,13 +13,16 @@ import {
   Layers3,
   LockKeyhole,
   LogIn,
+  Server,
   RefreshCw,
   Search,
   ShieldCheck,
   Trophy,
+  UserRoundCheck,
+  UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { getCurrentUser, getLeaderboard, getLevels } from "@/lib/api";
+import { getCurrentUser, getHealth, getLeaderboard, getLevels } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Difficulty, LeaderboardEntry, Level, QuizSummary } from "@/types/quiz";
 
@@ -90,6 +93,11 @@ function AdminPage() {
   const leaderboardQuery = useQuery({
     queryKey: ["admin", "leaderboard"],
     queryFn: () => getLeaderboard(),
+    enabled: isAdmin,
+  });
+  const healthQuery = useQuery({
+    queryKey: ["admin", "health"],
+    queryFn: () => getHealth(),
     enabled: isAdmin,
   });
 
@@ -167,6 +175,13 @@ function AdminPage() {
 
   const activity = useMemo(() => summarizeActivity(leaderboard), [leaderboard]);
 
+  const refreshedAt = Math.max(
+    levelsQuery.dataUpdatedAt,
+    leaderboardQuery.dataUpdatedAt,
+    healthQuery.dataUpdatedAt,
+  );
+  const refreshedLabel = refreshedAt ? new Date(refreshedAt).toLocaleString() : "Waiting for data";
+
   const readiness: ReadinessItem[] = [
     {
       label: "Question delivery",
@@ -175,28 +190,79 @@ function AdminPage() {
       tone: "ready",
     },
     {
-      label: "Durable persistence",
-      detail:
-        "Standalone Fastify/PostgreSQL persistence exists, but local Postgres is not running and client server routes keep activity in memory.",
-      tone: "blocked",
-    },
-    {
       label: "Admin authorization",
       detail:
-        "User sessions exist, but there is no role table, admin middleware, or permission check for privileged writes yet.",
-      tone: "blocked",
+        "The dashboard checks the signed-in session and only opens for accounts with the admin role.",
+      tone: "ready",
     },
     {
-      label: "Content management API",
+      label: "Account deletion",
       detail:
-        "Wait for authenticated create/update/publish endpoints with audit logs before enabling editing.",
+        "Signed-in users can open account actions and delete their account after typing a confirmation phrase.",
+      tone: "ready",
+    },
+    {
+      label: "Legal pages",
+      detail:
+        "Privacy Policy, Terms of Service, Support, and the external deletion request page exist.",
+      tone: "ready",
+    },
+    {
+      label: "Editorial tools",
+      detail:
+        "Catalogue editing is still read-only. Add create, update, publish, and audit-log endpoints before editing content here.",
       tone: "warning",
     },
   ];
 
   const loading =
-    accountQuery.isLoading || (isAdmin && (levelsQuery.isLoading || leaderboardQuery.isLoading));
-  const hasLoadError = levelsQuery.isError || leaderboardQuery.isError;
+    accountQuery.isLoading ||
+    (isAdmin && (levelsQuery.isLoading || leaderboardQuery.isLoading || healthQuery.isLoading));
+  const hasLoadError = levelsQuery.isError || leaderboardQuery.isError || healthQuery.isError;
+  const apiHealthy = healthQuery.data?.status === "ok";
+  const accountContact =
+    account?.email ?? account?.phoneE164 ?? account?.displayName ?? "Signed-in admin";
+  const systemStatus = [
+    {
+      icon: UserRoundCheck,
+      label: "Access",
+      value: "Admin verified",
+      detail: accountContact,
+      tone: "ready",
+    },
+    {
+      icon: Server,
+      label: "API health",
+      value: apiHealthy ? "Online" : "Check",
+      detail: healthQuery.data?.service ?? "Waiting for health response",
+      tone: apiHealthy ? "ready" : "warning",
+    },
+    {
+      icon: Database,
+      label: "Data endpoints",
+      value: levelsQuery.isSuccess && leaderboardQuery.isSuccess ? "Responding" : "Loading",
+      detail: `${formatNumber(totalSections)} sections, ${formatNumber(leaderboard.length)} score entries`,
+      tone:
+        levelsQuery.isError || leaderboardQuery.isError
+          ? "blocked"
+          : levelsQuery.isSuccess && leaderboardQuery.isSuccess
+            ? "ready"
+            : "warning",
+    },
+    {
+      icon: UsersRound,
+      label: "Learner controls",
+      value: "Account-safe",
+      detail: "Deletion requires sign-in and typed confirmation",
+      tone: "ready",
+    },
+  ] satisfies Array<{
+    icon: LucideIcon;
+    label: string;
+    value: string;
+    detail: string;
+    tone: StatusTone;
+  }>;
 
   if (accountQuery.isLoading) {
     return (
@@ -225,7 +291,7 @@ function AdminPage() {
       <AdminAccessState
         icon={LockKeyhole}
         title="Admin access required"
-        copy={`${account.email} is signed in, but this account is not marked as an admin.`}
+        copy={`${accountContact} is signed in, but this account is not marked as an admin.`}
         actionHref="/"
         actionLabel="Back to quizzes"
       />
@@ -245,21 +311,38 @@ function AdminPage() {
               Admin dashboard
             </h1>
             <p className="mt-2 max-w-2xl text-sm leading-6 text-muted-foreground">
-              Monitor catalogue coverage, learner activity, content quality, and backend gaps before
-              enabling a full content studio.
+              Monitor catalogue coverage, learner activity, content quality, access control, and
+              production readiness from one place.
             </p>
+            <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
+              <span className="rounded-md border border-border bg-background px-2.5 py-1">
+                Signed in as <span className="font-medium text-foreground">{accountContact}</span>
+              </span>
+              <span className="rounded-md border border-border bg-background px-2.5 py-1">
+                Last refreshed {refreshedLabel}
+              </span>
+            </div>
           </div>
-          <button
-            type="button"
-            onClick={() => {
-              void levelsQuery.refetch();
-              void leaderboardQuery.refetch();
-            }}
-            className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
-          >
-            <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
-            Refresh
-          </button>
+          <div className="flex flex-wrap gap-2">
+            <a
+              href="/"
+              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              View site
+            </a>
+            <button
+              type="button"
+              onClick={() => {
+                void healthQuery.refetch();
+                void levelsQuery.refetch();
+                void leaderboardQuery.refetch();
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+              Refresh
+            </button>
+          </div>
         </div>
       </section>
 
@@ -279,7 +362,13 @@ function AdminPage() {
           </div>
         )}
 
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+          {systemStatus.map((status) => (
+            <StatusCard key={status.label} {...status} />
+          ))}
+        </div>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             icon={Layers3}
             label="Learning levels"
@@ -385,6 +474,13 @@ function AdminPage() {
                 </tbody>
               </table>
             </div>
+
+            {visibleSections.length > 0 && (
+              <div className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
+                Showing {formatNumber(Math.min(visibleSections.length, 12))} of{" "}
+                {formatNumber(visibleSections.length)} matching sections.
+              </div>
+            )}
 
             {visibleSections.length === 0 && (
               <div className="p-10 text-center">
@@ -495,8 +591,8 @@ function AdminPage() {
               />
               <ArchitectureRow
                 label="Persistence"
-                value="Needs running PostgreSQL for production"
-                tone="blocked"
+                value="Scores, certificates, sessions, and account records belong in the deployed API database"
+                tone={leaderboardQuery.isSuccess ? "ready" : "warning"}
               />
             </div>
           </section>
@@ -556,6 +652,35 @@ function AdminAccessState({
           </a>
         )}
       </div>
+    </div>
+  );
+}
+
+function StatusCard({
+  icon: Icon,
+  label,
+  value,
+  detail,
+  tone,
+}: {
+  icon: LucideIcon;
+  label: string;
+  value: string;
+  detail: string;
+  tone: StatusTone;
+}) {
+  return (
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+      <div className="flex items-start justify-between gap-3">
+        <div>
+          <p className="text-xs font-medium uppercase text-muted-foreground">{label}</p>
+          <p className="mt-2 text-base font-semibold text-card-foreground">{value}</p>
+        </div>
+        <span className={cn("rounded-md border p-2", statusClass(tone))}>
+          <Icon className="h-4 w-4" />
+        </span>
+      </div>
+      <p className="mt-3 line-clamp-2 text-xs leading-5 text-muted-foreground">{detail}</p>
     </div>
   );
 }

@@ -3,6 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Award, Download, Printer } from "lucide-react";
 import { getCertificate } from "@/lib/api";
 import { downloadCertificatePdf } from "@/lib/certificate-pdf";
+import { countryFlag } from "@/lib/countries";
 import type { Certificate } from "@/types/quiz";
 
 /** Look the code up through the client-hosted API. */
@@ -79,6 +80,11 @@ function CertificatePage() {
         <p className="mt-1 text-sm text-muted-foreground">
           {certificate.levelName} - {certificate.category}
         </p>
+        {certificate.countryName && (
+          <p className="mt-1 text-sm text-muted-foreground">
+            {countryFlag(certificate.countryCode ?? "")} {certificate.countryName}
+          </p>
+        )}
         <p className="mt-6 text-lg font-semibold text-emerald-600 dark:text-emerald-400">
           Score {certificate.score}/{certificate.maxScore} ({certificate.percentage}%)
         </p>

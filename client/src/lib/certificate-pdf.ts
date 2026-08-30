@@ -51,6 +51,9 @@ export function downloadCertificatePdf(certificate: Certificate, verifyUrl: stri
   doc.text(`${certificate.levelName}  -  ${certificate.category}`, width / 2, 290, {
     align: "center",
   });
+  if (certificate.countryName) {
+    doc.text(certificate.countryName, width / 2, 310, { align: "center" });
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(18);
@@ -58,7 +61,7 @@ export function downloadCertificatePdf(certificate: Certificate, verifyUrl: stri
   doc.text(
     `Score ${certificate.score}/${certificate.maxScore}  (${certificate.percentage}%)`,
     width / 2,
-    330,
+    certificate.countryName ? 350 : 330,
     { align: "center" },
   );
 

@@ -3,8 +3,14 @@ import type { AnswerResult, Certificate } from "@/types/quiz";
 const ATTEMPT_KEY = "quitech-current-attempt";
 const HISTORY_KEY = "quitech-history";
 const PROFILE_KEY = "quitech-player-name";
+const COUNTRY_KEY = "quitech-player-country";
 const PROGRESS_PREFIX = "quitech-progress-";
 const CERTS_KEY = "quitech-certificates";
+
+export interface PlayerCountry {
+  iso: string;
+  name: string;
+}
 
 export interface StoredQuestion {
   id: string;
@@ -19,6 +25,8 @@ export interface StoredAttempt {
   quizCategory: string;
   quizDifficulty: string;
   levelName: string;
+  countryCode?: string | null;
+  countryName?: string | null;
   timeLimitSeconds: number;
   playerName: string;
   answers: Record<string, number>;
@@ -35,6 +43,8 @@ export interface HistoryItem {
   score: number;
   maxScore: number;
   percentage: number;
+  countryCode?: string | null;
+  countryName?: string | null;
   timeSpentSeconds: number;
   completedAt: string;
   certificateCode?: string;
@@ -72,6 +82,9 @@ export function saveAttempt(attempt: StoredAttempt): void {
     score: attempt.result.score,
     maxScore: attempt.result.maxScore,
     percentage: attempt.result.percentage,
+    ...(attempt.countryCode && attempt.countryName
+      ? { countryCode: attempt.countryCode, countryName: attempt.countryName }
+      : {}),
     timeSpentSeconds: attempt.timeSpentSeconds,
     completedAt: attempt.completedAt,
     ...(attempt.result.certificate ? { certificateCode: attempt.result.certificate.code } : {}),
@@ -111,6 +124,19 @@ export function savePlayerName(name: string): void {
 export function loadPlayerName(): string {
   if (!browser()) return "";
   return localStorage.getItem(PROFILE_KEY) ?? "";
+}
+
+export function savePlayerCountry(country: PlayerCountry | null): void {
+  if (!browser()) return;
+  if (!country) {
+    localStorage.removeItem(COUNTRY_KEY);
+    return;
+  }
+  write(COUNTRY_KEY, country);
+}
+
+export function loadPlayerCountry(): PlayerCountry | null {
+  return read<PlayerCountry | null>(COUNTRY_KEY, null);
 }
 
 /* ---------- in-progress quiz (resume) ---------- */

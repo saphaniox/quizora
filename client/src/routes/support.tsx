@@ -57,8 +57,8 @@ function SupportPage() {
           We are here when something needs a human.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Tell us what happened, which quiz or certificate was involved, and the email address on
-          your account if you have one. We aim to respond as quickly as possible.
+          Tell us what happened, which quiz or certificate was involved, and the email address or
+          phone number on your account if you have one. We aim to respond as quickly as possible.
         </p>
       </div>
 
@@ -96,7 +96,8 @@ function SupportPage() {
         </div>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Signed-in users can delete their account from the certificate wallet. If you cannot sign
-          in, email privacy support from the email connected to your account.
+          in, email privacy support with the email address or phone number connected to your
+          account.
         </p>
         <Link
           to="/wallet"

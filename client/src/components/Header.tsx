@@ -8,7 +8,7 @@ import {
   ShieldCheck,
   Trophy,
   UserPlus,
-  Wallet,
+  UserRound,
   X,
 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -82,8 +82,8 @@ export function Header() {
               to="/wallet"
               className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
             >
-              <Wallet className="h-4 w-4" />
-              Wallet
+              <UserRound className="h-4 w-4" />
+              Account
             </Link>
           ) : (
             <div className="ml-2 flex items-center gap-2">
@@ -154,8 +154,8 @@ export function Header() {
               onClick={() => setOpen(false)}
               className="mt-2 flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
             >
-              <Wallet className="h-4 w-4" />
-              Wallet
+              <UserRound className="h-4 w-4" />
+              Account
             </Link>
           ) : (
             <div className="mt-2 grid gap-2 border-t border-border pt-2">
