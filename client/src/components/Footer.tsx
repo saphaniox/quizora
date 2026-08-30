@@ -1,11 +1,10 @@
 import { Link } from "@tanstack/react-router";
-import { HeartHandshake, LifeBuoy, ShieldCheck, Trash2 } from "lucide-react";
+import { HeartHandshake, LifeBuoy, ShieldCheck } from "lucide-react";
 
 const links = [
-  { to: "/privacy", label: "Privacy", icon: ShieldCheck },
-  { to: "/terms", label: "Terms", icon: HeartHandshake },
+  { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
+  { to: "/terms", label: "Terms of Service", icon: HeartHandshake },
   { to: "/support", label: "Support", icon: LifeBuoy },
-  { to: "/delete-account", label: "Delete account", icon: Trash2 },
 ] as const;
 
 export function Footer() {

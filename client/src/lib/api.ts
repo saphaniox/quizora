@@ -11,6 +11,7 @@ export interface AccountUser {
   id: string;
   email: string;
   displayName: string;
+  role: "user" | "admin";
 }
 
 const LOCAL_CONTENT_API_BASE = "/api";

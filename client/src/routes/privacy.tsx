@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Database, Mail, ShieldCheck, Trash2 } from "lucide-react";
+import { Database, Mail, ShieldCheck } from "lucide-react";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -118,16 +118,10 @@ function PrivacyPage() {
             Quitech uses HTTPS, secure cookies in production, password hashing, and access-limited
             infrastructure to protect account data. We keep account and quiz records while your
             account is active or while they are needed for security, support, certificate
-            verification, legal, or abuse-prevention reasons. You can request deletion from inside
-            the app or from the public deletion page.
+            verification, legal, or abuse-prevention reasons. Signed-in users can delete their
+            account from the certificate wallet. If you cannot sign in, email privacy support from
+            your account email.
           </p>
-          <Link
-            to="/delete-account"
-            className="mt-4 inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete account
-          </Link>
         </div>
 
         <div>

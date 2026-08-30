@@ -4,13 +4,13 @@ import { BadgeCheck, HeartHandshake, ShieldAlert } from "lucide-react";
 export const Route = createFileRoute("/terms")({
   head: () => ({
     meta: [
-      { title: "Terms of Use - Quitech" },
+      { title: "Terms of Service - Quitech" },
       {
         name: "description",
         content:
-          "Quitech terms of use for learners 13 and older, including accounts, acceptable use, certificates, and support.",
+          "Quitech terms of service for learners 13 and older, including accounts, acceptable use, certificates, and support.",
       },
-      { property: "og:title", content: "Terms of Use - Quitech" },
+      { property: "og:title", content: "Terms of Service - Quitech" },
       { property: "og:description", content: "Rules for using Quitech quizzes and certificates." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -52,7 +52,7 @@ function TermsPage() {
       <div className="max-w-3xl">
         <span className="inline-flex items-center gap-2 rounded-full border border-border bg-secondary px-3 py-1 text-xs font-medium text-muted-foreground">
           <HeartHandshake className="h-3.5 w-3.5 text-primary" />
-          Terms of Use
+          Terms of Service
         </span>
         <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           Clear rules for a better learning space.

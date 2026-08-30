@@ -184,11 +184,11 @@ function QuizPage() {
 
         <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
           <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">
-            Before you begin
+            Set up your practice
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Enter your name so we can score your attempt, place you on the leaderboard and issue a
-            certificate if you pass.
+            Add the name you want on your score and certificate. Then choose the kind of round that
+            fits your energy right now.
           </p>
 
           <label htmlFor="player-name" className="mt-6 block text-sm font-medium text-foreground">
@@ -210,12 +210,12 @@ function QuizPage() {
                 {
                   value: 10,
                   title: "Quick practice",
-                  copy: "10 shuffled questions. Great for a warm-up.",
+                  copy: "10 shuffled questions. A small start still counts.",
                 },
                 {
                   value: 25,
                   title: "Focused practice",
-                  copy: "25 shuffled questions to build confidence.",
+                  copy: "25 shuffled questions when you want a real rhythm.",
                 },
                 {
                   value: 50,
@@ -225,7 +225,7 @@ function QuizPage() {
                 {
                   value: "full",
                   title: "Full section (certificate eligible)",
-                  copy: "All 300-500 questions, untimed and self-paced. Save and rest any time; score 80%+ to earn a certificate.",
+                  copy: "All 300-500 questions, untimed and self-paced. Pause any time; score 80%+ to earn a certificate.",
                 },
               ] as { value: Mode; title: string; copy: string }[]
             ).map((option) => (
@@ -280,7 +280,10 @@ function QuizPage() {
   if (isLoading || !quiz) {
     return (
       <div className="flex min-h-[60vh] items-center justify-center">
-        <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+          <Loader2 className="h-5 w-5 animate-spin text-primary" />
+          Getting your questions ready...
+        </div>
       </div>
     );
   }
@@ -288,8 +291,10 @@ function QuizPage() {
   if (isError) {
     return (
       <div className="mx-auto max-w-xl px-4 py-20 text-center">
-        <p className="font-medium text-foreground">We couldn't load this section.</p>
-        <p className="mt-1 text-sm text-muted-foreground">{(error as Error)?.message}</p>
+        <p className="font-medium text-foreground">We could not get this section ready.</p>
+        <p className="mt-1 text-sm text-muted-foreground">
+          The connection failed with {(error as Error)?.message}. Try again in a moment.
+        </p>
         <button
           onClick={() => void refetch()}
           className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground"
@@ -313,6 +318,9 @@ function QuizPage() {
           <p className="mt-1 text-sm text-muted-foreground">
             {answeredCount} of {questions.length} answered
             {quiz.certificateEligible ? " - certificate eligible" : " - practice run"}
+          </p>
+          <p className="mt-2 text-sm text-muted-foreground">
+            One question at a time. Flag anything you want to revisit before submitting.
           </p>
         </div>
         {quiz.timeLimitSeconds > 0 ? (
@@ -442,17 +450,17 @@ function QuizPage() {
             disabled={submitting}
             className="mt-4 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60"
           >
-            Finish now
+            Submit now
           </button>
           <button
             type="button"
             onClick={() => void navigate({ to: "/" })}
             className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
           >
-            Save &amp; rest
+            Pause and come back
           </button>
           <p className="mt-2 text-center text-[11px] text-muted-foreground">
-            "Your answers are saved automatically on this device - resume this section any time."
+            Your answers are saved automatically on this device.
           </p>
         </aside>
       </div>

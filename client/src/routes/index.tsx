@@ -9,9 +9,14 @@ import {
   Users,
   Trophy,
   BookOpen,
+  CheckCircle2,
   Gamepad2,
   Globe2,
+  HeartHandshake,
   Layers3,
+  LogIn,
+  RefreshCw,
+  UserPlus,
 } from "lucide-react";
 import { getLevels } from "@/lib/api";
 import { QuizCard } from "@/components/QuizCard";
@@ -38,6 +43,12 @@ export const Route = createFileRoute("/")({
   }),
   component: HomePage,
 });
+
+const practiceNotes = [
+  { icon: CheckCircle2, text: "Start with a short round" },
+  { icon: RefreshCw, text: "Review what you missed" },
+  { icon: HeartHandshake, text: "Save proof when you are ready" },
+] as const;
 
 function HomePage() {
   const { data, isLoading, isError, error, refetch } = useQuery({
@@ -68,9 +79,17 @@ function HomePage() {
 
   return (
     <div>
-      <section className="border-b border-border bg-linear-to-b from-secondary/60 to-background">
+      <section className="relative isolate overflow-hidden border-b border-border bg-background">
+        <img
+          src="/hero-study.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 h-full w-full object-cover object-center"
+        />
+        <div className="absolute inset-0 -z-10 bg-linear-to-r from-background via-background/90 to-background/35 dark:from-background dark:via-background/95 dark:to-background/70" />
+
         <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
-          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1 text-xs font-medium text-muted-foreground">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             {data
               ? `${data.totalQuestions.toLocaleString()} questions`
@@ -78,13 +97,42 @@ function HomePage() {
             for learners 13+
           </span>
           <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Build confidence one question at a time.
+            Learn, challenge, and keep your progress moving.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Quitech helps learners 13+ refresh the basics, practise school topics, and stretch into
-            career knowledge. Start where you are, take a real challenge, and keep proof of the
-            progress you earn.
+            Quitech is built for the person coming back after a long day, the student preparing for
+            a test, and the curious mind that just wants to know more. Pick a section, take a
+            focused round, and keep evidence of the progress you earn.
           </p>
+
+          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <a
+              href="/auth?mode=signup&next=/wallet"
+              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+            >
+              <UserPlus className="h-4 w-4" />
+              Create free account
+            </a>
+            <a
+              href="/auth?next=/wallet"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+            >
+              <LogIn className="h-4 w-4" />
+              Sign in
+            </a>
+          </div>
+
+          <div className="mt-6 flex max-w-3xl flex-wrap gap-2">
+            {practiceNotes.map(({ icon: Icon, text }) => (
+              <span
+                key={text}
+                className="inline-flex items-center gap-2 rounded-full border border-border bg-card/80 px-3 py-1.5 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur"
+              >
+                <Icon className="h-3.5 w-3.5 text-primary" />
+                {text}
+              </span>
+            ))}
+          </div>
 
           <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
             {[
@@ -96,7 +144,10 @@ function HomePage() {
               },
               { icon: Award, label: "Certificate pass mark", value: "80%" },
             ].map(({ icon: Icon, label, value }) => (
-              <div key={label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+              <div
+                key={label}
+                className="rounded-xl border border-border bg-card/85 p-4 shadow-sm backdrop-blur"
+              >
                 <Icon className="h-5 w-5 text-primary" />
                 <dt className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
                   {label}
@@ -111,8 +162,11 @@ function HomePage() {
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {isError && (
           <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6">
-            <p className="font-medium text-foreground">We couldn't load the quiz catalogue.</p>
-            <p className="mt-1 text-sm text-muted-foreground">{(error as Error)?.message}</p>
+            <p className="font-medium text-foreground">We could not reach the quiz catalogue.</p>
+            <p className="mt-1 text-sm text-muted-foreground">
+              This usually means the API is waking up or temporarily offline. The exact response was{" "}
+              {(error as Error)?.message}.
+            </p>
             <button
               onClick={() => void refetch()}
               className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
@@ -141,11 +195,11 @@ function HomePage() {
                   Browse the catalogue
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                  Choose a category
+                  What do you want to work on today?
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Choose a quick refresh, school practice, career growth, or a topic you simply want
-                  to understand better.
+                  to understand better. You can start quietly and build from there.
                 </p>
               </div>
 
@@ -235,7 +289,8 @@ function HomePage() {
 
             {sections.length === 0 && (
               <p className="mt-10 text-center text-sm text-muted-foreground">
-                No sections match "{search}". Try a different search.
+                I could not find "{search}" in this catalogue. Try a subject, skill, or category
+                name.
               </p>
             )}
           </>

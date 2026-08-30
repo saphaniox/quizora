@@ -9,12 +9,18 @@ const difficultyStyles: Record<string, string> = {
   Hard: "bg-rose-500/10 text-rose-600 dark:text-rose-400",
 };
 
+const difficultyCopy: Record<string, string> = {
+  Easy: "Gentle start",
+  Medium: "Focused challenge",
+  Hard: "Deep practice",
+};
+
 export function QuizCard({ quiz }: { quiz: QuizSummary }) {
   return (
     <Link
       to="/quizzes/$id"
       params={{ id: quiz.id }}
-      className="group flex h-full flex-col rounded-xl border border-border bg-card p-6 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+      className="group flex h-full flex-col rounded-lg border border-border bg-card p-5 shadow-sm transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
     >
       <div className="flex items-start justify-between gap-3">
         <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
@@ -33,7 +39,13 @@ export function QuizCard({ quiz }: { quiz: QuizSummary }) {
       <h3 className="mt-4 text-lg font-semibold tracking-tight text-card-foreground">
         {quiz.title}
       </h3>
-      <p className="mt-2 line-clamp-2 flex-1 text-sm text-muted-foreground">{quiz.description}</p>
+      <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-muted-foreground">
+        {quiz.description}
+      </p>
+
+      <p className="mt-4 text-xs font-medium text-primary">
+        {difficultyCopy[quiz.difficulty] ?? "Practice round"} for {quiz.category.toLowerCase()}.
+      </p>
 
       <div className="mt-5 flex items-center gap-4 text-xs text-muted-foreground">
         <span className="inline-flex items-center gap-1.5">
@@ -56,7 +68,7 @@ export function QuizCard({ quiz }: { quiz: QuizSummary }) {
       )}
 
       <span className="mt-5 inline-flex items-center gap-1.5 text-sm font-medium text-primary">
-        Start section
+        Start this practice
         <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" />
       </span>
     </Link>

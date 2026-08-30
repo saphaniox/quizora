@@ -11,13 +11,15 @@ import {
   FileQuestion,
   Gauge,
   Layers3,
+  LockKeyhole,
+  LogIn,
   RefreshCw,
   Search,
   ShieldCheck,
   Trophy,
   type LucideIcon,
 } from "lucide-react";
-import { getLeaderboard, getLevels } from "@/lib/api";
+import { getCurrentUser, getLeaderboard, getLevels } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type { Difficulty, LeaderboardEntry, Level, QuizSummary } from "@/types/quiz";
 
@@ -76,10 +78,19 @@ function AdminPage() {
   const [query, setQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("all");
 
-  const levelsQuery = useQuery({ queryKey: ["admin", "levels"], queryFn: () => getLevels() });
+  const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
+  const account = accountQuery.data?.user ?? null;
+  const isAdmin = account?.role === "admin";
+
+  const levelsQuery = useQuery({
+    queryKey: ["admin", "levels"],
+    queryFn: () => getLevels(),
+    enabled: isAdmin,
+  });
   const leaderboardQuery = useQuery({
     queryKey: ["admin", "leaderboard"],
     queryFn: () => getLeaderboard(),
+    enabled: isAdmin,
   });
 
   const loadedLevels = levelsQuery.data?.levels;
@@ -183,8 +194,43 @@ function AdminPage() {
     },
   ];
 
-  const loading = levelsQuery.isLoading || leaderboardQuery.isLoading;
+  const loading =
+    accountQuery.isLoading || (isAdmin && (levelsQuery.isLoading || leaderboardQuery.isLoading));
   const hasLoadError = levelsQuery.isError || leaderboardQuery.isError;
+
+  if (accountQuery.isLoading) {
+    return (
+      <AdminAccessState
+        icon={ShieldCheck}
+        title="Checking admin access"
+        copy="Give us a moment while we confirm your signed-in account."
+      />
+    );
+  }
+
+  if (!account) {
+    return (
+      <AdminAccessState
+        icon={LogIn}
+        title="Sign in to continue"
+        copy="Use your Quitech account before opening the admin dashboard."
+        actionHref="/auth?next=/admin"
+        actionLabel="Sign in"
+      />
+    );
+  }
+
+  if (!isAdmin) {
+    return (
+      <AdminAccessState
+        icon={LockKeyhole}
+        title="Admin access required"
+        copy={`${account.email} is signed in, but this account is not marked as an admin.`}
+        actionHref="/"
+        actionLabel="Back to quizzes"
+      />
+    );
+  }
 
   return (
     <div className="bg-background">
@@ -475,6 +521,40 @@ function AdminPage() {
             ))}
           </div>
         </section>
+      </div>
+    </div>
+  );
+}
+
+function AdminAccessState({
+  icon: Icon,
+  title,
+  copy,
+  actionHref,
+  actionLabel,
+}: {
+  icon: LucideIcon;
+  title: string;
+  copy: string;
+  actionHref?: string;
+  actionLabel?: string;
+}) {
+  return (
+    <div className="mx-auto flex min-h-[60vh] max-w-lg items-center justify-center px-4 py-16 text-center sm:px-6">
+      <div>
+        <span className="mx-auto flex h-12 w-12 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
+          <Icon className="h-5 w-5" />
+        </span>
+        <h1 className="mt-5 text-2xl font-semibold tracking-tight text-foreground">{title}</h1>
+        <p className="mt-2 text-sm leading-6 text-muted-foreground">{copy}</p>
+        {actionHref && actionLabel && (
+          <a
+            href={actionHref}
+            className="mt-6 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            {actionLabel}
+          </a>
+        )}
       </div>
     </div>
   );

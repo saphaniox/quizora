@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
-import { Loader2, LogIn } from "lucide-react";
+import { Loader2, LogIn, UserPlus } from "lucide-react";
 import { loginAccount, registerAccount } from "@/lib/api";
 
 export const Route = createFileRoute("/auth")({
@@ -30,9 +30,14 @@ function safeNext(raw: string | null): string {
   return raw;
 }
 
+function initialAuthMode(): "signin" | "signup" {
+  if (typeof window === "undefined") return "signin";
+  return new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin";
+}
+
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup">(initialAuthMode);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
@@ -91,12 +96,34 @@ function AuthPage() {
           earn.
         </p>
 
-        <div className="my-5 flex items-center gap-3 text-xs uppercase tracking-wide text-muted-foreground">
-          <span className="h-px flex-1 bg-border" /> or use email{" "}
-          <span className="h-px flex-1 bg-border" />
+        <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
+          <button
+            type="button"
+            onClick={() => setMode("signin")}
+            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              mode === "signin"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <LogIn className="h-4 w-4" />
+            Sign in
+          </button>
+          <button
+            type="button"
+            onClick={() => setMode("signup")}
+            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
+              mode === "signup"
+                ? "bg-background text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            <UserPlus className="h-4 w-4" />
+            Create account
+          </button>
         </div>
 
-        <form onSubmit={(event) => void submit(event)} className="space-y-4">
+        <form onSubmit={(event) => void submit(event)} className="mt-5 space-y-4">
           {mode === "signup" && (
             <div>
               <label htmlFor="name" className="block text-sm font-medium text-foreground">
@@ -147,7 +174,13 @@ function AuthPage() {
             disabled={busy}
             className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
           >
-            {busy ? <Loader2 className="h-4 w-4 animate-spin" /> : <LogIn className="h-4 w-4" />}
+            {busy ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : mode === "signup" ? (
+              <UserPlus className="h-4 w-4" />
+            ) : (
+              <LogIn className="h-4 w-4" />
+            )}
             {mode === "signin" ? "Sign in" : "Create account"}
           </button>
         </form>
@@ -165,7 +198,7 @@ function AuthPage() {
         <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
           By using Quitech, you agree to the{" "}
           <Link to="/terms" className="font-medium text-primary hover:underline">
-            Terms
+            Terms of Service
           </Link>{" "}
           and{" "}
           <Link to="/privacy" className="font-medium text-primary hover:underline">

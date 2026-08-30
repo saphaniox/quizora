@@ -95,13 +95,14 @@ function SupportPage() {
           </a>
         </div>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          For deletion requests, you can also use the dedicated account deletion page.
+          Signed-in users can delete their account from the certificate wallet. If you cannot sign
+          in, email privacy support from the email connected to your account.
         </p>
         <Link
-          to="/delete-account"
+          to="/wallet"
           className="mt-4 inline-flex items-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
         >
-          Manage account deletion
+          Open certificate wallet
         </Link>
       </section>
     </div>

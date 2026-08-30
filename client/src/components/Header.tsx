@@ -1,7 +1,19 @@
 import { Link } from "@tanstack/react-router";
-import { Trophy, Home, History, BadgeCheck, Menu, X } from "lucide-react";
-import { useState } from "react";
+import {
+  BadgeCheck,
+  History,
+  Home,
+  LogIn,
+  Menu,
+  ShieldCheck,
+  Trophy,
+  UserPlus,
+  Wallet,
+  X,
+} from "lucide-react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { getCurrentUser, type AccountUser } from "@/lib/api";
 
 const links = [
   { to: "/", label: "Quizzes", icon: Home },
@@ -12,6 +24,22 @@ const links = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const [user, setUser] = useState<AccountUser | null>(null);
+
+  useEffect(() => {
+    let alive = true;
+    void getCurrentUser()
+      .then(({ user }) => {
+        if (alive) setUser(user);
+      })
+      .catch(() => {
+        if (alive) setUser(null);
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
@@ -40,6 +68,41 @@ export function Header() {
               {label}
             </Link>
           ))}
+          {user?.role === "admin" && (
+            <Link
+              to="/admin"
+              className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Admin
+            </Link>
+          )}
+          {user ? (
+            <Link
+              to="/wallet"
+              className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+            >
+              <Wallet className="h-4 w-4" />
+              Wallet
+            </Link>
+          ) : (
+            <div className="ml-2 flex items-center gap-2">
+              <a
+                href="/auth?next=/wallet"
+                className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </a>
+              <a
+                href="/auth?mode=signup&next=/wallet"
+                className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                <UserPlus className="h-4 w-4" />
+                Create account
+              </a>
+            </div>
+          )}
           <ThemeToggle />
         </nav>
 
@@ -75,6 +138,45 @@ export function Header() {
               {label}
             </Link>
           ))}
+          {user?.role === "admin" && (
+            <Link
+              to="/admin"
+              onClick={() => setOpen(false)}
+              className="mt-2 flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              <ShieldCheck className="h-4 w-4" />
+              Admin
+            </Link>
+          )}
+          {user ? (
+            <Link
+              to="/wallet"
+              onClick={() => setOpen(false)}
+              className="mt-2 flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+            >
+              <Wallet className="h-4 w-4" />
+              Wallet
+            </Link>
+          ) : (
+            <div className="mt-2 grid gap-2 border-t border-border pt-2">
+              <a
+                href="/auth?next=/wallet"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </a>
+              <a
+                href="/auth?mode=signup&next=/wallet"
+                onClick={() => setOpen(false)}
+                className="flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+              >
+                <UserPlus className="h-4 w-4" />
+                Create account
+              </a>
+            </div>
+          )}
         </nav>
       )}
     </header>
