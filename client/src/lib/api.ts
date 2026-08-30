@@ -149,3 +149,7 @@ export async function loginAccount(payload: {
 export async function logoutAccount(): Promise<void> {
   await fetchJson<{ ok: true }>("/auth/logout", { method: "POST" });
 }
+
+export async function deleteCurrentAccount(): Promise<void> {
+  await fetchJson<{ ok: true }>("/auth/me", { method: "DELETE" });
+}

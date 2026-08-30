@@ -40,343 +40,6 @@ const genSection = (
 const int = (random: () => number, min: number, max: number) =>
   min + Math.floor(random() * (max - min + 1));
 
-/* ================================ EARLY ================================== */
-
-const earlyWords = [
-  "ball",
-  "cat",
-  "dog",
-  "egg",
-  "fish",
-  "goat",
-  "hat",
-  "ink",
-  "jug",
-  "kite",
-  "lion",
-  "moon",
-  "nest",
-  "orange",
-  "pen",
-  "queen",
-  "rat",
-  "sun",
-  "tree",
-  "umbrella",
-  "van",
-  "water",
-  "box",
-  "yam",
-  "zebra",
-  "apple",
-  "book",
-  "cup",
-  "door",
-  "elephant",
-];
-
-const rhymePairs: [string, string][] = [
-  ["Which word rhymes with 'cat'?", "hat"],
-  ["Which word rhymes with 'dog'?", "log"],
-  ["Which word rhymes with 'sun'?", "run"],
-  ["Which word rhymes with 'tree'?", "bee"],
-  ["Which word rhymes with 'cake'?", "lake"],
-  ["Which word rhymes with 'boat'?", "coat"],
-  ["Which word rhymes with 'ring'?", "sing"],
-  ["Which word rhymes with 'star'?", "car"],
-  ["Which word rhymes with 'mouse'?", "house"],
-  ["Which word rhymes with 'bell'?", "shell"],
-  ["Which word rhymes with 'pen'?", "hen"],
-  ["Which word rhymes with 'blue'?", "shoe"],
-  ["Which word rhymes with 'night'?", "light"],
-  ["Which word rhymes with 'chair'?", "hair"],
-  ["Which word rhymes with 'duck'?", "truck"],
-  ["Which word rhymes with 'snake'?", "rake"],
-  ["Which word rhymes with 'clock'?", "sock"],
-  ["Which word rhymes with 'goat'?", "boat"],
-  ["Which word rhymes with 'frog'?", "log"],
-  ["Which word rhymes with 'bug'?", "rug"],
-];
-
-const bodyFacts: [string, string][] = [
-  ["What do we use to see?", "Our eyes"],
-  ["What do we use to hear?", "Our ears"],
-  ["What do we use to smell?", "Our nose"],
-  ["What do we use to taste?", "Our tongue"],
-  ["What do we use to hold things?", "Our hands"],
-  ["What do we use to walk?", "Our legs"],
-  ["How many fingers are on one hand?", "5"],
-  ["How many toes are on two feet?", "10"],
-  ["How many eyes do we have?", "2"],
-  ["What covers our body?", "Skin"],
-  ["What grows on our head?", "Hair"],
-  ["What do we chew food with?", "Our teeth"],
-  ["Which part of the body pumps blood?", "The heart"],
-  ["Which part helps us think?", "The brain"],
-  ["What do we breathe with?", "Our lungs"],
-  ["What joins the hand to the arm?", "The wrist"],
-  ["What is between the leg and the foot?", "The ankle"],
-  ["What is in the middle of the face?", "The nose"],
-  ["What do we use to speak?", "Our mouth"],
-  ["How many ears do we have?", "2"],
-];
-
-const foodFacts: [string, string][] = [
-  ["Which fruit is yellow and curved?", "A banana"],
-  ["Which fruit is red and round?", "An apple"],
-  ["Which fruit has many small seeds outside?", "A strawberry"],
-  ["Which fruit is orange and juicy?", "An orange"],
-  ["Which vegetable is orange and long?", "A carrot"],
-  ["Which vegetable makes us cry?", "An onion"],
-  ["Which food comes from a cow?", "Milk"],
-  ["Which food comes from a hen?", "Eggs"],
-  ["Which food is made from wheat flour?", "Bread"],
-  ["Which drink comes from oranges?", "Orange juice"],
-  ["Which fruit is green with a red inside?", "A watermelon"],
-  ["Which vegetable has green leaves?", "Spinach"],
-  ["Which food gives us energy?", "Rice"],
-  ["Which food helps build strong bones?", "Milk"],
-  ["Which food should we eat many of every day?", "Fruits and vegetables"],
-  ["What do bees make that we eat?", "Honey"],
-  ["Which fruit grows on a palm tree?", "A coconut"],
-  ["Which vegetable is round and red in salads?", "A tomato"],
-  ["Which food is cooked from maize flour?", "Porridge"],
-  ["What must we drink every day to stay healthy?", "Water"],
-];
-
-const communityFacts: [string, string][] = [
-  ["Who teaches children at school?", "A teacher"],
-  ["Who helps sick people?", "A doctor"],
-  ["Who puts out fires?", "A firefighter"],
-  ["Who keeps people safe from crime?", "A police officer"],
-  ["Who grows our food?", "A farmer"],
-  ["Who bakes bread?", "A baker"],
-  ["Who cuts hair?", "A barber"],
-  ["Who drives a bus?", "A driver"],
-  ["Who flies an aeroplane?", "A pilot"],
-  ["Who builds houses?", "A builder"],
-  ["Who sells things in a shop?", "A shopkeeper"],
-  ["Who takes care of teeth?", "A dentist"],
-  ["Who delivers letters?", "A postal worker"],
-  ["Who cooks in a restaurant?", "A chef"],
-  ["Who repairs cars?", "A mechanic"],
-  ["Who takes care of animals?", "A veterinarian"],
-  ["Who is the head of a school?", "The head teacher"],
-  ["Who helps a doctor care for patients?", "A nurse"],
-  ["Where do we go when we are very sick?", "The hospital"],
-  ["Where do we buy food?", "The market"],
-];
-
-const positionFacts: [string, string][] = [
-  ["Where is the bird if it is flying above the tree?", "On top / above"],
-  ["Where is the cat if it is beneath the table?", "Under"],
-  ["Where is the book if it lies on the desk?", "On"],
-  ["Where is the ball if it is inside the box?", "In"],
-  ["Where is the boy if he stands beside his friend?", "Next to"],
-  ["Where is the door if it is at the back of the house?", "Behind"],
-  ["Where is the sun in the daytime sky?", "Up"],
-  ["Which word means the opposite of 'up'?", "Down"],
-  ["Which word means the opposite of 'in'?", "Out"],
-  ["Which word means the opposite of 'big'?", "Small"],
-  ["Which word means the opposite of 'hot'?", "Cold"],
-  ["Which word means the opposite of 'fast'?", "Slow"],
-  ["Which word means the opposite of 'happy'?", "Sad"],
-  ["Which word means the opposite of 'day'?", "Night"],
-  ["Which word means the opposite of 'open'?", "Closed"],
-  ["Which word means the opposite of 'long'?", "Short"],
-  ["Which word means the opposite of 'full'?", "Empty"],
-  ["Which word means the opposite of 'young'?", "Old"],
-  ["Which word means the opposite of 'clean'?", "Dirty"],
-  ["Which word means the opposite of 'first'?", "Last"],
-];
-
-const patternItems = ["circle", "square", "triangle", "star", "heart"];
-const patternColours = ["red", "blue", "green", "yellow"];
-
-export const earlyExtraTopics: SectionDefinition[] = [
-  genSection(
-    "early-counting-order",
-    "Counting Order",
-    "What comes next and what comes before, from 1 to 100.",
-    "Easy",
-    (index, random) => {
-      const n = int(random, 1, 99);
-      const before = index % 2 === 0;
-      const answer = before ? n - 1 : n + 1;
-      return draft(
-        before ? `What number comes just before ${n}?` : `What number comes just after ${n}?`,
-        String(answer),
-        numericOptions(answer, 3),
-        `Counting in order, ${before ? `${answer} comes before ${n}` : `${answer} comes after ${n}`}.`,
-      );
-    },
-  ),
-  genSection(
-    "early-add-ten",
-    "Adding to Ten",
-    "Gentle addition sums within twenty.",
-    "Easy",
-    (_i, random) => {
-      const a = int(random, 1, 10);
-      const b = int(random, 1, 10);
-      return draft(
-        `What is ${a} + ${b}?`,
-        String(a + b),
-        numericOptions(a + b, 3),
-        `${a} plus ${b} makes ${a + b}.`,
-      );
-    },
-  ),
-  genSection(
-    "early-take-away",
-    "Taking Away",
-    "Simple subtraction for first-time learners.",
-    "Easy",
-    (_i, random) => {
-      const a = int(random, 2, 20);
-      const b = int(random, 1, a - 1);
-      return draft(
-        `What is ${a} − ${b}?`,
-        String(a - b),
-        numericOptions(a - b, 3),
-        `Taking ${b} away from ${a} leaves ${a - b}.`,
-      );
-    },
-  ),
-  genSection(
-    "early-bigger-smaller",
-    "Bigger and Smaller",
-    "Comparing numbers and quantities.",
-    "Easy",
-    (index, random) => {
-      const a = int(random, 1, 50);
-      let b = int(random, 1, 50);
-      if (b === a) b = a + 3;
-      const bigger = index % 2 === 0;
-      const answer = bigger ? Math.max(a, b) : Math.min(a, b);
-      return draft(
-        bigger ? `Which number is bigger: ${a} or ${b}?` : `Which number is smaller: ${a} or ${b}?`,
-        String(answer),
-        [String(a === answer ? b : a), String(answer + 10), String(Math.max(1, answer - 10))],
-        `${answer} is the ${bigger ? "bigger" : "smaller"} of ${a} and ${b}.`,
-      );
-    },
-  ),
-  genSection(
-    "early-first-letters",
-    "First Letters & Sounds",
-    "Which letter does the word start with?",
-    "Easy",
-    (index, random) => {
-      const word = earlyWords[index % earlyWords.length] as string;
-      const letter = (word[0] as string).toUpperCase();
-      const others = ["B", "M", "S", "T", "K", "P", "R", "D"].filter((l) => l !== letter);
-      const start = int(random, 0, others.length - 4);
-      return draft(
-        `Which letter does the word "${word}" begin with?`,
-        letter,
-        others.slice(start, start + 3),
-        `"${word}" begins with the letter ${letter}.`,
-      );
-    },
-  ),
-  genSection(
-    "early-patterns",
-    "Patterns & Sorting",
-    "Spot the repeating pattern and say what comes next.",
-    "Easy",
-    (index, random) => {
-      const useColour = index % 2 === 0;
-      const list = useColour ? patternColours : patternItems;
-      const a = list[int(random, 0, list.length - 1)] as string;
-      let b = list[int(random, 0, list.length - 1)] as string;
-      if (b === a) b = list[(list.indexOf(a) + 1) % list.length] as string;
-      const others = list.filter((item) => item !== a && item !== b).slice(0, 2);
-      return draft(
-        `What comes next in this pattern: ${a}, ${b}, ${a}, ${b}, ___ ?`,
-        a,
-        [b, ...others, "nothing"].slice(0, 3),
-        `The pattern repeats ${a} then ${b}, so ${a} comes next.`,
-      );
-    },
-  ),
-  factSection(
-    "early-rhymes",
-    "Rhyming Words",
-    "Hearing words that end with the same sound.",
-    "Easy",
-    rhymePairs,
-  ),
-  factSection(
-    "early-body",
-    "My Body",
-    "Body parts and what each one helps us do.",
-    "Easy",
-    bodyFacts,
-  ),
-  factSection(
-    "early-food",
-    "Food & Healthy Eating",
-    "Fruits, vegetables and healthy choices.",
-    "Easy",
-    foodFacts,
-  ),
-  factSection(
-    "early-community",
-    "People Who Help Us",
-    "Community helpers and the places they work.",
-    "Easy",
-    communityFacts,
-  ),
-  factSection(
-    "early-position",
-    "Position & Opposites",
-    "In, on, under, above and everyday opposites.",
-    "Easy",
-    positionFacts,
-  ),
-  genSection(
-    "early-shapes-count",
-    "Shapes & Sides",
-    "Counting the sides and corners of simple shapes.",
-    "Easy",
-    (index, _random) => {
-      const shapes: [string, number][] = [
-        ["triangle", 3],
-        ["square", 4],
-        ["rectangle", 4],
-        ["pentagon", 5],
-        ["hexagon", 6],
-        ["octagon", 8],
-      ];
-      const [shape, sides] = shapes[index % shapes.length] as [string, number];
-      const corners = index % 2 === 0;
-      return draft(
-        corners ? `How many corners does a ${shape} have?` : `How many sides does a ${shape} have?`,
-        String(sides),
-        numericOptions(sides, 2),
-        `A ${shape} has ${sides} sides and ${sides} corners.`,
-      );
-    },
-  ),
-  genSection(
-    "early-money-coins",
-    "Counting Coins",
-    "Adding up small amounts of money.",
-    "Easy",
-    (_i, random) => {
-      const a = int(random, 1, 9) * 100;
-      const b = int(random, 1, 9) * 100;
-      return draft(
-        `You have ${a} and get ${b} more. How much do you have now?`,
-        String(a + b),
-        numericOptions(a + b, 200),
-        `${a} plus ${b} equals ${a + b}.`,
-      );
-    },
-  ),
-];
-
 /* =============================== PRIMARY ================================= */
 
 const spellingFacts: [string, string][] = [
@@ -413,7 +76,7 @@ const healthFacts: [string, string][] = [
   ["What disease is caused by lack of vitamin C?", "Scurvy"],
   ["What spreads germs most easily?", "Dirty hands"],
   ["Why should we cover our mouth when coughing?", "To stop germs spreading"],
-  ["How many hours of sleep do children need?", "About 9 to 11"],
+  ["How many hours of sleep do most teenagers need?", "About 8 to 10"],
   ["What should we do with rubbish?", "Put it in a bin"],
   ["What kills germs when washing hands?", "Soap"],
   ["Why should we boil drinking water?", "To kill germs"],
@@ -450,7 +113,7 @@ const capitalFacts: [string, string][] = [
 
 export const primaryExtraTopics: SectionDefinition[] = [
   genSection(
-    "primary-times-tables",
+    "foundations-times-tables",
     "Times Tables",
     "Multiplication facts from 2 to 12.",
     "Easy",
@@ -466,7 +129,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   genSection(
-    "primary-division",
+    "foundations-division",
     "Division Facts",
     "Sharing equally and finding exact quotients.",
     "Easy",
@@ -482,7 +145,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   genSection(
-    "primary-fractions",
+    "foundations-fractions",
     "Fractions",
     "Halves, quarters and fractions of amounts.",
     "Medium",
@@ -499,7 +162,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   genSection(
-    "primary-measures",
+    "foundations-measures",
     "Measurement & Units",
     "Converting length, mass and capacity.",
     "Medium",
@@ -529,7 +192,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   genSection(
-    "primary-time",
+    "foundations-time",
     "Telling the Time",
     "Reading clocks and working with minutes.",
     "Easy",
@@ -553,7 +216,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   genSection(
-    "primary-money",
+    "foundations-money",
     "Money & Shopping",
     "Change, totals and simple budgeting.",
     "Medium",
@@ -570,7 +233,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   genSection(
-    "primary-rounding",
+    "foundations-rounding",
     "Rounding & Estimation",
     "Rounding to the nearest ten and hundred.",
     "Medium",
@@ -587,21 +250,21 @@ export const primaryExtraTopics: SectionDefinition[] = [
     },
   ),
   factSection(
-    "primary-spelling",
+    "foundations-spelling",
     "Spelling & Grammar",
     "Plurals, tenses, punctuation and word classes.",
     "Easy",
     spellingFacts,
   ),
   factSection(
-    "primary-health",
+    "foundations-health",
     "Health & Hygiene",
     "Staying clean, eating well and preventing illness.",
     "Easy",
     healthFacts,
   ),
   factSection(
-    "primary-world",
+    "foundations-world",
     "World Geography",
     "Capitals, continents, rivers and landmarks.",
     "Easy",
@@ -1147,7 +810,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
 
 primaryExtraTopics.push(
   genSection(
-    "primary-place-value",
+    "foundations-place-value",
     "Place Value",
     "Tens, hundreds and thousands in whole numbers.",
     "Easy",

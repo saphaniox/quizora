@@ -12,11 +12,16 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as SupportRouteImport } from './routes/support'
+import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
+import { Route as ApiIndexRouteImport } from './routes/api.index'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLeaderboardRouteImport } from './routes/api/leaderboard'
 import { Route as ApiLevelsRouteImport } from './routes/api/levels'
@@ -42,6 +47,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
@@ -52,9 +62,24 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
   path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
@@ -66,6 +91,11 @@ const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const ApiIndexRoute = ApiIndexRouteImport.update({
+  id: '/api/',
+  path: '/api/',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
@@ -121,9 +151,13 @@ const ApiQuizzesIdRoute = ApiQuizzesIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/api/health': typeof ApiHealthRoute
@@ -132,6 +166,7 @@ export interface FileRoutesByFullPath {
   '/api/submit': typeof ApiSubmitRoute
   '/certificate/$code': typeof CertificateCodeRoute
   '/quizzes/$id': typeof QuizzesIdRoute
+  '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
@@ -140,9 +175,13 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/api/health': typeof ApiHealthRoute
@@ -151,6 +190,7 @@ export interface FileRoutesByTo {
   '/api/submit': typeof ApiSubmitRoute
   '/certificate/$code': typeof CertificateCodeRoute
   '/quizzes/$id': typeof QuizzesIdRoute
+  '/api': typeof ApiIndexRoute
   '/certificate': typeof CertificateIndexRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
@@ -161,9 +201,13 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
+  '/support': typeof SupportRoute
+  '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/api/health': typeof ApiHealthRoute
@@ -172,6 +216,7 @@ export interface FileRoutesById {
   '/api/submit': typeof ApiSubmitRoute
   '/certificate/$code': typeof CertificateCodeRoute
   '/quizzes/$id': typeof QuizzesIdRoute
+  '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
@@ -182,9 +227,13 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/delete-account'
     | '/history'
     | '/leaderboard'
+    | '/privacy'
     | '/results'
+    | '/support'
+    | '/terms'
     | '/admin'
     | '/wallet'
     | '/api/health'
@@ -193,6 +242,7 @@ export interface FileRouteTypes {
     | '/api/submit'
     | '/certificate/$code'
     | '/quizzes/$id'
+    | '/api/'
     | '/certificate/'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
@@ -201,9 +251,13 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/delete-account'
     | '/history'
     | '/leaderboard'
+    | '/privacy'
     | '/results'
+    | '/support'
+    | '/terms'
     | '/admin'
     | '/wallet'
     | '/api/health'
@@ -212,6 +266,7 @@ export interface FileRouteTypes {
     | '/api/submit'
     | '/certificate/$code'
     | '/quizzes/$id'
+    | '/api'
     | '/certificate'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
@@ -221,9 +276,13 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/delete-account'
     | '/history'
     | '/leaderboard'
+    | '/privacy'
     | '/results'
+    | '/support'
+    | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/wallet'
     | '/api/health'
@@ -232,6 +291,7 @@ export interface FileRouteTypes {
     | '/api/submit'
     | '/certificate/$code'
     | '/quizzes/$id'
+    | '/api/'
     | '/certificate/'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
@@ -242,15 +302,20 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DeleteAccountRoute: typeof DeleteAccountRoute
   HistoryRoute: typeof HistoryRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  PrivacyRoute: typeof PrivacyRoute
   ResultsRoute: typeof ResultsRoute
+  SupportRoute: typeof SupportRoute
+  TermsRoute: typeof TermsRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiLeaderboardRoute: typeof ApiLeaderboardRoute
   ApiLevelsRoute: typeof ApiLevelsRoute
   ApiSubmitRoute: typeof ApiSubmitRoute
   CertificateCodeRoute: typeof CertificateCodeRoute
   QuizzesIdRoute: typeof QuizzesIdRoute
+  ApiIndexRoute: typeof ApiIndexRoute
   CertificateIndexRoute: typeof CertificateIndexRoute
   ApiCertificatesCodeRoute: typeof ApiCertificatesCodeRoute
   ApiQuizzesIdRoute: typeof ApiQuizzesIdRoute
@@ -280,6 +345,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/history': {
       id: '/history'
       path: '/history'
@@ -294,11 +366,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/results': {
       id: '/results'
       path: '/results'
       fullPath: '/results'
       preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/admin': {
@@ -314,6 +407,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/wallet'
       preLoaderRoute: typeof AuthenticatedWalletRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/api/': {
+      id: '/api/'
+      path: '/api'
+      fullPath: '/api/'
+      preLoaderRoute: typeof ApiIndexRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/health': {
       id: '/api/health'
@@ -405,15 +505,20 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DeleteAccountRoute: DeleteAccountRoute,
   HistoryRoute: HistoryRoute,
   LeaderboardRoute: LeaderboardRoute,
+  PrivacyRoute: PrivacyRoute,
   ResultsRoute: ResultsRoute,
+  SupportRoute: SupportRoute,
+  TermsRoute: TermsRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiLeaderboardRoute: ApiLeaderboardRoute,
   ApiLevelsRoute: ApiLevelsRoute,
   ApiSubmitRoute: ApiSubmitRoute,
   CertificateCodeRoute: CertificateCodeRoute,
   QuizzesIdRoute: QuizzesIdRoute,
+  ApiIndexRoute: ApiIndexRoute,
   CertificateIndexRoute: CertificateIndexRoute,
   ApiCertificatesCodeRoute: ApiCertificatesCodeRoute,
   ApiQuizzesIdRoute: ApiQuizzesIdRoute,

@@ -65,3 +65,12 @@ export async function getUser(token: string | undefined): Promise<User | null> {
 export async function logout(token: string | undefined): Promise<void> {
   if (token) await pool.query("DELETE FROM sessions WHERE token_hash = $1", [hashToken(token)]);
 }
+
+export async function deleteCurrentUser(token: string | undefined): Promise<boolean> {
+  if (!token) return false;
+  const result = await pool.query<{ id: string }>(
+    "DELETE FROM users WHERE id = (SELECT user_id FROM sessions WHERE token_hash = $1 AND expires_at > NOW()) RETURNING id",
+    [hashToken(token)],
+  );
+  return Boolean(result.rowCount);
+}

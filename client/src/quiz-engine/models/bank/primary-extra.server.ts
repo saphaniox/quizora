@@ -60,7 +60,7 @@ const moneyTimeBank = () =>
         `${days} ÷ 7 = ${days / 7} weeks.`,
       );
     },
-    "primary-money-time",
+    "foundations-money-time",
   );
 
 const grammarFacts: [string, string][] = [
@@ -136,7 +136,7 @@ const readingBank = () => [
         `The correct sentence is: ${item[0].replace("___", item[1])}`,
       );
     },
-    "primary-reading",
+    "foundations-reading",
   ),
 ];
 
@@ -154,22 +154,25 @@ const healthFacts: [string, string][] = [
   ["Why should we cover food?", "To keep flies and dust away"],
   ["What should you do with dirty water before drinking?", "Boil or treat it"],
   ["Which exercise is good for the heart?", "Running or skipping"],
-  ["How many hours of sleep does a child need?", "About nine to eleven"],
+  ["How many hours of sleep do most teenagers need?", "About eight to ten"],
   ["What should you wear in strong sunshine?", "A hat and light clothes"],
   ["What do we call an injury that breaks the skin?", "A wound"],
   ["What should be put on a small cut?", "A clean plaster after washing"],
-  ["Who should you tell when you feel unwell?", "An adult or teacher"],
+  ["Who should you tell when you feel unwell?", "A trusted person or health worker"],
   ["What do vaccines do?", "Protect us from certain diseases"],
   ["Why should you not share a toothbrush?", "Germs can spread"],
   ["What is the first thing to do in a fire?", "Leave the building and call for help"],
   ["What should you do before crossing a road?", "Look both ways"],
-  ["Where should medicine be kept?", "Locked away from children"],
+  ["Where should medicine be kept?", "Stored safely and out of reach"],
   ["What do we call food that has gone bad?", "Spoilt food"],
   ["Why do we wash fruits before eating?", "To remove dirt and germs"],
   ["Which drink is best instead of soda?", "Clean water"],
   ["What causes tooth decay?", "Too much sugar and poor brushing"],
   ["Why do we bathe every day?", "To stay clean and healthy"],
-  ["What should you do if a stranger asks you to follow them?", "Refuse and tell a trusted adult"],
+  [
+    "What should you do if someone pressures you to go somewhere unsafe?",
+    "Refuse, leave and tell a trusted person",
+  ],
   ["What is litter?", "Rubbish dropped in the wrong place"],
 ];
 
@@ -200,7 +203,7 @@ const healthBank = () => [
         `${item[0]} are a good source of ${item[1].toLowerCase()}.`,
       );
     },
-    "primary-health",
+    "foundations-health",
   ),
 ];
 
@@ -234,51 +237,51 @@ const reasoningBank = () =>
         );
       }
       if (kind === 2) {
-        const pupils = 4 * (2 + (index % 6));
+        const learners = 4 * (2 + (index % 6));
         const groups = 4;
         return draft(
-          `${pupils} pupils are shared equally into ${groups} groups. How many are in each group?`,
-          String(pupils / groups),
-          numericOptions(pupils / groups, 3),
-          `${pupils} ÷ ${groups} = ${pupils / groups} pupils per group.`,
+          `${learners} learners are shared equally into ${groups} groups. How many are in each group?`,
+          String(learners / groups),
+          numericOptions(learners / groups, 3),
+          `${learners} ÷ ${groups} = ${learners / groups} learners per group.`,
         );
       }
       const total = 10 * (2 + (index % 8));
       const half = total / 2;
       return draft(
-        `Half of ${total} pupils went on a trip. How many went?`,
+        `Half of ${total} learners went on a trip. How many went?`,
         String(half),
         numericOptions(half, 5),
         `Half of ${total} is ${half}.`,
       );
     },
-    "primary-reasoning",
+    "foundations-reasoning",
   );
 
 export const primaryExtraSections: SectionDefinition[] = [
   {
-    id: "primary-money-time",
+    id: "foundations-money-time",
     name: "Money & Time",
     description: "Shopping change, prices, clocks and calendars.",
     difficulty: "Easy",
     build: moneyTimeBank,
   },
   {
-    id: "primary-reading",
+    id: "foundations-reading",
     name: "Reading & Grammar",
     description: "Parts of speech, punctuation, spelling and sentences.",
     difficulty: "Easy",
     build: readingBank,
   },
   {
-    id: "primary-health",
+    id: "foundations-health",
     name: "Health & Hygiene",
     description: "Personal hygiene, nutrition, safety and staying well.",
     difficulty: "Easy",
     build: healthBank,
   },
   {
-    id: "primary-reasoning",
+    id: "foundations-reasoning",
     name: "Everyday Problem Solving",
     description: "Number patterns and simple real-life word problems.",
     difficulty: "Easy",

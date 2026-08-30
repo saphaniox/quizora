@@ -1,5 +1,10 @@
 import type { Level, Quiz, QuizSummary, PublicQuiz } from "../types.js";
-import { expandTo, finalize, makeRng, type SectionDefinition } from "./bank/helpers.js";
+import {
+  expandTo,
+  finalize,
+  makeRng,
+  type SectionDefinition,
+} from "./bank/helpers.js";
 import { primarySections } from "./bank/primary.js";
 import { primaryExtraSections } from "./bank/primary-extra.js";
 import { secondarySections } from "./bank/secondary.js";
@@ -8,16 +13,13 @@ import { collegeSections } from "./bank/college.js";
 import { collegeExtraSections } from "./bank/college-extra.js";
 import { professionalSections } from "./bank/professional.js";
 import { professionalExtraSections } from "./bank/professional-extra.js";
-import { earlySections } from "./bank/early.js";
 import {
-  earlyTopicSections,
   primaryTopicSections,
   secondaryTopicSections,
   collegeTopicSections,
   professionalTopicSections,
 } from "./bank/topics.js";
 import {
-  earlyExtraTopics,
   primaryExtraTopics,
   secondaryExtraTopics,
   collegeExtraTopics,
@@ -26,60 +28,97 @@ import { popularTopicSections } from "./bank/popular-topics.js";
 
 export const PASS_MARK = 80;
 
+function foundationDescription(description: string): string {
+  return description.replace(/^Number work,/, "Core number work,");
+}
+
+function foundationName(name: string): string {
+  return (
+    {
+      "Basic Science": "Science Fundamentals",
+      "Social Studies": "Civic & World Basics",
+      "ICT Basics": "Digital Basics",
+      "Everyday Problem Solving": "Practical Problem Solving",
+    }[name] ?? name
+  );
+}
+
+function asFoundationSection(section: SectionDefinition): SectionDefinition {
+  return {
+    ...section,
+    id: section.id,
+    name: foundationName(section.name),
+    description: foundationDescription(section.description),
+  };
+}
+
+const foundationSections = [
+  ...primarySections,
+  ...primaryExtraSections,
+  ...primaryTopicSections,
+  ...primaryExtraTopics,
+].map(asFoundationSection);
+
 const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   {
-    id: "early-years",
-    name: "Early Learners",
-    tagline: "First steps in counting, letters, shapes and the world around us.",
-    ageRange: "Ages 3-6",
+    id: "foundations",
+    name: "Core Foundations",
+    tagline:
+      "Basic math, English, science, digital skills, and everyday reasoning refreshers.",
+    ageRange: "Ages 13+",
     order: 1,
-    sections: [...earlySections, ...earlyTopicSections, ...earlyExtraTopics],
-  },
-  {
-    id: "primary",
-    name: "Primary School",
-    tagline: "Fun foundational quizzes for young learners.",
-    ageRange: "Ages 6–12",
-    order: 2,
-    sections: [...primarySections, ...primaryExtraSections, ...primaryTopicSections, ...primaryExtraTopics],
+    sections: foundationSections,
   },
   {
     id: "secondary",
     name: "Secondary School",
-    tagline: "Exam-style practice across the core subjects.",
-    ageRange: "Ages 13–18",
-    order: 3,
-    sections: [...secondarySections, ...secondaryExtraSections, ...secondaryTopicSections, ...secondaryExtraTopics],
+    tagline: "Teen-focused exam practice across the core subjects.",
+    ageRange: "Ages 13+",
+    order: 2,
+    sections: [
+      ...secondarySections,
+      ...secondaryExtraSections,
+      ...secondaryTopicSections,
+      ...secondaryExtraTopics,
+    ],
   },
   {
     id: "college",
     name: "College & University",
     tagline: "Degree-level reasoning and applied problem solving.",
     ageRange: "Ages 18+",
-    order: 4,
-    sections: [...collegeSections, ...collegeExtraSections, ...collegeTopicSections, ...collegeExtraTopics],
+    order: 3,
+    sections: [
+      ...collegeSections,
+      ...collegeExtraSections,
+      ...collegeTopicSections,
+      ...collegeExtraTopics,
+    ],
   },
   {
     id: "professional",
     name: "Professional",
     tagline: "Workplace certification practice across every department.",
-    ageRange: "Career",
-    order: 5,
-    sections: [...professionalSections, ...professionalExtraSections, ...professionalTopicSections],
+    ageRange: "Career learners",
+    order: 4,
+    sections: [
+      ...professionalSections,
+      ...professionalExtraSections,
+      ...professionalTopicSections,
+    ],
   },
   {
     id: "popular-topics",
     name: "Popular Topics",
     tagline: "Take on the subjects people love most, from football to gaming.",
-    ageRange: "All ages",
-    order: 6,
+    ageRange: "Ages 13+",
+    order: 5,
     sections: popularTopicSections,
   },
 ];
 
 const LEVEL_TARGETS: Record<string, number> = {
-  "early-years": 300,
-  primary: 320,
+  foundations: 320,
   secondary: 360,
   college: 400,
   professional: 500,
@@ -89,12 +128,14 @@ function targetFor(levelId: string, section: SectionDefinition): number {
   return section.target ?? LEVEL_TARGETS[levelId] ?? 300;
 }
 
-
 function buildQuizzes(): Quiz[] {
   const out: Quiz[] = [];
   for (const level of levelDefinitions) {
     for (const section of level.sections) {
-      const questions = finalize(section.id, expandTo(section.id, section.build(), targetFor(level.id, section)));
+      const questions = finalize(
+        section.id,
+        expandTo(section.id, section.build(), targetFor(level.id, section)),
+      );
       out.push({
         id: section.id,
         title: section.name,
@@ -131,7 +172,9 @@ export function toSummary(quiz: Quiz): QuizSummary {
 }
 
 export function listQuizzes(levelId?: string): QuizSummary[] {
-  return quizzes.filter((quiz) => !levelId || quiz.levelId === levelId).map(toSummary);
+  return quizzes
+    .filter((quiz) => !levelId || quiz.levelId === levelId)
+    .map(toSummary);
 }
 
 export function listLevels() {
@@ -146,7 +189,10 @@ export function listLevels() {
         tagline: level.tagline,
         ageRange: level.ageRange,
         order: level.order,
-        questionCount: sections.reduce((sum, section) => sum + section.questionCount, 0),
+        questionCount: sections.reduce(
+          (sum, section) => sum + section.questionCount,
+          0,
+        ),
         sections,
       };
     });
@@ -160,7 +206,11 @@ export function findQuiz(id: string): Quiz | undefined {
  * Build the client-safe quiz. `limit` produces a shorter practice run, which is
  * never certificate eligible — certificates require the full section.
  */
-export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQuiz {
+export function toPublicQuiz(
+  quiz: Quiz,
+  limit?: number,
+  seed?: string,
+): PublicQuiz {
   const total = quiz.questions.length;
   const count = limit && limit > 0 && limit < total ? limit : total;
   let pool = quiz.questions;
@@ -171,7 +221,9 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
       .sort((a, b) => a.sort - b.sort)
       .map((item) => item.question);
   }
-  const questions = pool.slice(0, count).map(({ id, text, options }) => ({ id, text, options }));
+  const questions = pool
+    .slice(0, count)
+    .map(({ id, text, options }) => ({ id, text, options }));
   return {
     id: quiz.id,
     title: quiz.title,

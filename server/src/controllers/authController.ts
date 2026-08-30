@@ -9,7 +9,9 @@ const credentials = z.object({
 });
 
 const cookie = "quitech_session";
-const cookieOptions = `Path=/; HttpOnly; SameSite=Lax; ${process.env["NODE_ENV"] === "production" ? "Secure; " : ""}Max-Age=2592000`;
+const secureCookiePart = process.env["NODE_ENV"] === "production" ? "Secure; " : "";
+const cookieOptions = `Path=/; HttpOnly; SameSite=Lax; ${secureCookiePart}Max-Age=2592000`;
+const expiredCookieOptions = `Path=/; HttpOnly; SameSite=Lax; ${secureCookiePart}Max-Age=0`;
 
 function setSession(reply: FastifyReply, token: string): void {
   reply.header("set-cookie", `${cookie}=${token}; ${cookieOptions}`);
@@ -58,5 +60,14 @@ export async function me(request: FastifyRequest, reply: FastifyReply): Promise<
 
 export async function logout(request: FastifyRequest, reply: FastifyReply): Promise<void> {
   await auth.logout(token(request));
-  reply.header("set-cookie", `${cookie}=; ${cookieOptions}; Max-Age=0`).send({ ok: true });
+  reply.header("set-cookie", `${cookie}=; ${expiredCookieOptions}`).send({ ok: true });
+}
+
+export async function deleteAccount(request: FastifyRequest, reply: FastifyReply): Promise<void> {
+  const deleted = await auth.deleteCurrentUser(token(request));
+  if (!deleted) {
+    reply.code(401).send({ error: "Sign in before deleting your account" });
+    return;
+  }
+  reply.header("set-cookie", `${cookie}=; ${expiredCookieOptions}`).send({ ok: true });
 }

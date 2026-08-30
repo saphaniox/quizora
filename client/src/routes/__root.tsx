@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 const SITE_URL = "https://quitech.online";
 
@@ -146,6 +147,7 @@ function RootComponent() {
         <main className="flex-1">
           <Outlet />
         </main>
+        <Footer />
       </div>
     </QueryClientProvider>
   );

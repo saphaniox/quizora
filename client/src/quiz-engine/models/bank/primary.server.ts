@@ -65,7 +65,7 @@ const mathBank = (): ReturnType<SectionDefinition["build"]> => {
         `${value} rounds to ${answer} when rounding to the nearest ten.`,
       );
     },
-    "primary-math",
+    "foundations-math",
   );
 };
 
@@ -258,7 +258,7 @@ const capitals: [string, string][] = [
 
 const helpers: [string, string][] = [
   ["A doctor", "Treats sick people"],
-  ["A teacher", "Helps pupils learn"],
+  ["A teacher", "Helps students learn"],
   ["A farmer", "Grows food and keeps animals"],
   ["A police officer", "Keeps people and property safe"],
   ["A firefighter", "Puts out fires and rescues people"],
@@ -379,41 +379,41 @@ const ictBank = () => [
         `"${chosen[0]}" means: ${chosen[1].toLowerCase()}.`,
       );
     },
-    "primary-ict",
+    "foundations-digital",
   ),
 ];
 
 export const primarySections: SectionDefinition[] = [
   {
-    id: "primary-mathematics",
+    id: "foundations-mathematics",
     name: "Mathematics",
     description: "Number work, the four operations, fractions and rounding.",
     difficulty: "Easy",
     build: mathBank,
   },
   {
-    id: "primary-english",
+    id: "foundations-english",
     name: "English",
-    description: "Opposites, plurals and verb tenses for young learners.",
+    description: "Opposites, plurals and verb tenses for foundation refreshers.",
     difficulty: "Easy",
     build: englishBank,
   },
   {
-    id: "primary-science",
+    id: "foundations-science",
     name: "Basic Science",
     description: "The human body, animals, plants and everyday science.",
     difficulty: "Easy",
     build: scienceBank,
   },
   {
-    id: "primary-social-studies",
+    id: "foundations-social-studies",
     name: "Social Studies",
     description: "Countries, community helpers, civics and map skills.",
     difficulty: "Easy",
     build: socialBank,
   },
   {
-    id: "primary-ict",
+    id: "foundations-ict",
     name: "ICT Basics",
     description: "Computer parts, common programs and staying safe online.",
     difficulty: "Easy",

@@ -8,74 +8,6 @@ const facts = (entries: [string, string][]): Draft[] =>
     (_k, v) => `The correct answer is: ${v}.`,
   );
 
-/* ------------------------------ Early years ----------------------------- */
-
-const animalFacts: [string, string][] = [
-  ["Which animal says 'moo'?", "A cow"],
-  ["Which animal says 'meow'?", "A cat"],
-  ["Which animal says 'woof'?", "A dog"],
-  ["Which animal gives us wool?", "A sheep"],
-  ["Which animal has a long trunk?", "An elephant"],
-  ["Which animal is called the king of the jungle?", "A lion"],
-  ["Which animal hops and has long ears?", "A rabbit"],
-  ["Which animal lives in water and has fins?", "A fish"],
-  ["Which animal has a very long neck?", "A giraffe"],
-  ["Which bird cannot fly but swims well?", "A penguin"],
-  ["Which animal carries its house on its back?", "A snail"],
-  ["Which insect makes honey?", "A bee"],
-  ["Which animal has black and white stripes?", "A zebra"],
-  ["Which animal lays eggs and clucks?", "A hen"],
-  ["Which animal is a baby cat called?", "A kitten"],
-  ["What is a baby dog called?", "A puppy"],
-  ["What is a baby cow called?", "A calf"],
-  ["Which animal changes colour to hide?", "A chameleon"],
-  ["Which animal has eight legs?", "A spider"],
-  ["Which animal jumps and says 'ribbit'?", "A frog"],
-  ["Which animal is the fastest on land?", "A cheetah"],
-  ["Which animal sleeps hanging upside down?", "A bat"],
-  ["Which animal has a shell and moves slowly?", "A tortoise"],
-  ["Which animal barks and guards the home?", "A dog"],
-  ["Which farm animal gives us milk?", "A cow"],
-  ["Which animal has a mane?", "A lion"],
-  ["Which sea animal is very big and sprays water?", "A whale"],
-  ["Which animal likes to eat bananas and swings?", "A monkey"],
-  ["Which bird says 'hoot' at night?", "An owl"],
-  ["Which animal has feathers and can fly?", "A bird"],
-];
-
-const routineFacts: [string, string][] = [
-  ["How many days are in one week?", "7"],
-  ["Which day comes after Monday?", "Tuesday"],
-  ["Which day comes before Friday?", "Thursday"],
-  ["What do we call the first meal of the day?", "Breakfast"],
-  ["When do we see the sun?", "During the day"],
-  ["When do we see the moon and stars?", "At night"],
-  ["What do we wear when it rains?", "A raincoat"],
-  ["What do we use to see when it is dark?", "A light"],
-  ["What should we do before eating?", "Wash our hands"],
-  ["What do we brush every morning?", "Our teeth"],
-  ["How many months are in a year?", "12"],
-  ["Which month is the first of the year?", "January"],
-  ["Which month is the last of the year?", "December"],
-  ["What season is hot and sunny?", "Summer"],
-  ["What falls from the sky when it rains?", "Water"],
-  ["What do we call frozen water?", "Ice"],
-  ["Where do we go to learn?", "School"],
-  ["Who teaches us at school?", "A teacher"],
-  ["What do we say when someone helps us?", "Thank you"],
-  ["What do we say when we meet someone in the morning?", "Good morning"],
-  ["Where do we sleep at night?", "In a bed"],
-  ["What do we use to write?", "A pencil"],
-  ["What colour is the sky on a clear day?", "Blue"],
-  ["What colour is grass?", "Green"],
-  ["How many hours are in one day?", "24"],
-  ["What do we call the day after today?", "Tomorrow"],
-  ["What do we call the day before today?", "Yesterday"],
-  ["What do we wear on our feet?", "Shoes"],
-  ["Which meal do we eat in the middle of the day?", "Lunch"],
-  ["What must we do to stay clean?", "Take a bath"],
-];
-
 /* -------------------------------- Primary -------------------------------- */
 
 const artsFacts: [string, string][] = [
@@ -430,28 +362,11 @@ const section = (
   entries: [string, string][],
 ): SectionDefinition => ({ id, name, description, difficulty, build: () => facts(entries) });
 
-export const earlyTopicSections: SectionDefinition[] = [
-  section(
-    "early-animals",
-    "Animals Around Us",
-    "Farm, wild and sea animals for the youngest learners.",
-    "Easy",
-    animalFacts,
-  ),
-  section(
-    "early-routines",
-    "Days, Weather & Routines",
-    "Days of the week, weather and everyday good habits.",
-    "Easy",
-    routineFacts,
-  ),
-];
-
 export const primaryTopicSections: SectionDefinition[] = [
   section(
-    "primary-arts",
+    "foundations-arts",
     "Creative Arts & Music",
-    "Colours, drawing, instruments and rhythm for primary pupils.",
+    "Colours, drawing, instruments and rhythm for foundation refreshers.",
     "Easy",
     artsFacts,
   ),

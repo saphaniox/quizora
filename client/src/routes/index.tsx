@@ -24,7 +24,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Quitech online helps you learn faster, challenge yourself smarter, and earn verifiable certificates across every level from beginner to professional.",
+          "Quitech online helps learners 13+ challenge themselves, build knowledge, and earn verifiable certificates across academic, career, and popular topics.",
       },
       { property: "og:title", content: "Quitech Online: Learn, Challenge & Progress" },
       {
@@ -75,23 +75,23 @@ function HomePage() {
             {data
               ? `${data.totalQuestions.toLocaleString()} questions`
               : "Thousands of questions"}{" "}
-            across every level
+            for learners 13+
           </span>
           <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
-            Learn online, challenge yourself, and grow from beginner to expert.
+            Build confidence one question at a time.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-            Quitech online helps learners build confidence across primary, secondary, college, and
-            professional tracks. Practice at your own pace, take timed quizzes, and earn a
-            verifiable certificate when you reach the pass mark.
+            Quitech helps learners 13+ refresh the basics, practise school topics, and stretch into
+            career knowledge. Start where you are, take a real challenge, and keep proof of the
+            progress you earn.
           </p>
 
           <dl className="mt-10 grid max-w-3xl grid-cols-1 gap-4 sm:grid-cols-3">
             {[
-              { icon: GraduationCap, label: "Learning levels", value: levels.length || "5" },
+              { icon: GraduationCap, label: "Learning paths", value: levels.length || "5" },
               {
                 icon: Users,
-                label: "Subject sections",
+                label: "Quiz sections",
                 value: levels.reduce((n, l) => n + l.sections.length, 0) || "-",
               },
               { icon: Award, label: "Certificate pass mark", value: "80%" },
@@ -144,7 +144,8 @@ function HomePage() {
                   Choose a category
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Pick what you want to learn, practise, or challenge yourself on.
+                  Choose a quick refresh, school practice, career growth, or a topic you simply want
+                  to understand better.
                 </p>
               </div>
 
@@ -200,8 +201,8 @@ function HomePage() {
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
-                  placeholder="Search quizzes or topics..."
-                  aria-label="Search quizzes or topics"
+                  placeholder="Search a subject or skill..."
+                  aria-label="Search a subject or skill"
                   className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </div>

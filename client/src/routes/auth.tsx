@@ -162,6 +162,17 @@ function AuthPage() {
             {mode === "signin" ? "Create an account" : "Sign in instead"}
           </button>
         </p>
+        <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
+          By using Quitech, you agree to the{" "}
+          <Link to="/terms" className="font-medium text-primary hover:underline">
+            Terms
+          </Link>{" "}
+          and{" "}
+          <Link to="/privacy" className="font-medium text-primary hover:underline">
+            Privacy Policy
+          </Link>
+          .
+        </p>
       </div>
 
       <p className="mt-6 text-center text-sm text-muted-foreground">

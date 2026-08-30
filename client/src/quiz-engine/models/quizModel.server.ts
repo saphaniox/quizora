@@ -8,16 +8,13 @@ import { collegeSections } from "./bank/college.server";
 import { collegeExtraSections } from "./bank/college-extra.server";
 import { professionalSections } from "./bank/professional.server";
 import { professionalExtraSections } from "./bank/professional-extra.server";
-import { earlySections } from "./bank/early.server";
 import {
-  earlyTopicSections,
   primaryTopicSections,
   secondaryTopicSections,
   collegeTopicSections,
   professionalTopicSections,
 } from "./bank/topics.server";
 import {
-  earlyExtraTopics,
   primaryExtraTopics,
   secondaryExtraTopics,
   collegeExtraTopics,
@@ -26,34 +23,52 @@ import { popularTopicSections } from "./bank/popular-topics.server";
 
 export const PASS_MARK = 80;
 
+function foundationDescription(description: string): string {
+  return description.replace(/^Number work,/, "Core number work,");
+}
+
+function foundationName(name: string): string {
+  return (
+    {
+      "Basic Science": "Science Fundamentals",
+      "Social Studies": "Civic & World Basics",
+      "ICT Basics": "Digital Basics",
+      "Everyday Problem Solving": "Practical Problem Solving",
+    }[name] ?? name
+  );
+}
+
+function asFoundationSection(section: SectionDefinition): SectionDefinition {
+  return {
+    ...section,
+    id: section.id,
+    name: foundationName(section.name),
+    description: foundationDescription(section.description),
+  };
+}
+
+const foundationSections = [
+  ...primarySections,
+  ...primaryExtraSections,
+  ...primaryTopicSections,
+  ...primaryExtraTopics,
+].map(asFoundationSection);
+
 const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   {
-    id: "early-years",
-    name: "Early Learners",
-    tagline: "First steps in counting, letters, shapes and the world around us.",
-    ageRange: "Ages 3–6",
+    id: "foundations",
+    name: "Core Foundations",
+    tagline: "Basic math, English, science, digital skills, and everyday reasoning refreshers.",
+    ageRange: "Ages 13+",
     order: 1,
-    sections: [...earlySections, ...earlyTopicSections, ...earlyExtraTopics],
-  },
-  {
-    id: "primary",
-    name: "Primary School",
-    tagline: "Fun foundational quizzes for young learners.",
-    ageRange: "Ages 6–12",
-    order: 2,
-    sections: [
-      ...primarySections,
-      ...primaryExtraSections,
-      ...primaryTopicSections,
-      ...primaryExtraTopics,
-    ],
+    sections: foundationSections,
   },
   {
     id: "secondary",
     name: "Secondary School",
-    tagline: "Exam-style practice across the core subjects.",
-    ageRange: "Ages 13–18",
-    order: 3,
+    tagline: "Teen-focused exam practice across the core subjects.",
+    ageRange: "Ages 13+",
+    order: 2,
     sections: [
       ...secondarySections,
       ...secondaryExtraSections,
@@ -66,7 +81,7 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
     name: "College & University",
     tagline: "Degree-level reasoning and applied problem solving.",
     ageRange: "Ages 18+",
-    order: 4,
+    order: 3,
     sections: [
       ...collegeSections,
       ...collegeExtraSections,
@@ -78,16 +93,16 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
     id: "professional",
     name: "Professional",
     tagline: "Workplace certification practice across every department.",
-    ageRange: "Career",
-    order: 5,
+    ageRange: "Career learners",
+    order: 4,
     sections: [...professionalSections, ...professionalExtraSections, ...professionalTopicSections],
   },
   {
     id: "popular-topics",
     name: "Popular Topics",
     tagline: "Take on the subjects people love most, from football to gaming.",
-    ageRange: "All ages",
-    order: 6,
+    ageRange: "Ages 13+",
+    order: 5,
     sections: popularTopicSections,
   },
 ];
@@ -97,8 +112,7 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
  * questions so only committed learners finish a full run.
  */
 const LEVEL_TARGETS: Record<string, number> = {
-  "early-years": 300,
-  primary: 320,
+  foundations: 320,
   secondary: 360,
   college: 400,
   professional: 500,

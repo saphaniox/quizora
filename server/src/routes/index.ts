@@ -25,6 +25,7 @@ const routes: FastifyPluginAsync = async (app) => {
 	app.post("/auth/register", authController.register);
 	app.post("/auth/login", authController.login);
 	app.get("/auth/me", authController.me);
+	app.delete("/auth/me", authController.deleteAccount);
 	app.post("/auth/logout", authController.logout);
 };
 
