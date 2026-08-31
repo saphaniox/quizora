@@ -29,7 +29,7 @@ export const Route = createFileRoute("/auth")({
 });
 
 function safeNext(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/wallet";
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
   return raw;
 }
 
@@ -97,7 +97,7 @@ function AuthPage() {
   const next =
     typeof window !== "undefined"
       ? safeNext(new URLSearchParams(window.location.search).get("next"))
-      : "/wallet";
+      : "/";
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();

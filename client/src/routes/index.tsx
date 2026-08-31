@@ -115,14 +115,14 @@ function HomePage() {
           {showAuthActions && (
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <a
-                href="/auth?mode=signup&next=/wallet"
+                href="/auth?mode=signup"
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <UserPlus className="h-4 w-4" />
                 Create free account
               </a>
               <a
-                href="/auth?next=/wallet"
+                href="/auth"
                 className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
               >
                 <LogIn className="h-4 w-4" />
