@@ -59,7 +59,7 @@ function TermsPage() {
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Last updated: August 31, 2026. These terms explain how learners 13 and older can use
-          Quitech online to learn, challenge themselves, track progress, and verify certificates.
+          Quitech to learn, challenge themselves, track progress, and verify certificates.
         </p>
       </div>
 

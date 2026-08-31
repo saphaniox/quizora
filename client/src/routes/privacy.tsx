@@ -65,7 +65,7 @@ function PrivacyPage() {
           Your progress belongs to you.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Last updated: August 31, 2026. This policy explains how Quitech online ("Quitech", "we",
+          Last updated: August 31, 2026. This policy explains how Quitech ("we",
           "us", or "our") collects, uses, shares, protects, and deletes information for learners 13
           and older.
         </p>

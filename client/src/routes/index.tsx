@@ -25,13 +25,13 @@ import { cn } from "@/lib/utils";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: "Quitech Online: Learn, Challenge & Progress" },
+      { title: "Quitech: Learn, Challenge & Progress" },
       {
         name: "description",
         content:
-          "Quitech online helps learners 13+ challenge themselves, build knowledge, and earn verifiable certificates across academic, career, and popular topics.",
+          "Quitech helps learners 13+ challenge themselves, build knowledge, and earn verifiable certificates across academic, career, and popular topics.",
       },
-      { property: "og:title", content: "Quitech Online: Learn, Challenge & Progress" },
+      { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
       {
         property: "og:description",
         content:
