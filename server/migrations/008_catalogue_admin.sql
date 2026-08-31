@@ -8,9 +8,9 @@ CREATE TABLE IF NOT EXISTS catalogue_section_edits (
   published_description TEXT NOT NULL CHECK (char_length(trim(published_description)) BETWEEN 40 AND 500),
   published_difficulty TEXT NOT NULL CHECK (published_difficulty IN ('Easy', 'Medium', 'Hard')),
   published_is_visible BOOLEAN NOT NULL DEFAULT TRUE,
-  updated_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+  updated_by UUID REFERENCES users(id) ON DELETE SET NULL,
   updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-  published_by TEXT REFERENCES users(id) ON DELETE SET NULL,
+  published_by UUID REFERENCES users(id) ON DELETE SET NULL,
   published_at TIMESTAMPTZ
 );
 
@@ -19,7 +19,7 @@ CREATE INDEX IF NOT EXISTS catalogue_section_edits_updated_idx
 
 CREATE TABLE IF NOT EXISTS admin_audit_log (
   id BIGSERIAL PRIMARY KEY,
-  actor_id TEXT REFERENCES users(id) ON DELETE SET NULL,
+  actor_id UUID REFERENCES users(id) ON DELETE SET NULL,
   action TEXT NOT NULL,
   entity_type TEXT NOT NULL,
   entity_id TEXT NOT NULL,

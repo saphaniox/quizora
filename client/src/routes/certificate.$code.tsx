@@ -108,8 +108,23 @@ function CertificatePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-xl border border-slate-300 bg-[#fbfcf8] p-5 text-center text-slate-900 shadow-sm sm:p-8 print:border-slate-300 print:shadow-none">
-        <div className="pointer-events-none absolute inset-4 rounded-lg border border-slate-200" />
+      <div className="relative overflow-hidden rounded-lg border border-slate-300 bg-[#fbfcf8] px-6 py-14 text-center text-slate-900 shadow-xl shadow-slate-200/70 sm:p-16 print:border-slate-300 print:shadow-none">
+        <div className="pointer-events-none absolute inset-[18px] rounded-lg border border-slate-950/70" />
+        <div className="pointer-events-none absolute inset-[28px] rounded-md border-[3px] border-blue-700/80" />
+        <div className="pointer-events-none absolute inset-[42px] border border-amber-500/70" />
+        <div className="pointer-events-none absolute inset-[54px] border border-slate-200" />
+        <div className="pointer-events-none absolute left-1/2 top-[28px] h-1 w-48 -translate-x-1/2 bg-blue-100" />
+        <div className="pointer-events-none absolute bottom-[28px] left-1/2 h-1 w-48 -translate-x-1/2 bg-blue-100" />
+        <div className="pointer-events-none absolute left-1/2 top-[42px] h-px w-36 -translate-x-1/2 bg-amber-500/70" />
+        <div className="pointer-events-none absolute bottom-[42px] left-1/2 h-px w-36 -translate-x-1/2 bg-amber-500/70" />
+        <div className="pointer-events-none absolute left-12 top-12 hidden h-24 w-24 border-l-[3px] border-t-[3px] border-amber-600 sm:block" />
+        <div className="pointer-events-none absolute right-12 top-12 hidden h-24 w-24 border-r-[3px] border-t-[3px] border-amber-600 sm:block" />
+        <div className="pointer-events-none absolute bottom-12 left-12 hidden h-24 w-24 border-b-[3px] border-l-[3px] border-amber-600 sm:block" />
+        <div className="pointer-events-none absolute bottom-12 right-12 hidden h-24 w-24 border-b-[3px] border-r-[3px] border-amber-600 sm:block" />
+        <div className="pointer-events-none absolute left-16 top-16 hidden h-16 w-16 border-l border-t border-blue-700/60 sm:block" />
+        <div className="pointer-events-none absolute right-16 top-16 hidden h-16 w-16 border-r border-t border-blue-700/60 sm:block" />
+        <div className="pointer-events-none absolute bottom-16 left-16 hidden h-16 w-16 border-b border-l border-blue-700/60 sm:block" />
+        <div className="pointer-events-none absolute bottom-16 right-16 hidden h-16 w-16 border-b border-r border-blue-700/60 sm:block" />
         <img
           src="/logo.png"
           alt=""
@@ -140,6 +155,16 @@ function CertificatePage() {
             <p className="mt-5 text-xs font-semibold uppercase text-slate-500">
               Certificate of Achievement
             </p>
+            <div
+              className="mx-auto mt-4 flex max-w-xs items-center justify-center gap-3"
+              aria-hidden="true"
+            >
+              <span className="h-px flex-1 bg-amber-500/70" />
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
+              <span className="h-2.5 w-2.5 rounded-full bg-blue-700" />
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
+              <span className="h-px flex-1 bg-amber-500/70" />
+            </div>
             <p className="mt-5 text-sm text-slate-600">This certifies that</p>
             <h1 className="mt-3 break-words text-4xl font-bold text-slate-950">
               {certificate.playerName}

@@ -1,6 +1,8 @@
 import { jsPDF } from "jspdf";
 import type { Certificate } from "@/types/quiz";
 
+type PdfColor = readonly [number, number, number];
+
 async function logoDataUrl(size: number, opacity = 1): Promise<string | null> {
   if (typeof document === "undefined") return null;
 
@@ -40,6 +42,89 @@ function centeredText(
   return y + Math.max(0, lines.length - 1) * lineHeight;
 }
 
+function setDrawColor(doc: jsPDF, color: PdfColor): void {
+  doc.setDrawColor(color[0], color[1], color[2]);
+}
+
+function setFillColor(doc: jsPDF, color: PdfColor): void {
+  doc.setFillColor(color[0], color[1], color[2]);
+}
+
+function drawCornerOrnament(
+  doc: jsPDF,
+  x: number,
+  y: number,
+  horizontal: 1 | -1,
+  vertical: 1 | -1,
+  blue: PdfColor,
+  gold: PdfColor,
+): void {
+  setDrawColor(doc, gold);
+  doc.setLineWidth(3);
+  doc.line(x, y, x + horizontal * 86, y);
+  doc.line(x, y, x, y + vertical * 86);
+
+  setDrawColor(doc, blue);
+  doc.setLineWidth(1.1);
+  doc.line(x + horizontal * 14, y + vertical * 14, x + horizontal * 70, y + vertical * 14);
+  doc.line(x + horizontal * 14, y + vertical * 14, x + horizontal * 14, y + vertical * 70);
+
+  setFillColor(doc, [251, 252, 248]);
+  setDrawColor(doc, gold);
+  doc.setLineWidth(1);
+  doc.circle(x + horizontal * 34, y + vertical * 34, 5, "FD");
+  setFillColor(doc, blue);
+  doc.circle(x + horizontal * 34, y + vertical * 34, 1.8, "F");
+}
+
+function drawCertificateFrame(
+  doc: jsPDF,
+  width: number,
+  height: number,
+  blue: PdfColor,
+  gold: PdfColor,
+): void {
+  setDrawColor(doc, [15, 23, 42]);
+  doc.setLineWidth(1.2);
+  doc.rect(22, 22, width - 44, height - 44);
+
+  setDrawColor(doc, blue);
+  doc.setLineWidth(4);
+  doc.roundedRect(30, 30, width - 60, height - 60, 8, 8, "S");
+
+  setDrawColor(doc, gold);
+  doc.setLineWidth(1.4);
+  doc.rect(43, 43, width - 86, height - 86);
+
+  setDrawColor(doc, [203, 213, 225]);
+  doc.setLineWidth(0.8);
+  doc.rect(56, 56, width - 112, height - 112);
+
+  setFillColor(doc, [232, 240, 254]);
+  doc.rect(width / 2 - 120, 30, 240, 4, "F");
+  doc.rect(width / 2 - 120, height - 34, 240, 4, "F");
+  setFillColor(doc, [245, 229, 184]);
+  doc.rect(width / 2 - 82, 43, 164, 2, "F");
+  doc.rect(width / 2 - 82, height - 45, 164, 2, "F");
+
+  drawCornerOrnament(doc, 49, 49, 1, 1, blue, gold);
+  drawCornerOrnament(doc, width - 49, 49, -1, 1, blue, gold);
+  drawCornerOrnament(doc, 49, height - 49, 1, -1, blue, gold);
+  drawCornerOrnament(doc, width - 49, height - 49, -1, -1, blue, gold);
+}
+
+function drawDivider(doc: jsPDF, width: number, y: number, blue: PdfColor, gold: PdfColor): void {
+  setDrawColor(doc, gold);
+  doc.setLineWidth(1.2);
+  doc.line(width / 2 - 128, y, width / 2 - 22, y);
+  doc.line(width / 2 + 22, y, width / 2 + 128, y);
+  setFillColor(doc, blue);
+  doc.circle(width / 2, y, 3.2, "F");
+  setFillColor(doc, gold);
+  doc.circle(width / 2 - 12, y, 2, "F");
+  doc.circle(width / 2 + 12, y, 2, "F");
+}
+
 /** Render a certificate as a landscape A4 PDF and trigger a download. */
 export async function downloadCertificatePdf(
   certificate: Certificate,
@@ -53,6 +138,7 @@ export async function downloadCertificatePdf(
   const slate = [100, 116, 139] as const;
   const blue = [37, 99, 235] as const;
   const emerald = [4, 120, 87] as const;
+  const gold = [180, 132, 45] as const;
   const issuedDate = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "long",
@@ -67,12 +153,7 @@ export async function downloadCertificatePdf(
     doc.addImage(watermark, "PNG", width / 2 - 160, height / 2 - 160, 320, 320);
   }
 
-  doc.setDrawColor(blue[0], blue[1], blue[2]);
-  doc.setLineWidth(4);
-  doc.rect(28, 28, width - 56, height - 56);
-  doc.setDrawColor(203, 213, 225);
-  doc.setLineWidth(1);
-  doc.rect(42, 42, width - 84, height - 84);
+  drawCertificateFrame(doc, width, height, blue, gold);
 
   if (logo) {
     doc.addImage(logo, "PNG", 72, 58, 44, 44);
@@ -99,15 +180,16 @@ export async function downloadCertificatePdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(11);
   doc.text("CERTIFICATE OF ACHIEVEMENT", width / 2, 132, { align: "center" });
+  drawDivider(doc, width, 148, blue, gold);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(13);
-  doc.text("This certifies that", width / 2, 170, { align: "center" });
+  doc.text("This certifies that", width / 2, 174, { align: "center" });
 
   doc.setTextColor(navy[0], navy[1], navy[2]);
   doc.setFont("helvetica", "bold");
   doc.setFontSize(certificate.playerName.length > 28 ? 28 : 36);
-  const nameBottom = centeredText(doc, certificate.playerName, width / 2, 214, width - 190, 34);
+  const nameBottom = centeredText(doc, certificate.playerName, width / 2, 218, width - 190, 34);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(13);
