@@ -146,14 +146,14 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
 ];
 
 const LEVEL_TARGETS: Record<string, number> = {
-  foundations: 320,
-  secondary: 360,
-  college: 400,
-  professional: 420,
+  foundations: 500,
+  secondary: 500,
+  college: 500,
+  professional: 500,
 };
 
 function targetFor(levelId: string, section: SectionDefinition): number {
-  return section.target ?? LEVEL_TARGETS[levelId] ?? 300;
+  return section.target ?? LEVEL_TARGETS[levelId] ?? 500;
 }
 
 function buildQuizzes(): Quiz[] {

@@ -9,17 +9,29 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
 
   const questionById = new Map(quiz.questions.map((question) => [question.id, question]));
   const answeredIds = Object.keys(payload.answers);
-  if (answeredIds.some((id) => !questionById.has(id))) return null;
+  const submittedQuestionIds =
+    payload.questionIds && payload.questionIds.length > 0 ? payload.questionIds : answeredIds;
+  const uniqueQuestionIds = new Set(submittedQuestionIds);
+  if (
+    submittedQuestionIds.length === 0 ||
+    uniqueQuestionIds.size !== submittedQuestionIds.length ||
+    submittedQuestionIds.some((id) => !questionById.has(id))
+  ) {
+    return null;
+  }
+  const submittedQuestionSet = new Set(submittedQuestionIds);
+  if (answeredIds.some((id) => !submittedQuestionSet.has(id))) return null;
   if (
     answeredIds.some((id) => {
+      const question = questionById.get(id);
       const answer = payload.answers[id];
-      return answer === undefined || answer >= (questionById.get(id)?.options.length ?? 0);
+      return answer === undefined || !question || answer >= question.options.length;
     })
   ) {
     return null;
   }
 
-  const graded = quiz.questions;
+  const graded = submittedQuestionIds.map((id) => questionById.get(id)!);
   const correctAnswers: Record<string, boolean> = {};
   const correctOptionIndices: Record<string, number> = {};
   const explanations: Record<string, string> = {};
@@ -58,7 +70,7 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   };
   const leaderboardResult = leaderboardModel.recordBestEntry(entry);
 
-  const fullSection = answeredIds.length === quiz.questions.length;
+  const fullSection = graded.length === quiz.questions.length;
   const passed = percentage >= PASS_MARK;
   let certificate: Certificate | null = null;
   let certificateMessage: string;

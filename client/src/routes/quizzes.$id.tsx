@@ -151,6 +151,7 @@ function QuizPage() {
         visitorId: getVisitorId(),
         countryCode: attemptCountry?.iso ?? null,
         countryName: attemptCountry?.name ?? null,
+        questionIds: questions.map((question) => question.id),
         answers,
         timeSpentSeconds,
       });
@@ -349,7 +350,7 @@ function QuizPage() {
                 {
                   value: "full",
                   title: "Full section (certificate eligible)",
-                  copy: "All 300-500 questions, untimed and self-paced. Pause any time; score 80%+ to earn a certificate.",
+                  copy: "All 500 questions, untimed and self-paced. Pause any time; score 80%+ to earn a certificate.",
                 },
               ] as { value: Mode; title: string; copy: string }[]
             ).map((option) => (

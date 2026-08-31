@@ -140,6 +140,7 @@ export async function submitAnswers(payload: {
   visitorId?: string | null;
   countryCode?: string | null;
   countryName?: string | null;
+  questionIds?: string[];
   answers: Record<string, number>;
   timeSpentSeconds: number;
 }): Promise<{ result: AnswerResult }> {

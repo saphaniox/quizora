@@ -39,6 +39,7 @@ const answerSchema = z
     visitorId: optionalVisitorId,
     countryCode: optionalCountryCode,
     countryName: optionalCountryName,
+    questionIds: z.array(z.string().min(1).max(120)).max(500).optional(),
     answers: z
       .record(z.string().max(120), z.number().int().min(0).max(20))
       .refine(

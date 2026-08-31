@@ -136,6 +136,7 @@ export interface Certificate {
 export interface AnswerPayload {
   quizId: string;
   playerName: string;
+  questionIds?: string[];
   answers: Record<string, number>;
   visitorId?: string | null;
   countryCode?: string | null;

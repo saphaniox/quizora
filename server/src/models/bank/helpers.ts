@@ -115,13 +115,13 @@ export interface SectionDefinition {
   name: string;
   description: string;
   difficulty: Difficulty;
-  /** How many questions the finished section should contain (300–500). */
+  /** How many questions the finished section should contain. */
   target?: number;
   build: () => Draft[];
 }
 
 /* ---------------------------------------------------------------------- */
-/* Section expansion: grow an authored core into a full 300–500 question   */
+/* Section expansion: grow an authored core into the full certificate set. */
 /* section by re-asking each fact in several genuinely different ways.     */
 /* ---------------------------------------------------------------------- */
 
@@ -224,4 +224,3 @@ export function expandTo(sectionId: string, base: Draft[], target: number): Draf
 
   return out.slice(0, target);
 }
-

@@ -280,7 +280,7 @@ function AdminPage() {
     const shortDescriptions = sectionSource.filter(
       (section) => section.description.trim().length < 80,
     );
-    const longRuns = sectionSource.filter((section) => section.questionCount >= 450);
+    const nonStandardRuns = sectionSource.filter((section) => section.questionCount !== 500);
     const repeatedTitles = sectionSource.filter((section, index, list) => {
       return (
         list.findIndex(
@@ -297,10 +297,10 @@ function AdminPage() {
         tone: shortDescriptions.length ? "warning" : "ready",
       },
       {
-        label: "Long certificate runs",
-        value: longRuns.length,
-        detail: "Sections at 450+ questions. Confirm learners can pause and resume.",
-        tone: longRuns.length ? "warning" : "ready",
+        label: "Certificate length",
+        value: nonStandardRuns.length,
+        detail: "Full certificate sections should use the 500-question standard.",
+        tone: nonStandardRuns.length ? "warning" : "ready",
       },
       {
         label: "Repeated titles",

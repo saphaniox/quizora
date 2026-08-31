@@ -366,7 +366,7 @@ const topic = (
   name,
   description,
   difficulty: "Medium",
-  target: 420,
+  target: 500,
   build: () => facts(entries),
 });
 
