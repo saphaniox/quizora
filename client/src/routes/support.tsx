@@ -1,6 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Bug, FileText, LifeBuoy, Mail, ShieldQuestion } from "lucide-react";
 
+const CONTACT_EMAIL = "quitech@saptechug.com";
+
 export const Route = createFileRoute("/support")({
   head: () => ({
     meta: [
@@ -25,22 +27,22 @@ export const Route = createFileRoute("/support")({
 const helpOptions = [
   {
     title: "Account help",
-    body: "Sign-in problems, profile questions, password issues, and deletion requests.",
+    body: "Trouble signing in, updating your profile, recovering access, or deleting an account.",
     icon: LifeBuoy,
   },
   {
     title: "Quiz or certificate issue",
-    body: "Wrong answer feedback, missing certificate records, leaderboard concerns, or verification issues.",
+    body: "A score looks wrong, a certificate is missing, or a leaderboard entry needs checking.",
     icon: FileText,
   },
   {
     title: "Privacy and safety",
-    body: "Data access, correction, deletion, ads privacy, and user safety questions.",
+    body: "Questions about your data, ads privacy, account deletion, or keeping the app safe.",
     icon: ShieldQuestion,
   },
   {
     title: "Bug report",
-    body: "Broken pages, failed requests, loading problems, or anything that feels off in the app.",
+    body: "Something will not load, a button is stuck, or the app is behaving strangely.",
     icon: Bug,
   },
 ] as const;
@@ -54,11 +56,12 @@ function SupportPage() {
           Support
         </span>
         <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          We are here when something needs a human.
+          Talk to us when something needs a human.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Tell us what happened, which quiz or certificate was involved, and the email address or
-          phone number on your account if you have one. We aim to respond as quickly as possible.
+          Send one clear message and we will help from there. Include the quiz name, certificate
+          code, account email or phone number, and what you expected to happen if those details
+          apply.
         </p>
       </div>
 
@@ -78,26 +81,17 @@ function SupportPage() {
         <h2 className="text-xl font-semibold tracking-tight text-card-foreground">
           Contact Quitech
         </h2>
-        <div className="mt-5 grid gap-3 text-sm sm:grid-cols-2">
-          <a
-            href="mailto:support@quitech.online"
-            className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-3 font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            <Mail className="h-4 w-4 text-primary" />
-            support@quitech.online
-          </a>
-          <a
-            href="mailto:privacy@quitech.online"
-            className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-3 font-medium text-foreground transition-colors hover:bg-accent"
-          >
-            <Mail className="h-4 w-4 text-primary" />
-            privacy@quitech.online
-          </a>
-        </div>
+        <a
+          href={`mailto:${CONTACT_EMAIL}?subject=Quitech support`}
+          className="mt-5 inline-flex w-full items-center gap-3 rounded-md border border-input bg-background px-4 py-3 text-sm font-medium text-foreground transition-colors hover:bg-accent sm:w-auto"
+        >
+          <Mail className="h-4 w-4 text-primary" />
+          {CONTACT_EMAIL}
+        </a>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Signed-in users can delete their account from the certificate wallet. If you cannot sign
-          in, email privacy support with the email address or phone number connected to your
-          account.
+          in, email us with the address or phone number connected to your account and use the
+          subject "Delete my Quitech account".
         </p>
         <Link
           to="/wallet"

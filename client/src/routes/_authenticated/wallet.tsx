@@ -1,4 +1,5 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import {
   Award,
   CheckCircle2,
@@ -42,6 +43,7 @@ export const Route = createFileRoute("/_authenticated/wallet")({
 
 function WalletPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [certificates, setCertificates] = useState<Certificate[]>([]);
   const [user, setUser] = useState<AccountUser | null>(null);
   const [loadingUser, setLoadingUser] = useState(true);
@@ -93,6 +95,7 @@ function WalletPage() {
     try {
       await deleteCurrentAccount();
       setUser(null);
+      queryClient.setQueryData(["auth", "me"], { user: null });
       setDeleteOpen(false);
       setConfirmation("");
       setDeleteMessage("Your account has been deleted. You are being signed out.");
@@ -113,6 +116,7 @@ function WalletPage() {
     try {
       await logoutAccount();
       setUser(null);
+      queryClient.setQueryData(["auth", "me"], { user: null });
       void navigate({ to: "/", replace: true });
     } catch (failure) {
       const message = failure instanceof Error ? failure.message : "Sign out failed";

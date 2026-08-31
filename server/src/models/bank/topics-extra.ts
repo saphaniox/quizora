@@ -131,7 +131,7 @@ export const primaryExtraTopics: SectionDefinition[] = [
     );
   }),
   factSection("foundations-spelling", "Spelling & Grammar", "Plurals, tenses, punctuation and word classes.", "Easy", spellingFacts),
-  factSection("foundations-health", "Health & Hygiene", "Staying clean, eating well and preventing illness.", "Easy", healthFacts),
+  factSection("foundations-wellbeing", "Wellbeing Essentials", "Staying clean, eating well and preventing illness.", "Easy", healthFacts),
   factSection("foundations-world", "World Geography", "Capitals, continents, rivers and landmarks.", "Easy", capitalFacts),
 ];
 
@@ -263,8 +263,8 @@ export const secondaryExtraTopics: SectionDefinition[] = [
   factSection("secondary-chemistry-formulas", "Chemistry Essentials", "Formulas, symbols, bonding and atomic structure.", "Medium", chemFacts),
   factSection("secondary-human-biology", "Human Biology", "Cells, organs, systems and genetics.", "Medium", bioFacts),
   factSection("secondary-world-history", "World History", "Key events, leaders and turning points.", "Medium", historyFacts),
-  factSection("secondary-literature", "Literature in English", "Figures of speech, plot, poetry and drama.", "Medium", litFacts),
-  factSection("secondary-computer-studies", "Computer Studies", "Hardware, software, networks and data.", "Medium", compFacts),
+  factSection("secondary-literature-in-english", "Literature in English", "Figures of speech, plot, poetry and drama.", "Medium", litFacts),
+  factSection("secondary-computer-systems", "Computer Systems", "Hardware, software, networks and data.", "Medium", compFacts),
 ];
 
 /* =============================== COLLEGE ================================= */
@@ -408,7 +408,7 @@ const researchFacts: [string, string][] = [
 ];
 
 export const collegeExtraTopics: SectionDefinition[] = [
-  genSection("college-linear-algebra", "Linear Algebra", "Determinants, matrices and vector operations.", "Hard", (index, random) => {
+  genSection("college-matrix-vector-algebra", "Matrix & Vector Algebra", "Determinants, matrices and vector operations.", "Hard", (index, random) => {
     const a = int(random, 1, 9);
     const b = int(random, 1, 9);
     const c = int(random, 1, 9);
@@ -446,7 +446,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
       `For independent events, P(A and B) = ${p1} × ${p2} = ${joint.toFixed(3)}.`,
     );
   }),
-  factSection("college-accounting", "Financial Accounting", "Statements, double entry, ratios and standards.", "Medium", accountingFacts),
+  factSection("college-financial-accounting", "Financial Accounting", "Statements, double entry, ratios and standards.", "Medium", accountingFacts),
   factSection("college-business-law", "Business Law", "Contracts, torts, companies and intellectual property.", "Medium", lawFacts),
   factSection("college-data-structures", "Data Structures & Algorithms", "Complexity, sorting, trees and graphs.", "Hard", dsFacts),
   factSection("college-operating-systems", "Operating Systems", "Processes, memory, scheduling and file systems.", "Hard", osFacts),

@@ -257,8 +257,8 @@ export const primaryExtraTopics: SectionDefinition[] = [
     spellingFacts,
   ),
   factSection(
-    "foundations-health",
-    "Health & Hygiene",
+    "foundations-wellbeing",
+    "Wellbeing Essentials",
     "Staying clean, eating well and preventing illness.",
     "Easy",
     healthFacts,
@@ -521,15 +521,15 @@ export const secondaryExtraTopics: SectionDefinition[] = [
     historyFacts,
   ),
   factSection(
-    "secondary-literature",
+    "secondary-literature-in-english",
     "Literature in English",
     "Figures of speech, plot, poetry and drama.",
     "Medium",
     litFacts,
   ),
   factSection(
-    "secondary-computer-studies",
-    "Computer Studies",
+    "secondary-computer-systems",
+    "Computer Systems",
     "Hardware, software, networks and data.",
     "Medium",
     compFacts,
@@ -681,8 +681,8 @@ const researchFacts: [string, string][] = [
 
 export const collegeExtraTopics: SectionDefinition[] = [
   genSection(
-    "college-linear-algebra",
-    "Linear Algebra",
+    "college-matrix-vector-algebra",
+    "Matrix & Vector Algebra",
     "Determinants, matrices and vector operations.",
     "Hard",
     (index, random) => {
@@ -736,7 +736,7 @@ export const collegeExtraTopics: SectionDefinition[] = [
     },
   ),
   factSection(
-    "college-accounting",
+    "college-financial-accounting",
     "Financial Accounting",
     "Statements, double entry, ratios and standards.",
     "Medium",

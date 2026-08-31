@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as certificateModel from "../models/certificateModel.js";
 import * as leaderboardModel from "../models/leaderboardModel.js";
 import * as progressModel from "../models/progressModel.js";
+import * as quizModel from "../models/quizModel.js";
 import * as auth from "../services/authService.js";
 import type { User } from "../services/authService.js";
 import {
@@ -63,6 +64,13 @@ const progressSchema = z.object({
   deviceLabel: z.string().trim().max(80).nullable().optional(),
 });
 
+const catalogueDraftSchema = z.object({
+  title: z.string().trim().min(2).max(120),
+  description: z.string().trim().min(40).max(500),
+  difficulty: z.enum(["Easy", "Medium", "Hard"]),
+  published: z.boolean(),
+});
+
 async function requireUser(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -71,6 +79,19 @@ async function requireUser(
   const user = await auth.getUser(readSessionToken(request));
   if (!user) {
     reply.code(401).send({ error: message });
+    return null;
+  }
+  return user;
+}
+
+async function requireAdmin(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<User | null> {
+  const user = await requireUser(request, reply, "Sign in as an admin");
+  if (!user) return null;
+  if (user.role !== "admin") {
+    reply.code(403).send({ error: "Admin access required" });
     return null;
   }
   return user;
@@ -233,4 +254,90 @@ export async function deleteAccount(
     return;
   }
   clearSessionCookie(reply).send({ ok: true });
+}
+
+export async function deleteLeaderboardEntry(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const params = request.params as { id?: string };
+  const id = params.id?.trim();
+  if (!id) {
+    reply.code(400).send({ error: "Leaderboard record id is required" });
+    return;
+  }
+
+  const deleted = await leaderboardModel.remove(id);
+  if (!deleted) {
+    reply.code(404).send({ error: "Leaderboard record not found" });
+    return;
+  }
+
+  reply.send({ ok: true });
+}
+
+export async function getAdminCatalogue(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  reply.send({ sections: await quizModel.listAdminSections() });
+}
+
+export async function getAdminAuditLog(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  reply.send({ auditLog: await quizModel.listAdminAuditLog() });
+}
+
+export async function saveCatalogueDraft(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const params = request.params as { sectionId?: string };
+  const sectionId = params.sectionId?.trim();
+  const parsed = catalogueDraftSchema.safeParse(request.body);
+  if (!sectionId || !parsed.success) {
+    reply.code(400).send({ error: "Invalid catalogue draft" });
+    return;
+  }
+
+  const section = await quizModel.saveCatalogueDraft(sectionId, parsed.data, admin.id);
+  if (!section) {
+    reply.code(404).send({ error: "Catalogue section not found" });
+    return;
+  }
+  reply.send({ section });
+}
+
+export async function publishCatalogueSection(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const params = request.params as { sectionId?: string };
+  const sectionId = params.sectionId?.trim();
+  if (!sectionId) {
+    reply.code(400).send({ error: "Catalogue section id is required" });
+    return;
+  }
+
+  const section = await quizModel.publishCatalogueSection(sectionId, admin.id);
+  if (!section) {
+    reply.code(404).send({ error: "Save a draft before publishing this section" });
+    return;
+  }
+  reply.send({ section });
 }

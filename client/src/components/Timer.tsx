@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Clock, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -6,32 +6,46 @@ interface TimerProps {
   totalSeconds: number;
   onExpire: () => void;
   running: boolean;
+  startedAtMs: number;
   className?: string;
 }
 
-export function Timer({ totalSeconds, onExpire, running, className }: TimerProps) {
+function secondsLeft(totalSeconds: number, startedAtMs: number): number {
+  const deadline = startedAtMs + totalSeconds * 1000;
+  return Math.max(0, Math.ceil((deadline - Date.now()) / 1000));
+}
+
+export function Timer({ totalSeconds, onExpire, running, startedAtMs, className }: TimerProps) {
   const [remaining, setRemaining] = useState(totalSeconds);
+  const onExpireRef = useRef(onExpire);
+  const expiredRef = useRef(false);
 
   useEffect(() => {
-    setRemaining(totalSeconds);
-  }, [totalSeconds]);
+    onExpireRef.current = onExpire;
+  }, [onExpire]);
 
   useEffect(() => {
-    if (!running) return;
+    expiredRef.current = false;
+    setRemaining(secondsLeft(totalSeconds, startedAtMs));
+  }, [startedAtMs, totalSeconds]);
 
-    const interval = setInterval(() => {
-      setRemaining((prev) => {
-        if (prev <= 1) {
-          clearInterval(interval);
-          onExpire();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
+  useEffect(() => {
+    if (!running || totalSeconds <= 0) return;
 
-    return () => clearInterval(interval);
-  }, [running, onExpire]);
+    const sync = () => {
+      const nextRemaining = secondsLeft(totalSeconds, startedAtMs);
+      setRemaining(nextRemaining);
+      if (nextRemaining === 0 && !expiredRef.current) {
+        expiredRef.current = true;
+        onExpireRef.current();
+      }
+    };
+
+    sync();
+    const interval = window.setInterval(sync, 250);
+
+    return () => window.clearInterval(interval);
+  }, [running, startedAtMs, totalSeconds]);
 
   const minutes = Math.floor(remaining / 60);
   const seconds = remaining % 60;

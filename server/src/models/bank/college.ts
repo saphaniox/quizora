@@ -330,7 +330,7 @@ export const collegeSections: SectionDefinition[] = [
   { id: "college-calculus", name: "Calculus", description: "Differentiation, integration and limits.", difficulty: "Hard", build: calculusBank },
   { id: "college-statistics", name: "Statistics", description: "Descriptive statistics, distributions and hypothesis testing.", difficulty: "Hard", build: statisticsBank },
   { id: "college-programming", name: "Computer Programming", description: "Algorithms, data structures, OOP and web basics.", difficulty: "Hard", build: programmingBank },
-  { id: "college-economics", name: "Economics", description: "Micro and macro principles with applied calculations.", difficulty: "Hard", build: economicsBank },
+  { id: "college-economics", name: "College Economics", description: "Micro and macro principles with applied calculations.", difficulty: "Hard", build: economicsBank },
   { id: "college-digital-logic", name: "Digital Logic", description: "Number systems, logic gates and binary arithmetic.", difficulty: "Hard", build: digitalLogicBank },
   { id: "college-accounting", name: "Accounting", description: "Financial statements, double entry and ratios.", difficulty: "Hard", build: accountingBank },
 ];

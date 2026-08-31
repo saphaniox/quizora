@@ -119,7 +119,7 @@ function PrivacyPage() {
             infrastructure to protect account data. We keep account and quiz records while your
             account is active or while they are needed for security, support, certificate
             verification, legal, or abuse-prevention reasons. Signed-in users can delete their
-            account from the certificate wallet. If you cannot sign in, email privacy support with
+            account from the certificate wallet. If you cannot sign in, email Quitech support with
             the email address or phone number connected to your account.
           </p>
         </div>
@@ -130,9 +130,9 @@ function PrivacyPage() {
             For privacy questions, corrections, or deletion help, contact{" "}
             <a
               className="font-medium text-primary hover:underline"
-              href="mailto:privacy@quitech.online"
+              href="mailto:quitech@saptechug.com"
             >
-              privacy@quitech.online
+              quitech@saptechug.com
             </a>
             .
           </p>

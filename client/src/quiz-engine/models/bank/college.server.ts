@@ -422,7 +422,7 @@ export const collegeSections: SectionDefinition[] = [
   },
   {
     id: "college-economics",
-    name: "Economics",
+    name: "College Economics",
     description: "Micro and macro principles with applied calculations.",
     difficulty: "Hard",
     build: economicsBank,

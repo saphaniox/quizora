@@ -11,9 +11,10 @@ import {
   UserRound,
   X,
 } from "lucide-react";
-import { useEffect, useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
-import { getCurrentUser, type AccountUser } from "@/lib/api";
+import { getCurrentUser } from "@/lib/api";
 
 const links = [
   { to: "/", label: "Quizzes", icon: Home },
@@ -24,21 +25,12 @@ const links = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [user, setUser] = useState<AccountUser | null>(null);
-
-  useEffect(() => {
-    let alive = true;
-    void getCurrentUser()
-      .then(({ user }) => {
-        if (alive) setUser(user);
-      })
-      .catch(() => {
-        if (alive) setUser(null);
-      });
-    return () => {
-      alive = false;
-    };
-  }, []);
+  const { data } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => getCurrentUser(),
+    retry: false,
+  });
+  const user = data?.user ?? null;
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">

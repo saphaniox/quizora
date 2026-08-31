@@ -363,7 +363,7 @@ export const professionalSections: SectionDefinition[] = [
   { id: "professional-electrical", name: "Electrical Engineering", description: "Ohm's law, circuits, machines, protection and site safety.", difficulty: "Hard", build: electricalBank },
   { id: "professional-it", name: "IT & Networking", description: "Protocols, ports, subnetting, security and operations.", difficulty: "Hard", build: networkingBank },
   { id: "professional-finance", name: "Business & Finance", description: "Strategy, financial analysis and interest calculations.", difficulty: "Hard", build: financeBank },
-  { id: "professional-project-management", name: "Project Management", description: "Scope, schedule, risk, agile and stakeholder management.", difficulty: "Hard", build: projectBank },
+  { id: "professional-project-management", name: "Professional Project Management", description: "Scope, schedule, risk, agile and stakeholder management.", difficulty: "Hard", build: projectBank },
   { id: "professional-safety", name: "Health & Safety", description: "Risk assessment, PPE, fire, electrical and site safety.", difficulty: "Hard", build: safetyBank },
   { id: "professional-data-ai", name: "Data & AI", description: "Machine learning, data engineering and model evaluation.", difficulty: "Hard", build: dataAiBank },
 ];

@@ -23,8 +23,27 @@ import { popularTopicSections } from "./bank/popular-topics.server";
 
 export const PASS_MARK = 80;
 
+const descriptionTails: Record<string, string> = {
+  foundations: "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+  secondary: "Built for focused revision, confident recall, and steady exam-style practice.",
+  college: "Built for higher-level practice, applied reasoning, and certificate-ready review.",
+  professional:
+    "Built for practical workplace review, interview preparation, and certification practice.",
+  "popular-topics":
+    "Built for curious learners who want quick recall, challenge, and steady progress.",
+};
+
 function foundationDescription(description: string): string {
   return description.replace(/^Number work,/, "Core number work,");
+}
+
+function sectionDescription(levelId: string, description: string): string {
+  const base = description.trim();
+  if (base.length >= 80) return base;
+  const tail =
+    descriptionTails[levelId] ??
+    "Built for focused practice, useful recall, and steady learning progress.";
+  return `${base} ${tail}`;
 }
 
 function foundationName(name: string): string {
@@ -65,8 +84,8 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   },
   {
     id: "secondary",
-    name: "Secondary School",
-    tagline: "Teen-focused exam practice across the core subjects.",
+    name: "Secondary Education",
+    tagline: "Focused 13+ revision across core secondary-level subjects.",
     ageRange: "Ages 13+",
     order: 2,
     sections: [
@@ -115,7 +134,7 @@ const LEVEL_TARGETS: Record<string, number> = {
   foundations: 320,
   secondary: 360,
   college: 400,
-  professional: 500,
+  professional: 420,
 };
 
 function targetFor(levelId: string, section: SectionDefinition): number {
@@ -149,7 +168,7 @@ function summaryFor(meta: SectionMeta): QuizSummary {
   return {
     id: meta.section.id,
     title: meta.section.name,
-    description: meta.section.description,
+    description: sectionDescription(meta.level.id, meta.section.description),
     category: meta.section.name,
     levelId: meta.level.id,
     levelName: meta.level.name,
@@ -173,7 +192,7 @@ function buildQuiz(meta: SectionMeta): Quiz {
   const quiz: Quiz = {
     id: meta.section.id,
     title: meta.section.name,
-    description: meta.section.description,
+    description: sectionDescription(meta.level.id, meta.section.description),
     category: meta.section.name,
     levelId: meta.level.id,
     levelName: meta.level.name,

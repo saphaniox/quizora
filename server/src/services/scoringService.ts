@@ -14,7 +14,7 @@ export async function scoreSubmission(
   payload: AnswerPayload,
   user: User | null = null,
 ): Promise<AnswerResult | null> {
-  const quiz = findQuiz(payload.quizId);
+  const quiz = await findQuiz(payload.quizId);
   if (!quiz) return null;
 
   const questionById = new Map(

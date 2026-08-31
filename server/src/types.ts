@@ -34,6 +34,36 @@ export interface QuizSummary {
   questionCount: number;
 }
 
+export type CatalogueStatus = "published" | "draft" | "unpublished";
+
+export interface AdminCatalogueSection extends QuizSummary {
+  baseTitle: string;
+  baseDescription: string;
+  baseDifficulty: Difficulty;
+  draftTitle: string;
+  draftDescription: string;
+  draftDifficulty: Difficulty;
+  draftPublished: boolean;
+  publishedTitle: string;
+  publishedDescription: string;
+  publishedDifficulty: Difficulty;
+  published: boolean;
+  hasDraftChanges: boolean;
+  status: CatalogueStatus;
+  updatedAt: string | null;
+  publishedAt: string | null;
+}
+
+export interface AdminAuditEntry {
+  id: string;
+  actorId: string | null;
+  action: string;
+  entityType: string;
+  entityId: string;
+  metadata: Record<string, unknown>;
+  createdAt: string;
+}
+
 export interface Level {
   id: string;
   name: string;

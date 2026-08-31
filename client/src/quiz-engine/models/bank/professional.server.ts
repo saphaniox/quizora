@@ -432,7 +432,7 @@ export const professionalSections: SectionDefinition[] = [
   },
   {
     id: "professional-project-management",
-    name: "Project Management",
+    name: "Professional Project Management",
     description: "Scope, schedule, risk, agile and stakeholder management.",
     difficulty: "Hard",
     build: projectBank,

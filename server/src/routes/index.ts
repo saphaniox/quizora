@@ -43,6 +43,11 @@ const routes: FastifyPluginAsync = async (app) => {
   app.delete("/auth/me/progress/:quizId", authController.deleteProgress);
   app.delete("/auth/me", authController.deleteAccount);
   app.post("/auth/logout", authController.logout);
+  app.get("/admin/catalogue", authController.getAdminCatalogue);
+  app.get("/admin/audit-log", authController.getAdminAuditLog);
+  app.put("/admin/catalogue/:sectionId", authController.saveCatalogueDraft);
+  app.post("/admin/catalogue/:sectionId/publish", authController.publishCatalogueSection);
+  app.delete("/admin/leaderboard/:id", authController.deleteLeaderboardEntry);
 };
 
 export default routes;

@@ -2,6 +2,9 @@ import type {
   Quiz,
   QuizSummary,
   AnswerResult,
+  AdminAuditEntry,
+  AdminCatalogueSection,
+  Difficulty,
   LeaderboardEntry,
   Level,
   Certificate,
@@ -24,6 +27,13 @@ export interface HealthStatus {
 export interface AccountProgress extends SavedProgress {
   version: number;
   deviceLabel: string | null;
+}
+
+export interface CatalogueDraftPayload {
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  published: boolean;
 }
 
 const LOCAL_CONTENT_API_BASE = "/api";
@@ -224,4 +234,40 @@ export async function logoutAccount(): Promise<void> {
 
 export async function deleteCurrentAccount(): Promise<void> {
   await fetchJson<{ ok: true }>("/auth/me", { method: "DELETE" });
+}
+
+export async function deleteLeaderboardEntry(id: string): Promise<void> {
+  await fetchJson<{ ok: true }>(`/admin/leaderboard/${encodeURIComponent(id)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getAdminCatalogue(): Promise<{ sections: AdminCatalogueSection[] }> {
+  return fetchJson<{ sections: AdminCatalogueSection[] }>("/admin/catalogue");
+}
+
+export async function getAdminAuditLog(): Promise<{ auditLog: AdminAuditEntry[] }> {
+  return fetchJson<{ auditLog: AdminAuditEntry[] }>("/admin/audit-log");
+}
+
+export async function saveCatalogueDraft(
+  sectionId: string,
+  draft: CatalogueDraftPayload,
+): Promise<{ section: AdminCatalogueSection }> {
+  return fetchJson<{ section: AdminCatalogueSection }>(
+    `/admin/catalogue/${encodeURIComponent(sectionId)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify(draft),
+    },
+  );
+}
+
+export async function publishCatalogueSection(
+  sectionId: string,
+): Promise<{ section: AdminCatalogueSection }> {
+  return fetchJson<{ section: AdminCatalogueSection }>(
+    `/admin/catalogue/${encodeURIComponent(sectionId)}/publish`,
+    { method: "POST" },
+  );
 }

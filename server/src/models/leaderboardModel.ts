@@ -262,3 +262,38 @@ export async function count(options: LeaderboardFilters = {}): Promise<number> {
   );
   return Number(result.rows[0]?.count ?? 0);
 }
+
+export async function remove(id: string): Promise<boolean> {
+  const result = await pool.query<{ count: number }>(
+    `WITH target AS (
+       SELECT quiz_id, user_id, visitor_id
+       FROM leaderboard
+       WHERE id = $1
+     ),
+     deleted AS (
+       DELETE FROM leaderboard entry
+       USING target
+       WHERE (
+         target.user_id IS NOT NULL
+         AND entry.quiz_id = target.quiz_id
+         AND entry.user_id = target.user_id
+       )
+       OR (
+         target.user_id IS NULL
+         AND target.visitor_id IS NOT NULL
+         AND entry.quiz_id = target.quiz_id
+         AND entry.user_id IS NULL
+         AND entry.visitor_id = target.visitor_id
+       )
+       OR (
+         target.user_id IS NULL
+         AND target.visitor_id IS NULL
+         AND entry.id = $1
+       )
+       RETURNING entry.id
+     )
+     SELECT COUNT(*)::int AS count FROM deleted`,
+    [id],
+  );
+  return Number(result.rows[0]?.count ?? 0) > 0;
+}

@@ -1,6 +1,6 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Activity,
   AlertTriangle,
@@ -8,23 +8,48 @@ import {
   BookOpen,
   CheckCircle2,
   Database,
+  Eye,
+  EyeOff,
   FileQuestion,
   Gauge,
+  History,
   Layers3,
+  Loader2,
   LockKeyhole,
   LogIn,
+  PencilLine,
   Server,
   RefreshCw,
+  Save,
   Search,
+  Send,
   ShieldCheck,
   Trophy,
+  Trash2,
   UserRoundCheck,
   UsersRound,
   type LucideIcon,
 } from "lucide-react";
-import { getCurrentUser, getHealth, getLeaderboard, getLevels } from "@/lib/api";
+import {
+  deleteLeaderboardEntry,
+  getAdminAuditLog,
+  getAdminCatalogue,
+  getCurrentUser,
+  getHealth,
+  getLeaderboard,
+  getLevels,
+  publishCatalogueSection,
+  saveCatalogueDraft,
+} from "@/lib/api";
 import { cn } from "@/lib/utils";
-import type { Difficulty, LeaderboardEntry, Level, QuizSummary } from "@/types/quiz";
+import type {
+  AdminAuditEntry,
+  AdminCatalogueSection,
+  Difficulty,
+  LeaderboardEntry,
+  Level,
+  QuizSummary,
+} from "@/types/quiz";
 
 export const Route = createFileRoute("/_authenticated/admin")({
   head: () => ({
@@ -55,6 +80,13 @@ interface ReadinessItem {
   tone: StatusTone;
 }
 
+interface CatalogueDraftForm {
+  title: string;
+  description: string;
+  difficulty: Difficulty;
+  published: boolean;
+}
+
 const difficultyOrder: Difficulty[] = ["Easy", "Medium", "Hard"];
 
 function formatNumber(value: number): string {
@@ -77,9 +109,50 @@ function flattenSections(levels: Level[]): QuizSummary[] {
   return levels.flatMap((level) => level.sections);
 }
 
+function draftFromSection(section: AdminCatalogueSection): CatalogueDraftForm {
+  return {
+    title: section.draftTitle,
+    description: section.draftDescription,
+    difficulty: section.draftDifficulty,
+    published: section.draftPublished,
+  };
+}
+
+function isEditableSection(section: QuizSummary): section is AdminCatalogueSection {
+  return "draftTitle" in section;
+}
+
+function auditActionLabel(action: string): string {
+  if (action === "catalogue.draft_saved") return "Draft saved";
+  if (action === "catalogue.published") return "Published";
+  return action;
+}
+
+function auditDetail(entry: AdminAuditEntry): string {
+  const title =
+    typeof entry.metadata["title"] === "string" ? entry.metadata["title"] : entry.entityId;
+  const difficulty =
+    typeof entry.metadata["difficulty"] === "string" ? entry.metadata["difficulty"] : null;
+  const visible = typeof entry.metadata["visible"] === "boolean" ? entry.metadata["visible"] : null;
+  return [title, difficulty, visible === null ? null : visible ? "Visible" : "Hidden"]
+    .filter(Boolean)
+    .join(" / ");
+}
+
 function AdminPage() {
   const [query, setQuery] = useState("");
   const [selectedLevel, setSelectedLevel] = useState("all");
+  const [confirmingLeaderboardId, setConfirmingLeaderboardId] = useState<string | null>(null);
+  const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
+  const [catalogueDraft, setCatalogueDraft] = useState<CatalogueDraftForm | null>(null);
+  const [catalogueAction, setCatalogueAction] = useState<{
+    tone: StatusTone;
+    message: string;
+  } | null>(null);
+  const [leaderboardAction, setLeaderboardAction] = useState<{
+    tone: StatusTone;
+    message: string;
+  } | null>(null);
 
   const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
   const account = accountQuery.data?.user ?? null;
@@ -88,6 +161,16 @@ function AdminPage() {
   const levelsQuery = useQuery({
     queryKey: ["admin", "levels"],
     queryFn: () => getLevels(),
+    enabled: isAdmin,
+  });
+  const catalogueQuery = useQuery({
+    queryKey: ["admin", "catalogue"],
+    queryFn: () => getAdminCatalogue(),
+    enabled: isAdmin,
+  });
+  const auditQuery = useQuery({
+    queryKey: ["admin", "audit-log"],
+    queryFn: () => getAdminAuditLog(),
     enabled: isAdmin,
   });
   const leaderboardQuery = useQuery({
@@ -100,15 +183,68 @@ function AdminPage() {
     queryFn: () => getHealth(),
     enabled: isAdmin,
   });
+  const deleteLeaderboardMutation = useMutation({
+    mutationFn: deleteLeaderboardEntry,
+    onSuccess: () => {
+      setConfirmingLeaderboardId(null);
+      setLeaderboardAction({ tone: "ready", message: "Ranking record deleted." });
+      void leaderboardQuery.refetch();
+    },
+    onError: (error) => {
+      setLeaderboardAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not delete ranking record.",
+      });
+    },
+  });
+  const saveCatalogueMutation = useMutation({
+    mutationFn: ({ sectionId, draft }: { sectionId: string; draft: CatalogueDraftForm }) =>
+      saveCatalogueDraft(sectionId, draft),
+    onSuccess: ({ section }) => {
+      setCatalogueDraft(draftFromSection(section));
+      setCatalogueAction({ tone: "ready", message: "Draft saved." });
+      void catalogueQuery.refetch();
+      void levelsQuery.refetch();
+    },
+    onError: (error) => {
+      setCatalogueAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not save catalogue draft.",
+      });
+    },
+  });
+  const publishCatalogueMutation = useMutation({
+    mutationFn: async ({ sectionId, draft }: { sectionId: string; draft: CatalogueDraftForm }) => {
+      await saveCatalogueDraft(sectionId, draft);
+      return publishCatalogueSection(sectionId);
+    },
+    onSuccess: ({ section }) => {
+      setCatalogueDraft(draftFromSection(section));
+      setCatalogueAction({ tone: "ready", message: "Catalogue section published." });
+      void catalogueQuery.refetch();
+      void levelsQuery.refetch();
+    },
+    onError: (error) => {
+      setCatalogueAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not publish catalogue section.",
+      });
+    },
+  });
 
   const loadedLevels = levelsQuery.data?.levels;
   const levels = useMemo(() => loadedLevels ?? [], [loadedLevels]);
-  const sections = useMemo(() => flattenSections(levels), [levels]);
+  const loadedCatalogueSections = catalogueQuery.data?.sections;
+  const sections = useMemo(() => loadedCatalogueSections ?? [], [loadedCatalogueSections]);
+  const loadedAuditLog = auditQuery.data?.auditLog;
+  const auditLog = useMemo(() => loadedAuditLog ?? [], [loadedAuditLog]);
+  const fallbackSections = useMemo(() => flattenSections(levels), [levels]);
+  const sectionSource = sections.length ? sections : fallbackSections;
   const loadedLeaderboard = leaderboardQuery.data?.leaderboard;
   const leaderboard = useMemo(() => loadedLeaderboard ?? [], [loadedLeaderboard]);
   const visibleSections = useMemo(() => {
     const term = query.trim().toLowerCase();
-    return sections.filter((section) => {
+    return sectionSource.filter((section) => {
       const inLevel = selectedLevel === "all" || section.levelId === selectedLevel;
       const matches =
         !term ||
@@ -118,32 +254,34 @@ function AdminPage() {
         section.levelName.toLowerCase().includes(term);
       return inLevel && matches;
     });
-  }, [query, sections, selectedLevel]);
+  }, [query, sectionSource, selectedLevel]);
 
-  const totalQuestions =
-    levelsQuery.data?.totalQuestions ??
-    sections.reduce((sum, section) => sum + section.questionCount, 0);
-  const totalSections = sections.length;
+  const totalQuestions = sectionSource.reduce((sum, section) => sum + section.questionCount, 0);
+  const totalSections = sectionSource.length;
+  const publishedSections = sections.filter((section) => section.published).length;
+  const draftSections = sections.filter((section) => section.hasDraftChanges).length;
   const averageQuestions = totalSections ? Math.round(totalQuestions / totalSections) : 0;
 
   const difficultyCounts = useMemo(() => {
     return difficultyOrder.map((difficulty) => ({
       difficulty,
-      count: sections.filter((section) => section.difficulty === difficulty).length,
+      count: sectionSource.filter((section) => section.difficulty === difficulty).length,
     }));
-  }, [sections]);
+  }, [sectionSource]);
 
   const largestSections = useMemo(() => {
-    return sections
+    return sectionSource
       .slice()
       .sort((a, b) => b.questionCount - a.questionCount)
       .slice(0, 5);
-  }, [sections]);
+  }, [sectionSource]);
 
   const qaFlags = useMemo(() => {
-    const shortDescriptions = sections.filter((section) => section.description.trim().length < 80);
-    const longRuns = sections.filter((section) => section.questionCount >= 450);
-    const repeatedTitles = sections.filter((section, index, list) => {
+    const shortDescriptions = sectionSource.filter(
+      (section) => section.description.trim().length < 80,
+    );
+    const longRuns = sectionSource.filter((section) => section.questionCount >= 450);
+    const repeatedTitles = sectionSource.filter((section, index, list) => {
       return (
         list.findIndex(
           (candidate) => candidate.title.toLowerCase() === section.title.toLowerCase(),
@@ -171,7 +309,7 @@ function AdminPage() {
         tone: repeatedTitles.length ? "blocked" : "ready",
       },
     ] satisfies Array<{ label: string; value: number; detail: string; tone: StatusTone }>;
-  }, [sections]);
+  }, [sectionSource]);
 
   const activity = useMemo(() => summarizeActivity(leaderboard), [leaderboard]);
 
@@ -208,17 +346,27 @@ function AdminPage() {
       tone: "ready",
     },
     {
-      label: "Editorial tools",
+      label: "Catalogue governance",
       detail:
-        "Catalogue editing is still read-only. Add create, update, publish, and audit-log endpoints before editing content here.",
-      tone: "warning",
+        "Admins can save drafts, publish section updates, control visibility, and keep audit records in the API database.",
+      tone: "ready",
     },
   ];
 
   const loading =
     accountQuery.isLoading ||
-    (isAdmin && (levelsQuery.isLoading || leaderboardQuery.isLoading || healthQuery.isLoading));
-  const hasLoadError = levelsQuery.isError || leaderboardQuery.isError || healthQuery.isError;
+    (isAdmin &&
+      (levelsQuery.isLoading ||
+        catalogueQuery.isLoading ||
+        auditQuery.isLoading ||
+        leaderboardQuery.isLoading ||
+        healthQuery.isLoading));
+  const hasLoadError =
+    levelsQuery.isError ||
+    catalogueQuery.isError ||
+    auditQuery.isError ||
+    leaderboardQuery.isError ||
+    healthQuery.isError;
   const apiHealthy = healthQuery.data?.status === "ok";
   const accountContact =
     account?.email ?? account?.phoneE164 ?? account?.displayName ?? "Signed-in admin";
@@ -240,12 +388,15 @@ function AdminPage() {
     {
       icon: Database,
       label: "Data endpoints",
-      value: levelsQuery.isSuccess && leaderboardQuery.isSuccess ? "Responding" : "Loading",
-      detail: `${formatNumber(totalSections)} sections, ${formatNumber(leaderboard.length)} best score entries`,
+      value:
+        levelsQuery.isSuccess && catalogueQuery.isSuccess && leaderboardQuery.isSuccess
+          ? "Responding"
+          : "Loading",
+      detail: `${formatNumber(totalSections)} sections, ${formatNumber(publishedSections)} published, ${formatNumber(leaderboard.length)} best score entries`,
       tone:
-        levelsQuery.isError || leaderboardQuery.isError
+        levelsQuery.isError || catalogueQuery.isError || leaderboardQuery.isError
           ? "blocked"
-          : levelsQuery.isSuccess && leaderboardQuery.isSuccess
+          : levelsQuery.isSuccess && catalogueQuery.isSuccess && leaderboardQuery.isSuccess
             ? "ready"
             : "warning",
     },
@@ -335,6 +486,8 @@ function AdminPage() {
               onClick={() => {
                 void healthQuery.refetch();
                 void levelsQuery.refetch();
+                void catalogueQuery.refetch();
+                void auditQuery.refetch();
                 void leaderboardQuery.refetch();
               }}
               className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
@@ -379,7 +532,7 @@ function AdminPage() {
             icon={BookOpen}
             label="Sections"
             value={formatNumber(totalSections)}
-            detail="Queryable quiz sections"
+            detail={`${formatNumber(publishedSections)} published, ${formatNumber(draftSections)} drafts`}
           />
           <MetricCard
             icon={FileQuestion}
@@ -443,37 +596,240 @@ function AdminPage() {
                     <th className="px-5 py-3 font-medium">Difficulty</th>
                     <th className="px-5 py-3 text-right font-medium">Questions</th>
                     <th className="px-5 py-3 font-medium">Status</th>
+                    <th className="px-5 py-3 text-right font-medium">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {visibleSections.slice(0, 12).map((section) => (
-                    <tr key={section.id}>
-                      <td className="px-5 py-4">
-                        <p className="font-medium text-card-foreground">{section.title}</p>
-                        <p className="mt-1 line-clamp-1 max-w-md text-xs text-muted-foreground">
-                          {section.description}
-                        </p>
-                      </td>
-                      <td className="px-5 py-4 text-muted-foreground">{section.levelName}</td>
-                      <td className="px-5 py-4">
-                        <span className="rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground">
-                          {section.difficulty}
-                        </span>
-                      </td>
-                      <td className="px-5 py-4 text-right font-medium text-foreground">
-                        {formatNumber(section.questionCount)}
-                      </td>
-                      <td className="px-5 py-4">
-                        <span className="inline-flex items-center gap-1.5 rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                          <CheckCircle2 className="h-3.5 w-3.5" />
-                          Server served
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                  {visibleSections.slice(0, 12).map((section) => {
+                    const editable = isEditableSection(section) ? section : null;
+                    const isEditing = editingSectionId === section.id && Boolean(editable);
+                    const isSaving =
+                      saveCatalogueMutation.isPending &&
+                      saveCatalogueMutation.variables?.sectionId === section.id;
+                    const isPublishing =
+                      publishCatalogueMutation.isPending &&
+                      publishCatalogueMutation.variables?.sectionId === section.id;
+                    const actionDisabled = isSaving || isPublishing || !catalogueDraft;
+
+                    return (
+                      <Fragment key={section.id}>
+                        <tr>
+                          <td className="px-5 py-4">
+                            <p className="font-medium text-card-foreground">{section.title}</p>
+                            <p className="mt-1 line-clamp-1 max-w-md text-xs text-muted-foreground">
+                              {section.description}
+                            </p>
+                            {editable?.hasDraftChanges && (
+                              <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
+                                Draft waiting to publish
+                              </p>
+                            )}
+                          </td>
+                          <td className="px-5 py-4 text-muted-foreground">{section.levelName}</td>
+                          <td className="px-5 py-4">
+                            <span className="rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground">
+                              {section.difficulty}
+                            </span>
+                          </td>
+                          <td className="px-5 py-4 text-right font-medium text-foreground">
+                            {formatNumber(section.questionCount)}
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex flex-wrap gap-1.5">
+                              <span
+                                className={cn(
+                                  "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium",
+                                  editable?.published === false
+                                    ? statusClass("warning")
+                                    : statusClass("ready"),
+                                )}
+                              >
+                                {editable?.published === false ? (
+                                  <EyeOff className="h-3.5 w-3.5" />
+                                ) : (
+                                  <CheckCircle2 className="h-3.5 w-3.5" />
+                                )}
+                                {editable?.published === false ? "Hidden" : "Published"}
+                              </span>
+                              {editable?.hasDraftChanges && (
+                                <span
+                                  className={cn(
+                                    "rounded-md border px-2 py-1 text-xs font-medium",
+                                    statusClass("warning"),
+                                  )}
+                                >
+                                  Draft
+                                </span>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-5 py-4">
+                            <div className="flex justify-end">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  if (!editable) return;
+                                  setEditingSectionId(section.id);
+                                  setCatalogueDraft(draftFromSection(editable));
+                                  setCatalogueAction(null);
+                                }}
+                                disabled={!editable}
+                                className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+                              >
+                                <PencilLine className="h-3.5 w-3.5" />
+                                Edit
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+
+                        {isEditing && catalogueDraft && (
+                          <tr>
+                            <td colSpan={6} className="bg-muted/20 px-5 py-5">
+                              <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_240px]">
+                                <div className="space-y-3">
+                                  <label className="block text-sm font-medium text-foreground">
+                                    Section title
+                                    <input
+                                      value={catalogueDraft.title}
+                                      onChange={(event) =>
+                                        setCatalogueDraft({
+                                          ...catalogueDraft,
+                                          title: event.target.value,
+                                        })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    />
+                                  </label>
+                                  <label className="block text-sm font-medium text-foreground">
+                                    Description
+                                    <textarea
+                                      value={catalogueDraft.description}
+                                      onChange={(event) =>
+                                        setCatalogueDraft({
+                                          ...catalogueDraft,
+                                          description: event.target.value,
+                                        })
+                                      }
+                                      rows={4}
+                                      className="mt-1 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm font-normal leading-6 text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    />
+                                  </label>
+                                </div>
+                                <div className="space-y-3">
+                                  <label className="block text-sm font-medium text-foreground">
+                                    Difficulty
+                                    <select
+                                      value={catalogueDraft.difficulty}
+                                      onChange={(event) =>
+                                        setCatalogueDraft({
+                                          ...catalogueDraft,
+                                          difficulty: event.target.value as Difficulty,
+                                        })
+                                      }
+                                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-normal text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                                    >
+                                      {difficultyOrder.map((difficulty) => (
+                                        <option key={difficulty} value={difficulty}>
+                                          {difficulty}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </label>
+                                  <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground">
+                                    <span className="inline-flex items-center gap-2">
+                                      {catalogueDraft.published ? (
+                                        <Eye className="h-4 w-4 text-primary" />
+                                      ) : (
+                                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                                      )}
+                                      Visible to learners
+                                    </span>
+                                    <input
+                                      type="checkbox"
+                                      checked={catalogueDraft.published}
+                                      onChange={(event) =>
+                                        setCatalogueDraft({
+                                          ...catalogueDraft,
+                                          published: event.target.checked,
+                                        })
+                                      }
+                                      className="h-4 w-4 accent-primary"
+                                    />
+                                  </label>
+                                  <div className="flex flex-col gap-2 pt-1">
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        saveCatalogueMutation.mutate({
+                                          sectionId: section.id,
+                                          draft: catalogueDraft,
+                                        })
+                                      }
+                                      disabled={actionDisabled}
+                                      className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                      {isSaving ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Save className="h-4 w-4" />
+                                      )}
+                                      Save draft
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        publishCatalogueMutation.mutate({
+                                          sectionId: section.id,
+                                          draft: catalogueDraft,
+                                        })
+                                      }
+                                      disabled={actionDisabled}
+                                      className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                      {isPublishing ? (
+                                        <Loader2 className="h-4 w-4 animate-spin" />
+                                      ) : (
+                                        <Send className="h-4 w-4" />
+                                      )}
+                                      Publish
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setEditingSectionId(null);
+                                        setCatalogueDraft(null);
+                                      }}
+                                      disabled={isSaving || isPublishing}
+                                      className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-sm font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
+                                    >
+                                      Close
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+                      </Fragment>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
+
+            {catalogueAction && (
+              <div className="border-t border-border px-5 py-3">
+                <div
+                  className={cn(
+                    "rounded-md border px-3 py-2 text-sm",
+                    statusClass(catalogueAction.tone),
+                  )}
+                >
+                  {catalogueAction.message}
+                </div>
+              </div>
+            )}
 
             {visibleSections.length > 0 && (
               <div className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
@@ -597,6 +953,173 @@ function AdminPage() {
             </div>
           </section>
         </div>
+
+        <section className="mt-6 rounded-lg border border-border bg-card">
+          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Trophy className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold text-card-foreground">Ranking records</h2>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Review public leaderboard entries and remove test or incorrect records.
+              </p>
+            </div>
+            <span className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              {formatNumber(leaderboard.length)} visible records
+            </span>
+          </div>
+
+          {leaderboardAction && (
+            <div className="border-b border-border px-5 py-3">
+              <div
+                className={cn(
+                  "rounded-md border px-3 py-2 text-sm",
+                  statusClass(leaderboardAction.tone),
+                )}
+              >
+                {leaderboardAction.message}
+              </div>
+            </div>
+          )}
+
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[900px] text-left text-sm">
+              <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
+                <tr>
+                  <th className="px-5 py-3 font-medium">Learner</th>
+                  <th className="px-5 py-3 font-medium">Quiz</th>
+                  <th className="px-5 py-3 font-medium">Level</th>
+                  <th className="px-5 py-3 text-right font-medium">Score</th>
+                  <th className="px-5 py-3 font-medium">Completed</th>
+                  <th className="px-5 py-3 text-right font-medium">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border">
+                {leaderboard.map((entry) => {
+                  const isConfirming = confirmingLeaderboardId === entry.id;
+                  const isDeleting =
+                    deleteLeaderboardMutation.isPending &&
+                    deleteLeaderboardMutation.variables === entry.id;
+
+                  return (
+                    <tr key={entry.id}>
+                      <td className="px-5 py-4">
+                        <p className="font-medium text-card-foreground">{entry.playerName}</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {entry.countryName ?? "No country"}
+                        </p>
+                      </td>
+                      <td className="px-5 py-4">
+                        <p className="line-clamp-1 max-w-xs font-medium text-foreground">
+                          {entry.quizTitle}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">{entry.quizId}</p>
+                      </td>
+                      <td className="px-5 py-4 text-muted-foreground">{entry.levelName}</td>
+                      <td className="px-5 py-4 text-right">
+                        <p className="font-semibold text-foreground">{entry.percentage}%</p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {entry.score}/{entry.maxScore} in {formatNumber(entry.timeSpentSeconds)}s
+                        </p>
+                      </td>
+                      <td className="px-5 py-4 text-muted-foreground">
+                        {new Date(entry.completedAt).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-4">
+                        <div className="flex justify-end gap-2">
+                          {isConfirming ? (
+                            <>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setLeaderboardAction(null);
+                                  deleteLeaderboardMutation.mutate(entry.id);
+                                }}
+                                disabled={isDeleting}
+                                className="inline-flex items-center justify-center gap-2 rounded-md bg-destructive px-3 py-2 text-xs font-semibold text-destructive-foreground hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-70"
+                              >
+                                {isDeleting ? (
+                                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                ) : (
+                                  <Trash2 className="h-3.5 w-3.5" />
+                                )}
+                                Confirm
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setConfirmingLeaderboardId(null)}
+                                disabled={isDeleting}
+                                className="inline-flex items-center justify-center rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-70"
+                              >
+                                Cancel
+                              </button>
+                            </>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setLeaderboardAction(null);
+                                setConfirmingLeaderboardId(entry.id);
+                              }}
+                              className="inline-flex items-center justify-center gap-2 rounded-md border border-destructive/30 bg-background px-3 py-2 text-xs font-semibold text-destructive hover:bg-destructive/10"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                              Delete
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+
+          {leaderboard.length === 0 && (
+            <div className="p-10 text-center">
+              <p className="font-medium text-foreground">No ranking records yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Scores will appear here after learners submit quizzes.
+              </p>
+            </div>
+          )}
+        </section>
+
+        <section className="mt-6 rounded-lg border border-border bg-card p-5">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-2">
+              <History className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold text-card-foreground">Recent admin changes</h2>
+            </div>
+            <span className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              {formatNumber(auditLog.length)} events
+            </span>
+          </div>
+          <div className="mt-4 divide-y divide-border">
+            {auditLog.map((entry) => (
+              <div
+                key={entry.id}
+                className="grid gap-2 py-3 text-sm sm:grid-cols-[160px_minmax(0,1fr)_180px]"
+              >
+                <p className="font-medium text-foreground">{auditActionLabel(entry.action)}</p>
+                <p className="text-muted-foreground">{auditDetail(entry)}</p>
+                <p className="text-muted-foreground sm:text-right">
+                  {new Date(entry.createdAt).toLocaleString()}
+                </p>
+              </div>
+            ))}
+          </div>
+          {auditLog.length === 0 && (
+            <div className="py-8 text-center">
+              <p className="font-medium text-foreground">No admin changes yet</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Draft saves and publishes will appear here.
+              </p>
+            </div>
+          )}
+        </section>
 
         <section className="mt-6 rounded-lg border border-border bg-card p-5">
           <div className="flex items-center gap-2">

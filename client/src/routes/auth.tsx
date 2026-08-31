@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Loader2, LogIn, Mail, Phone, UserPlus } from "lucide-react";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, registerAccount } from "@/lib/api";
@@ -71,6 +72,7 @@ function phoneE164(country: CountryDialCode, value: string): string {
 
 function AuthPage() {
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [mode, setMode] = useState<"signin" | "signup">(initialAuthMode);
   const [signInMethod, setSignInMethod] = useState<ContactMethod>("email");
   const [contactMethod, setContactMethod] = useState<ContactMethod>("email");
@@ -134,14 +136,16 @@ function AuthPage() {
           displayName.trim() ||
           signupEmail.split("@")[0] ||
           (phoneTail ? `Learner ${phoneTail}` : "Learner");
-        await registerAccount({
+        const { user } = await registerAccount({
           ...(contactMethod === "email" ? { email: signupEmail } : { phoneE164: signupPhone }),
           password,
           displayName: displayNameFallback,
         });
+        queryClient.setQueryData(["auth", "me"], { user });
         void navigate({ to: next, replace: true });
       } else {
-        await loginAccount({ identifier: loginIdentifier, password });
+        const { user } = await loginAccount({ identifier: loginIdentifier, password });
+        queryClient.setQueryData(["auth", "me"], { user });
         void navigate({ to: next, replace: true });
       }
     } catch (failure) {

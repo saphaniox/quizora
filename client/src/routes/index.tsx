@@ -18,7 +18,7 @@ import {
   RefreshCw,
   UserPlus,
 } from "lucide-react";
-import { getLevels } from "@/lib/api";
+import { getCurrentUser, getLevels } from "@/lib/api";
 import { QuizCard } from "@/components/QuizCard";
 import { cn } from "@/lib/utils";
 
@@ -55,8 +55,15 @@ function HomePage() {
     queryKey: ["levels"],
     queryFn: () => getLevels(),
   });
+  const { data: accountData, isLoading: accountLoading } = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: () => getCurrentUser(),
+    retry: false,
+  });
 
   const levels = useMemo(() => data?.levels ?? [], [data]);
+  const user = accountData?.user ?? null;
+  const showAuthActions = !accountLoading && !user;
   const [activeLevel, setActiveLevel] = useState<string | null>(null);
   const [search, setSearch] = useState("");
 
@@ -105,22 +112,24 @@ function HomePage() {
             focused round, and keep evidence of the progress you earn.
           </p>
 
-          <div className="mt-7 flex flex-col gap-3 sm:flex-row">
-            <a
-              href="/auth?mode=signup&next=/wallet"
-              className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
-            >
-              <UserPlus className="h-4 w-4" />
-              Create free account
-            </a>
-            <a
-              href="/auth?next=/wallet"
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
-            >
-              <LogIn className="h-4 w-4" />
-              Sign in
-            </a>
-          </div>
+          {showAuthActions && (
+            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+              <a
+                href="/auth?mode=signup&next=/wallet"
+                className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
+              >
+                <UserPlus className="h-4 w-4" />
+                Create free account
+              </a>
+              <a
+                href="/auth?next=/wallet"
+                className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
+              >
+                <LogIn className="h-4 w-4" />
+                Sign in
+              </a>
+            </div>
+          )}
 
           <div className="mt-6 flex max-w-3xl flex-wrap gap-2">
             {practiceNotes.map(({ icon: Icon, text }) => (

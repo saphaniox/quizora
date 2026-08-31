@@ -212,9 +212,13 @@ function QuizPage() {
 
   useEffect(() => {
     if (!started) return;
-    const tick = setInterval(() => setElapsed((prev) => prev + 1), 1000);
+    const syncElapsed = () => {
+      setElapsed(Math.max(0, Math.floor((Date.now() - startedAt.current) / 1000)));
+    };
+    syncElapsed();
+    const tick = window.setInterval(syncElapsed, 1000);
     return () => clearInterval(tick);
-  }, [started]);
+  }, [seed, started]);
 
   // Look for a resumable attempt locally and in the signed-in account.
   useEffect(() => {
@@ -286,8 +290,7 @@ function QuizPage() {
             Set up your practice
           </h1>
           <p className="mt-2 text-sm text-muted-foreground">
-            Add the name and country you want on your score. Then choose the kind of round that fits
-            your energy right now.
+            Add the name you want on your score. You can add a country too, or leave it blank.
           </p>
 
           <label htmlFor="player-name" className="mt-6 block text-sm font-medium text-foreground">
@@ -309,15 +312,15 @@ function QuizPage() {
                 <div className="min-w-0 flex-1">
                   <CountrySelect
                     id="attempt-country"
-                    label="Visitor country (optional)"
+                    label="Country (optional)"
                     value={attemptCountry}
                     onChange={setAttemptCountry}
                     placeholder="Choose a country or leave blank"
                     allowEmpty
                   />
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    Visitors can skip this. If you choose a country, it appears beside your name on
-                    leaderboards and certificates; leave it blank to keep no country shown.
+                    If you choose one, it can appear beside your name on leaderboards and
+                    certificates.
                   </p>
                 </div>
               </div>
@@ -447,6 +450,7 @@ function QuizPage() {
         {quiz.timeLimitSeconds > 0 ? (
           <Timer
             totalSeconds={quiz.timeLimitSeconds}
+            startedAtMs={startedAt.current}
             running
             onExpire={() => void handleSubmit()}
           />
