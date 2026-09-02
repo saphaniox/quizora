@@ -1,7 +1,18 @@
 const DEFAULT_SERVER_API_BASE = "https://api.quitech.online";
-const DEFAULT_PROXY_HOSTS = ["quitech.online", "www.quitech.online", "quizora-two-mocha.vercel.app"];
+const DEFAULT_PROXY_HOSTS = [
+  "quitech.online",
+  "www.quitech.online",
+  "quizora-two-mocha.vercel.app",
+];
 const API_ENV_KEYS = ["SERVER_API_URL", "API_URL", "VITE_SERVER_API_URL", "VITE_API_URL"] as const;
-const FORWARDED_REQUEST_HEADERS = ["accept", "authorization", "content-type", "cookie", "user-agent", "x-forwarded-for"];
+const FORWARDED_REQUEST_HEADERS = [
+  "accept",
+  "authorization",
+  "content-type",
+  "cookie",
+  "user-agent",
+  "x-forwarded-for",
+];
 const FORWARDED_RESPONSE_HEADERS = ["cache-control", "content-type", "location", "retry-after"];
 
 function normalizeApiBase(value: string | undefined): string {
@@ -36,7 +47,9 @@ function isLikelyFrontendBase(base: string, request: Request): boolean {
     const candidateUrl = new URL(base);
     return (
       candidateUrl.host === incomingUrl.host &&
-      (candidateUrl.pathname === "" || candidateUrl.pathname === "/" || candidateUrl.pathname === "/api")
+      (candidateUrl.pathname === "" ||
+        candidateUrl.pathname === "/" ||
+        candidateUrl.pathname === "/api")
     );
   } catch {
     return false;
@@ -52,7 +65,10 @@ function shouldUseDefaultApiBase(request: Request): boolean {
   }
 }
 
-function resolveServerApiBase(request: Request, includeDefault = shouldUseDefaultApiBase(request)): string {
+function resolveServerApiBase(
+  request: Request,
+  includeDefault = shouldUseDefaultApiBase(request),
+): string {
   const candidates = [
     ...API_ENV_KEYS.map((key) => normalizeApiBase(process.env[key])),
     ...(includeDefault ? [DEFAULT_SERVER_API_BASE] : []),
@@ -114,14 +130,20 @@ export async function proxyApiRequest(request: Request, serverPath: string): Pro
   upstreamUrl.search = incomingUrl.search;
 
   const method = request.method.toUpperCase();
+  const requestHeaders = requestHeadersForProxy(request);
   const init: RequestInit = {
     method,
-    headers: requestHeadersForProxy(request),
+    headers: requestHeaders,
     redirect: "manual",
   };
 
   if (method !== "GET" && method !== "HEAD") {
-    init.body = await request.arrayBuffer();
+    const body = await request.arrayBuffer();
+    if (body.byteLength > 0) {
+      init.body = body;
+    } else {
+      requestHeaders.delete("content-type");
+    }
   }
 
   try {
@@ -137,6 +159,9 @@ export async function proxyApiRequest(request: Request, serverPath: string): Pro
       headers: responseHeaders,
     });
   } catch {
-    return jsonError("Could not reach the server API. Check the API deployment URL and try again.", 502);
+    return jsonError(
+      "Could not reach the server API. Check the API deployment URL and try again.",
+      502,
+    );
   }
 }

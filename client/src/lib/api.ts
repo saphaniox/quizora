@@ -36,6 +36,27 @@ export interface CatalogueDraftPayload {
   published: boolean;
 }
 
+export interface AdminUser {
+  id: string;
+  email: string | null;
+  phoneE164: string | null;
+  displayName: string;
+  role: "user" | "admin";
+  createdAt: string;
+  leaderboardCount: number;
+  certificateCount: number;
+  progressCount: number;
+}
+
+export interface AdminCertificate {
+  code: string;
+  playerName: string;
+  quizTitle: string;
+  levelName: string;
+  percentage: number;
+  issuedAt: string;
+}
+
 const LOCAL_API_BASE = "/api";
 const CONTENT_PATHS = [
   "/health",
@@ -261,6 +282,27 @@ export async function getAdminCatalogue(): Promise<{ sections: AdminCatalogueSec
 
 export async function getAdminAuditLog(): Promise<{ auditLog: AdminAuditEntry[] }> {
   return fetchJson<{ auditLog: AdminAuditEntry[] }>("/admin/audit-log");
+}
+
+export async function getAdminUsers(search?: string): Promise<{ users: AdminUser[] }> {
+  const query = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
+  return fetchJson<{ users: AdminUser[] }>(`/admin/users${query}`);
+}
+
+export async function deleteAdminUser(userId: string): Promise<void> {
+  await fetchJson<{ ok: true }>(`/admin/users/${encodeURIComponent(userId)}`, {
+    method: "DELETE",
+  });
+}
+
+export async function getAdminCertificates(): Promise<{ certificates: AdminCertificate[] }> {
+  return fetchJson<{ certificates: AdminCertificate[] }>("/admin/certificates");
+}
+
+export async function deleteAdminCertificate(code: string): Promise<void> {
+  await fetchJson<{ ok: true }>(`/admin/certificates/${encodeURIComponent(code)}`, {
+    method: "DELETE",
+  });
 }
 
 export async function saveCatalogueDraft(

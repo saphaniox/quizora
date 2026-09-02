@@ -6,6 +6,7 @@ import * as progressModel from "../models/progressModel.js";
 import * as quizModel from "../models/quizModel.js";
 import * as auth from "../services/authService.js";
 import type { User } from "../services/authService.js";
+import * as adminDataModel from "../models/adminDataModel.js";
 import {
   clearSessionCookie,
   readSessionToken,
@@ -277,6 +278,75 @@ export async function deleteLeaderboardEntry(
   }
 
   reply.send({ ok: true });
+}
+
+export async function listAdminUsers(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const query = request.query as { search?: string; limit?: string; offset?: string };
+  const limit = Math.min(Math.max(Number(query.limit) || 50, 1), 100);
+  const offset = Math.max(Number(query.offset) || 0, 0);
+  reply.send({
+    users: await adminDataModel.listUsers(query.search ?? "", limit, offset),
+  });
+}
+
+export async function deleteAdminUser(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const params = request.params as { userId?: string };
+  const userId = params.userId?.trim();
+  if (!userId) {
+    reply.code(400).send({ error: "User id is required" });
+    return;
+  }
+  if (userId === admin.id) {
+    reply.code(400).send({ error: "You cannot delete your own admin account here" });
+    return;
+  }
+
+  const deleted = await adminDataModel.deleteUserData(userId);
+  if (!deleted) {
+    reply.code(404).send({ error: "User not found" });
+    return;
+  }
+  reply.header("cache-control", "no-store").send({ ok: true });
+}
+
+export async function listAdminCertificates(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  reply.send({ certificates: await adminDataModel.listCertificates() });
+}
+
+export async function deleteAdminCertificate(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const params = request.params as { code?: string };
+  const code = params.code?.trim();
+  if (!code) {
+    reply.code(400).send({ error: "Certificate code is required" });
+    return;
+  }
+  if (!(await adminDataModel.deleteCertificate(code))) {
+    reply.code(404).send({ error: "Certificate not found" });
+    return;
+  }
+  reply.header("cache-control", "no-store").send({ ok: true });
 }
 
 export async function getAdminCatalogue(

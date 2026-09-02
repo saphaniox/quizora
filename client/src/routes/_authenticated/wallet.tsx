@@ -153,7 +153,7 @@ function WalletPage() {
                   <UserRound className="h-5 w-5" />
                 </span>
                 <div className="min-w-0">
-                  <p className="break-words text-sm font-medium text-card-foreground">
+                  <p className="wrap-break-word text-sm font-medium text-card-foreground">
                     {user.displayName}
                   </p>
                   <p className="break-all text-sm text-muted-foreground">{accountContact}</p>
@@ -304,7 +304,7 @@ function WalletPage() {
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {certificate.levelName}
               </p>
-              <h2 className="mt-1 break-words font-semibold text-card-foreground">
+              <h2 className="mt-1 wrap-break-word font-semibold text-card-foreground">
                 {certificate.quizTitle}
               </h2>
               <p className="mt-1 text-xs text-muted-foreground">
