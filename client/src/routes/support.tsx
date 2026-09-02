@@ -56,7 +56,7 @@ function SupportPage() {
           Support
         </span>
         <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Need a hand? Talk to a real person.
+          Need a hand? Talk to Us
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
           Send us a message in your own words and we will take it from there. It helps to include
