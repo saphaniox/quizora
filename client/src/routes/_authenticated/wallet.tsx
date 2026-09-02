@@ -22,6 +22,7 @@ import {
   type AccountUser,
 } from "@/lib/api";
 import type { Certificate } from "@/types/quiz";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
@@ -99,12 +100,16 @@ function WalletPage() {
       setDeleteOpen(false);
       setConfirmation("");
       setDeleteMessage("Your account has been deleted. You are being signed out.");
+      toast.success("Your account is deleted", {
+        description: "Your Quitech account has been removed.",
+      });
       window.setTimeout(() => {
         void navigate({ to: "/", replace: true });
       }, 900);
     } catch (failure) {
       const message = failure instanceof Error ? failure.message : "Account deletion failed";
       setDeleteError(message);
+      toast.error("We couldn't delete your account", { description: message });
     } finally {
       setDeleting(false);
     }
@@ -118,6 +123,7 @@ function WalletPage() {
     } catch (failure) {
       const message = failure instanceof Error ? failure.message : "Sign out failed";
       setDeleteError(message);
+      toast.error("We couldn't reach the server", { description: message });
     } finally {
       setUser(null);
       queryClient.setQueryData(["auth", "me"], { user: null });

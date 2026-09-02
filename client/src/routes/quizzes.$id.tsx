@@ -28,6 +28,7 @@ import {
 } from "@/lib/attempt-store";
 import { findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/quizzes/$id")({
   ssr: false,
@@ -178,11 +179,17 @@ function QuizPage() {
         completedAt: new Date().toISOString(),
       });
       clearProgress(quiz.id);
+      toast.success("Quiz submitted", {
+        description: `You scored ${result.percentage}% and your result is ready.`,
+      });
       if (account?.id) await deleteAccountProgress(quiz.id).catch(() => undefined);
 
       void navigate({ to: "/results" });
     } catch (submitFailure) {
-      setSubmitError((submitFailure as Error).message);
+      const message =
+        submitFailure instanceof Error ? submitFailure.message : "Could not submit quiz";
+      setSubmitError(message);
+      toast.error("Your answers weren't submitted", { description: message });
       setSubmitting(false);
     }
   }, [quiz, submitting, playerName, attemptCountry, answers, questions, account?.id, navigate]);
@@ -437,7 +444,7 @@ function QuizPage() {
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {quiz.levelName}
           </p>
-          <h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-1 wrap-break-word text-2xl font-semibold tracking-tight text-foreground">
             {quiz.title}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">

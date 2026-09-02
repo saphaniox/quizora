@@ -8,12 +8,12 @@ export const Route = createFileRoute("/privacy")({
       {
         name: "description",
         content:
-          "Quitech privacy policy explaining what data is collected, how it is used, and how users can request account deletion.",
+          "A plain-English guide to the information Quitech collects, why we use it, and how to ask us to delete your account.",
       },
       { property: "og:title", content: "Privacy Policy - Quitech" },
       {
         property: "og:description",
-        content: "How Quitech handles account, quiz, certificate, support, and ads data.",
+        content: "How Quitech handles account, quiz, certificate, support, and advertising data.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
@@ -25,23 +25,23 @@ export const Route = createFileRoute("/privacy")({
 const collectedData = [
   {
     title: "Account data",
-    body: "When you create an account, Quitech stores your email address or phone number, display name, password hash, session records, and account timestamps.",
+    body: "When you make an account, we keep the email address or phone number you provide, your display name, a secure password hash, session records, and the dates connected to your account.",
   },
   {
     title: "Quiz activity",
-    body: "Quitech stores quiz submissions, scores, time spent, optional country selection, best-score leaderboard entries, retake records, and certificate records needed to show results and verify certificates.",
+    body: "We keep your quiz submissions, scores, time spent, optional country choice, best leaderboard scores, retakes, and certificate details. We need these records to show your results and let people verify certificates.",
   },
   {
     title: "Device and usage data",
-    body: "The app may use cookies, local storage, a visitor identifier for non-account leaderboard retakes, hosting logs, diagnostics, and basic analytics to keep the service reliable and improve the experience.",
+    body: "The app may use cookies, local storage, a visitor ID for leaderboard retakes made without an account, hosting logs, error reports, and basic analytics. This helps us keep Quitech working and understand what needs improvement.",
   },
   {
     title: "Support messages",
-    body: "If you contact support, Quitech may process your contact details and the information you include so the team can respond.",
+    body: "When you contact support, we use your contact details and the information in your message to understand the problem and reply to you.",
   },
   {
     title: "Advertising data",
-    body: "If ads are enabled, ad partners may process identifiers, approximate location, device details, and ad interaction data according to your consent choices and their SDK settings.",
+    body: "If advertising is enabled, advertising partners may receive identifiers, approximate location, device details, and information about ad interactions. What they receive depends on your consent choices and the settings of their software.",
   },
 ] as const;
 
@@ -65,9 +65,8 @@ function PrivacyPage() {
           Your progress belongs to you.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Last updated: August 31, 2026. This policy explains how Quitech ("we",
-          "us", or "our") collects, uses, shares, protects, and deletes information for learners 13
-          and older.
+          Last updated: August 31, 2026. This policy explains how Quitech ("we", "us", or "our")
+          collects, uses, shares, protects, and deletes information for learners 13 and above.
         </p>
       </div>
 
@@ -103,10 +102,10 @@ function PrivacyPage() {
             Sharing and processors
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Quitech does not sell personal information. We may share data with service providers
-            that help run hosting, databases, analytics, support, security, and ads. These providers
-            process data only for the service purposes described here, unless you separately agree
-            to another use.
+            We do not sell your personal information. We may share the information needed with
+            companies that host our service, run our database, provide analytics, handle support,
+            protect against abuse, or deliver advertising. They may use it only to provide those
+            services, unless you separately agree to something else.
           </p>
         </div>
 
@@ -115,12 +114,12 @@ function PrivacyPage() {
             Security, retention, and deletion
           </h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Quitech uses HTTPS, secure cookies in production, password hashing, and access-limited
-            infrastructure to protect account data. We keep account and quiz records while your
-            account is active or while they are needed for security, support, certificate
-            verification, legal, or abuse-prevention reasons. Signed-in users can delete their
-            account from the certificate wallet. If you cannot sign in, email Quitech support with
-            the email address or phone number connected to your account.
+            We use HTTPS, secure production cookies, password hashing, and restricted access to
+            protect account data. We keep account and quiz records while your account is active, or
+            for as long as they are needed for security, support, certificate verification, legal
+            obligations, or abuse prevention. You can delete your account from the certificate
+            wallet while signed in. If you cannot sign in, email support with the email address or
+            phone number connected to your account.
           </p>
         </div>
 

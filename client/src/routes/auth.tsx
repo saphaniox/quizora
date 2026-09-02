@@ -5,6 +5,7 @@ import { Loader2, LogIn, Mail, Phone, UserPlus } from "lucide-react";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -142,10 +143,12 @@ function AuthPage() {
           displayName: displayNameFallback,
         });
         queryClient.setQueryData(["auth", "me"], { user });
+        toast.success("Account created", { description: "Welcome to Quitech." });
         void navigate({ to: next, replace: true });
       } else {
         const { user } = await loginAccount({ identifier: loginIdentifier, password });
         queryClient.setQueryData(["auth", "me"], { user });
+        toast.success("Signed in", { description: "Your account is ready." });
         void navigate({ to: next, replace: true });
       }
     } catch (failure) {
@@ -155,6 +158,7 @@ function AuthPage() {
           ? "Account services are temporarily unavailable. Please try again shortly."
           : message,
       );
+      toast.error("We couldn't sign you in", { description: message });
     } finally {
       setBusy(false);
     }

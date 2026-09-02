@@ -8,7 +8,7 @@ export const Route = createFileRoute("/terms")({
       {
         name: "description",
         content:
-          "Quitech terms of service for learners 13 and older, including accounts, acceptable use, certificates, and support.",
+          "The rules for using Quitech, including accounts, quizzes, certificates, fair use, and support, for learners 13 and above.",
       },
       { property: "og:title", content: "Terms of Service - Quitech" },
       { property: "og:description", content: "Rules for using Quitech quizzes and certificates." },
@@ -22,27 +22,27 @@ export const Route = createFileRoute("/terms")({
 const terms = [
   {
     title: "Who can use Quitech",
-    body: "Quitech is designed for learners 13 and older. If you are under the age of digital consent in your country, use Quitech only with permission from a parent or guardian.",
+    body: "Quitech is for learners 13 and above. If your country requires parental permission for your age group, please use the service with a parent or guardian's permission.",
   },
   {
     title: "Accounts",
-    body: "Keep your login details private and use accurate information when creating an account or certificate. Optional country details may appear on public leaderboards when you submit them. Retakes are allowed, and only your best score for a quiz is used for ranking.",
+    body: "Keep your sign-in details private and give us accurate information when you create an account or earn a certificate. If you add a country, it may appear beside your name on the public leaderboard. You can retake quizzes, but only your best score counts toward your ranking.",
   },
   {
     title: "Learning content",
-    body: "Quitech provides educational practice, feedback, scores, and certificates. It does not replace formal school, college, professional, or legal certification.",
+    body: "Quitech offers practice, feedback, scores, and certificates for learning. A Quitech certificate is not a replacement for formal school, college, professional, or legal certification.",
   },
   {
     title: "Fair use",
-    body: "Do not attack the service, scrape content at scale, submit fake results, abuse leaderboards, impersonate another person, or use Quitech for unlawful activity.",
+    body: "Please do not attack or overload the service, scrape large amounts of content, submit made-up results, manipulate the leaderboard, impersonate someone else, or use Quitech for anything unlawful.",
   },
   {
     title: "Ads and third-party services",
-    body: "Quitech may show ads or use third-party services for hosting, analytics, security, and support. Ads must be appropriate for the app rating and disclosed in the app store listing.",
+    body: "We may show ads and use trusted services for hosting, analytics, security, and support. Any ads shown in the app should be suitable for its store rating and described in the relevant store listing.",
   },
   {
     title: "Changes",
-    body: "Quitech may update features, content, pricing, legal pages, or service availability. The latest terms on this page apply when you continue using the app.",
+    body: "Quitech will change over time. We may update features, content, pricing, these terms, or availability. When you keep using the service after an update, the latest version of these terms applies.",
   },
 ] as const;
 
@@ -58,7 +58,7 @@ function TermsPage() {
           Clear rules for a better learning space.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Last updated: August 31, 2026. These terms explain how learners 13 and older can use
+          Last updated: August 31, 2026. These terms explain how learners 13 and above can use
           Quitech to learn, challenge themselves, track progress, and verify certificates.
         </p>
       </div>
@@ -79,9 +79,9 @@ function TermsPage() {
             Certificates
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Certificates are proof of completion inside Quitech. They include the learner name, quiz
-            name, score, and verification code. Do not edit or present a certificate in a way that
-            misrepresents your result.
+            A certificate records what you completed on Quitech. It includes your name, the quiz
+            name, your score, and a verification code. Please do not edit it or present it in a way
+            that makes your result look different from what you achieved.
           </p>
         </div>
         <div className="rounded-lg border border-border bg-card p-5">
@@ -90,8 +90,9 @@ function TermsPage() {
             Need help?
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            For account, content, privacy, or safety questions, contact support. We may remove
-            content, accounts, or results that break these terms.
+            Have a question about your account, content, privacy, or safety? Contact support and we
+            will help where we can. We may remove content, accounts, or results that seriously break
+            these terms.
           </p>
           <Link
             to="/support"

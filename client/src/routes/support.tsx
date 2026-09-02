@@ -56,12 +56,12 @@ function SupportPage() {
           Support
         </span>
         <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Talk to us when something needs a human.
+          Need a hand? Talk to a real person.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Send one clear message and we will help from there. Include the quiz name, certificate
-          code, account email or phone number, and what you expected to happen if those details
-          apply.
+          Send us a message in your own words and we will take it from there. It helps to include
+          the quiz name, certificate code, account email or phone number, and what you expected to
+          happen, when those details are relevant.
         </p>
       </div>
 
@@ -89,9 +89,9 @@ function SupportPage() {
           {CONTACT_EMAIL}
         </a>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Signed-in users can delete their account from the certificate wallet. If you cannot sign
-          in, email us with the address or phone number connected to your account and use the
-          subject "Delete my Quitech account".
+          You can delete your account from the certificate wallet when you are signed in. If you
+          cannot sign in, email us from the address connected to your account, or include the phone
+          number on the account, and use the subject "Delete my Quitech account".
         </p>
         <Link
           to="/wallet"

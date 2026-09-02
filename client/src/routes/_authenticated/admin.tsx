@@ -557,10 +557,12 @@ function AdminPage() {
             <div className="flex items-start gap-3">
               <AlertTriangle className="mt-0.5 h-5 w-5 text-destructive" />
               <div>
-                <p className="font-medium text-foreground">Some admin data could not be loaded.</p>
+                <p className="font-medium text-foreground">
+                  We couldn't load part of the dashboard.
+                </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Check `SERVER_API_URL` or `VITE_API_URL`, the API process, SSL, and PostgreSQL
-                  availability if this persists.
+                  Please try refreshing. If the problem continues, check that the API and database
+                  are online.
                 </p>
               </div>
             </div>

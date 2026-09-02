@@ -21,7 +21,7 @@ export function Footer() {
             <span>Quitech</span>
           </div>
           <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
-            Learn, challenge & progress with practical quizzes for learners 13 and older.
+            Learn, challenge & progress with practical quizzes for learners 13 and above.
           </p>
           <p className="mt-3 text-xs text-muted-foreground">
             Powered by{" "}

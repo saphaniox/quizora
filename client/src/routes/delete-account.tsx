@@ -30,13 +30,12 @@ function DeleteAccountRequestPage() {
           Account deletion request
         </span>
         <h1 className="mt-5 text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
-          Request deletion of a Quitech account.
+          Need your Quitech account removed?
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          This public resource is for account deletion requests outside the app. Signed-in users can
-          delete their account from the certificate wallet. If you cannot sign in, contact privacy
-          support at quitech@saptechug.com with the email address or phone number connected to your
-          Quitech account.
+          If you are signed in, the quickest option is to open your certificate wallet and delete
+          the account there. If you cannot sign in, email quitech@saptechug.com with the email
+          address or phone number connected to your Quitech account.
         </p>
       </div>
 
@@ -47,8 +46,8 @@ function DeleteAccountRequestPage() {
             Signed-in users
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Open your certificate wallet to view your account details and start deletion from inside
-            the signed-in app.
+            Open your certificate wallet to check your account details and start deletion while you
+            are signed in.
           </p>
           <Link
             to="/wallet"
@@ -64,15 +63,15 @@ function DeleteAccountRequestPage() {
             Cannot sign in
           </div>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Email{" "}
+            Send an email to{" "}
             <a
               className="font-medium text-primary hover:underline"
               href="mailto:quitech@saptechug.com"
             >
               quitech@saptechug.com
             </a>{" "}
-            with the subject "Delete my Quitech account". We may ask for limited information to
-            confirm account ownership.
+            with the subject "Delete my Quitech account". We may ask a few questions to make sure we
+            are deleting the right account.
           </p>
         </article>
       </section>
@@ -80,9 +79,9 @@ function DeleteAccountRequestPage() {
       <section className="mt-8 rounded-lg border border-border bg-card p-6">
         <h2 className="text-sm font-semibold text-card-foreground">What happens after deletion</h2>
         <p className="mt-3 text-sm leading-6 text-muted-foreground">
-          Quitech deletes the login account and active sessions linked to the confirmed account.
-          Some records may be retained only when needed for security, abuse prevention, legal
-          compliance, or certificate verification, as described in the Privacy Policy.
+          We remove the login account and its active sessions. Some records may remain when they are
+          needed for security, abuse prevention, legal compliance, or certificate verification, as
+          explained in the Privacy Policy.
         </p>
       </section>
     </div>

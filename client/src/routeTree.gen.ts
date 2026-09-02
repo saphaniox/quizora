@@ -31,6 +31,8 @@ import { Route as CertificateCodeRouteImport } from './routes/certificate.$code'
 import { Route as QuizzesIdRouteImport } from './routes/quizzes.$id'
 import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-log'
 import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
+import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
+import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
@@ -153,6 +155,16 @@ const ApiAdminCatalogueRoute = ApiAdminCatalogueRouteImport.update({
   path: '/api/admin/catalogue',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminCertificatesRoute = ApiAdminCertificatesRouteImport.update({
+  id: '/api/admin/certificates',
+  path: '/api/admin/certificates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
+  id: '/api/admin/users',
+  path: '/api/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
   id: '/api/auth/login',
   path: '/api/auth/login',
@@ -238,6 +250,8 @@ export interface FileRoutesByFullPath {
   '/certificate/': typeof CertificateIndexRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
+  '/api/admin/certificates': typeof ApiAdminCertificatesRoute
+  '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRouteWithChildren
@@ -273,6 +287,8 @@ export interface FileRoutesByTo {
   '/certificate': typeof CertificateIndexRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
+  '/api/admin/certificates': typeof ApiAdminCertificatesRoute
+  '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRouteWithChildren
@@ -310,6 +326,8 @@ export interface FileRoutesById {
   '/certificate/': typeof CertificateIndexRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
+  '/api/admin/certificates': typeof ApiAdminCertificatesRoute
+  '/api/admin/users': typeof ApiAdminUsersRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRouteWithChildren
@@ -347,6 +365,8 @@ export interface FileRouteTypes {
     | '/certificate/'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
+    | '/api/admin/certificates'
+    | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -382,6 +402,8 @@ export interface FileRouteTypes {
     | '/certificate'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
+    | '/api/admin/certificates'
+    | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -418,6 +440,8 @@ export interface FileRouteTypes {
     | '/certificate/'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
+    | '/api/admin/certificates'
+    | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
@@ -453,6 +477,8 @@ export interface RootRouteChildren {
   CertificateIndexRoute: typeof CertificateIndexRoute
   ApiAdminAuditLogRoute: typeof ApiAdminAuditLogRoute
   ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
+  ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRoute
+  ApiAdminUsersRoute: typeof ApiAdminUsersRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRouteWithChildren
@@ -619,6 +645,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminCatalogueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/certificates': {
+      id: '/api/admin/certificates'
+      path: '/api/admin/certificates'
+      fullPath: '/api/admin/certificates'
+      preLoaderRoute: typeof ApiAdminCertificatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/users': {
+      id: '/api/admin/users'
+      path: '/api/admin/users'
+      fullPath: '/api/admin/users'
+      preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/auth/login': {
       id: '/api/auth/login'
       path: '/api/auth/login'
@@ -780,6 +820,8 @@ const rootRouteChildren: RootRouteChildren = {
   CertificateIndexRoute: CertificateIndexRoute,
   ApiAdminAuditLogRoute: ApiAdminAuditLogRoute,
   ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
+  ApiAdminCertificatesRoute: ApiAdminCertificatesRoute,
+  ApiAdminUsersRoute: ApiAdminUsersRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRouteWithChildren,
