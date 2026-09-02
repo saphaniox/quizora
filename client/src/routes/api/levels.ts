@@ -9,7 +9,10 @@ const json = (body: unknown, status: number) =>
 export const Route = createFileRoute("/api/levels")({
   server: {
     handlers: {
-      GET: async () => {
+      GET: async ({ request }) => {
+        const { hasServerApiBase, proxyApiRequest } = await import("@/lib/api-proxy.server");
+        if (hasServerApiBase(request)) return proxyApiRequest(request, "/levels");
+
         const { getLevels } = await import("@/quiz-engine/controllers/quizController.server");
         const result = getLevels();
         return json(result.body, result.status);

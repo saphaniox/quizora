@@ -21,6 +21,9 @@ export const Route = createFileRoute("/api/submit")({
   server: {
     handlers: {
       POST: async ({ request }) => {
+        const { hasServerApiBase, proxyApiRequest } = await import("@/lib/api-proxy.server");
+        if (hasServerApiBase(request)) return proxyApiRequest(request, "/submit");
+
         if (Number(request.headers.get("content-length") ?? 0) > 100_000) {
           return new Response(JSON.stringify({ error: "Request is too large" }), {
             status: 413,

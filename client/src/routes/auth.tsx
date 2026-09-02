@@ -89,7 +89,7 @@ function AuthPage() {
     if (typeof window === "undefined") return null;
     const params = new URLSearchParams(window.location.search);
     return params.get("accountApi") === "offline"
-      ? "Account services are offline. Start the API and PostgreSQL before signing in."
+      ? "Account services are temporarily unavailable. Please try again shortly."
       : null;
   });
   const [error, setError] = useState<string | null>(null);
@@ -152,7 +152,7 @@ function AuthPage() {
       const message = (failure as Error).message;
       setError(
         message === "Failed to fetch"
-          ? "Account services are offline. Start the API and PostgreSQL, then try again."
+          ? "Account services are temporarily unavailable. Please try again shortly."
           : message,
       );
     } finally {

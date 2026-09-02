@@ -36,7 +36,7 @@ export interface CatalogueDraftPayload {
   published: boolean;
 }
 
-const LOCAL_CONTENT_API_BASE = "/api";
+const LOCAL_API_BASE = "/api";
 const CONTENT_PATHS = [
   "/health",
   "/levels",
@@ -46,7 +46,7 @@ const CONTENT_PATHS = [
   "/certificates",
 ];
 const API_BASE = normalizeApiBase(import.meta.env["VITE_API_URL"] as string | undefined);
-const CONTENT_API_BASE = API_BASE || LOCAL_CONTENT_API_BASE;
+const USE_DIRECT_API = import.meta.env["VITE_DIRECT_API"] === "true";
 
 function isContentPath(path: string): boolean {
   return CONTENT_PATHS.some(
@@ -57,22 +57,34 @@ function isContentPath(path: string): boolean {
 function normalizeApiBase(value: string | undefined): string {
   const raw = value?.trim().replace(/\/+$/, "");
   if (!raw) return "";
-  if (raw.startsWith("/") || raw.startsWith("http://") || raw.startsWith("https://")) return raw;
-  if (raw.startsWith("localhost") || raw.startsWith("127.0.0.1")) return `http://${raw}`;
-  if (!raw.includes(".") && !raw.includes(":")) return "";
-  return `https://${raw}`;
+  if (raw.startsWith("/")) return raw;
+  const base =
+    raw.startsWith("http://") || raw.startsWith("https://")
+      ? raw
+      : raw.startsWith("localhost") || raw.startsWith("127.0.0.1")
+        ? `http://${raw}`
+        : raw.includes(".") || raw.includes(":")
+          ? `https://${raw}`
+          : "";
+  if (!base) return "";
+  try {
+    const url = new URL(base);
+    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
+    return url.toString().replace(/\/$/, "");
+  } catch {
+    return "";
+  }
 }
 
-function baseFor(path: string): string {
-  return isContentPath(path) ? CONTENT_API_BASE : API_BASE;
+function baseFor(_path: string): string {
+  return USE_DIRECT_API && API_BASE ? API_BASE : LOCAL_API_BASE;
 }
 
 function canUseLocalContentFallback(path: string, attemptedBase: string): boolean {
   return (
-    import.meta.env.DEV &&
     typeof window !== "undefined" &&
     Boolean(attemptedBase) &&
-    attemptedBase !== LOCAL_CONTENT_API_BASE &&
+    attemptedBase !== LOCAL_API_BASE &&
     isContentPath(path)
   );
 }
@@ -103,7 +115,7 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
     response = await fetch(requestUrl(primaryBase, path), requestInit);
   } catch (error) {
     if (!canUseLocalContentFallback(path, primaryBase)) throw error;
-    response = await fetch(requestUrl(LOCAL_CONTENT_API_BASE, path), requestInit);
+    response = await fetch(requestUrl(LOCAL_API_BASE, path), requestInit);
   }
 
   if (!response.ok) {

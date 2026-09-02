@@ -29,9 +29,20 @@ import { Route as ApiSubmitRouteImport } from './routes/api/submit'
 import { Route as CertificateIndexRouteImport } from './routes/certificate.index'
 import { Route as CertificateCodeRouteImport } from './routes/certificate.$code'
 import { Route as QuizzesIdRouteImport } from './routes/quizzes.$id'
+import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-log'
+import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
+import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
+import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
+import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
+import { Route as ApiAuthRegisterRouteImport } from './routes/api/auth/register'
 import { Route as ApiCertificatesCodeRouteImport } from './routes/api/certificates.$code'
 import { Route as ApiQuizzesIndexRouteImport } from './routes/api/quizzes.index'
 import { Route as ApiQuizzesIdRouteImport } from './routes/api/quizzes.$id'
+import { Route as ApiAdminCatalogueSectionIdRouteImport } from './routes/api/admin/catalogue.$sectionId'
+import { Route as ApiAdminLeaderboardIdRouteImport } from './routes/api/admin/leaderboard.$id'
+import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
+import { Route as ApiAdminCatalogueSectionIdPublishRouteImport } from './routes/api/admin/catalogue.$sectionId.publish'
+import { Route as ApiAuthMeProgressQuizIdRouteImport } from './routes/api/auth/me/progress.$quizId'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -132,6 +143,36 @@ const QuizzesIdRoute = QuizzesIdRouteImport.update({
   path: '/quizzes/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminAuditLogRoute = ApiAdminAuditLogRouteImport.update({
+  id: '/api/admin/audit-log',
+  path: '/api/admin/audit-log',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCatalogueRoute = ApiAdminCatalogueRouteImport.update({
+  id: '/api/admin/catalogue',
+  path: '/api/admin/catalogue',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
+  id: '/api/auth/login',
+  path: '/api/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthLogoutRoute = ApiAuthLogoutRouteImport.update({
+  id: '/api/auth/logout',
+  path: '/api/auth/logout',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
+  id: '/api/auth/me',
+  path: '/api/auth/me',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthRegisterRoute = ApiAuthRegisterRouteImport.update({
+  id: '/api/auth/register',
+  path: '/api/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCertificatesCodeRoute = ApiCertificatesCodeRouteImport.update({
   id: '/api/certificates/$code',
   path: '/api/certificates/$code',
@@ -146,6 +187,33 @@ const ApiQuizzesIdRoute = ApiQuizzesIdRouteImport.update({
   id: '/api/quizzes/$id',
   path: '/api/quizzes/$id',
   getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminCatalogueSectionIdRoute =
+  ApiAdminCatalogueSectionIdRouteImport.update({
+    id: '/$sectionId',
+    path: '/$sectionId',
+    getParentRoute: () => ApiAdminCatalogueRoute,
+  } as any)
+const ApiAdminLeaderboardIdRoute = ApiAdminLeaderboardIdRouteImport.update({
+  id: '/api/admin/leaderboard/$id',
+  path: '/api/admin/leaderboard/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthMeActivityRoute = ApiAuthMeActivityRouteImport.update({
+  id: '/activity',
+  path: '/activity',
+  getParentRoute: () => ApiAuthMeRoute,
+} as any)
+const ApiAdminCatalogueSectionIdPublishRoute =
+  ApiAdminCatalogueSectionIdPublishRouteImport.update({
+    id: '/publish',
+    path: '/publish',
+    getParentRoute: () => ApiAdminCatalogueSectionIdRoute,
+  } as any)
+const ApiAuthMeProgressQuizIdRoute = ApiAuthMeProgressQuizIdRouteImport.update({
+  id: '/progress/$quizId',
+  path: '/progress/$quizId',
+  getParentRoute: () => ApiAuthMeRoute,
 } as any)
 
 export interface FileRoutesByFullPath {
@@ -168,9 +236,20 @@ export interface FileRoutesByFullPath {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
+  '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
+  '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRouteWithChildren
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
+  '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
+  '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
+  '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -192,9 +271,20 @@ export interface FileRoutesByTo {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api': typeof ApiIndexRoute
   '/certificate': typeof CertificateIndexRoute
+  '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
+  '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRouteWithChildren
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes': typeof ApiQuizzesIndexRoute
+  '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
+  '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
+  '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -218,9 +308,20 @@ export interface FileRoutesById {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
+  '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
+  '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
+  '/api/auth/login': typeof ApiAuthLoginRoute
+  '/api/auth/logout': typeof ApiAuthLogoutRoute
+  '/api/auth/me': typeof ApiAuthMeRouteWithChildren
+  '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
+  '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
+  '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
+  '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -244,9 +345,20 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
+    | '/api/admin/audit-log'
+    | '/api/admin/catalogue'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/register'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
     | '/api/quizzes/'
+    | '/api/admin/catalogue/$sectionId'
+    | '/api/admin/leaderboard/$id'
+    | '/api/auth/me/activity'
+    | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/auth/me/progress/$quizId'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -268,9 +380,20 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api'
     | '/certificate'
+    | '/api/admin/audit-log'
+    | '/api/admin/catalogue'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/register'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
     | '/api/quizzes'
+    | '/api/admin/catalogue/$sectionId'
+    | '/api/admin/leaderboard/$id'
+    | '/api/auth/me/activity'
+    | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/auth/me/progress/$quizId'
   id:
     | '__root__'
     | '/'
@@ -293,9 +416,20 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
+    | '/api/admin/audit-log'
+    | '/api/admin/catalogue'
+    | '/api/auth/login'
+    | '/api/auth/logout'
+    | '/api/auth/me'
+    | '/api/auth/register'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
     | '/api/quizzes/'
+    | '/api/admin/catalogue/$sectionId'
+    | '/api/admin/leaderboard/$id'
+    | '/api/auth/me/activity'
+    | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/auth/me/progress/$quizId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -317,9 +451,16 @@ export interface RootRouteChildren {
   QuizzesIdRoute: typeof QuizzesIdRoute
   ApiIndexRoute: typeof ApiIndexRoute
   CertificateIndexRoute: typeof CertificateIndexRoute
+  ApiAdminAuditLogRoute: typeof ApiAdminAuditLogRoute
+  ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
+  ApiAuthLoginRoute: typeof ApiAuthLoginRoute
+  ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
+  ApiAuthMeRoute: typeof ApiAuthMeRouteWithChildren
+  ApiAuthRegisterRoute: typeof ApiAuthRegisterRoute
   ApiCertificatesCodeRoute: typeof ApiCertificatesCodeRoute
   ApiQuizzesIdRoute: typeof ApiQuizzesIdRoute
   ApiQuizzesIndexRoute: typeof ApiQuizzesIndexRoute
+  ApiAdminLeaderboardIdRoute: typeof ApiAdminLeaderboardIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -464,6 +605,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QuizzesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/audit-log': {
+      id: '/api/admin/audit-log'
+      path: '/api/admin/audit-log'
+      fullPath: '/api/admin/audit-log'
+      preLoaderRoute: typeof ApiAdminAuditLogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/catalogue': {
+      id: '/api/admin/catalogue'
+      path: '/api/admin/catalogue'
+      fullPath: '/api/admin/catalogue'
+      preLoaderRoute: typeof ApiAdminCatalogueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/login': {
+      id: '/api/auth/login'
+      path: '/api/auth/login'
+      fullPath: '/api/auth/login'
+      preLoaderRoute: typeof ApiAuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/logout': {
+      id: '/api/auth/logout'
+      path: '/api/auth/logout'
+      fullPath: '/api/auth/logout'
+      preLoaderRoute: typeof ApiAuthLogoutRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me': {
+      id: '/api/auth/me'
+      path: '/api/auth/me'
+      fullPath: '/api/auth/me'
+      preLoaderRoute: typeof ApiAuthMeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/register': {
+      id: '/api/auth/register'
+      path: '/api/auth/register'
+      fullPath: '/api/auth/register'
+      preLoaderRoute: typeof ApiAuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/certificates/$code': {
       id: '/api/certificates/$code'
       path: '/api/certificates/$code'
@@ -485,6 +668,41 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiQuizzesIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/catalogue/$sectionId': {
+      id: '/api/admin/catalogue/$sectionId'
+      path: '/$sectionId'
+      fullPath: '/api/admin/catalogue/$sectionId'
+      preLoaderRoute: typeof ApiAdminCatalogueSectionIdRouteImport
+      parentRoute: typeof ApiAdminCatalogueRoute
+    }
+    '/api/admin/leaderboard/$id': {
+      id: '/api/admin/leaderboard/$id'
+      path: '/api/admin/leaderboard/$id'
+      fullPath: '/api/admin/leaderboard/$id'
+      preLoaderRoute: typeof ApiAdminLeaderboardIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/me/activity': {
+      id: '/api/auth/me/activity'
+      path: '/activity'
+      fullPath: '/api/auth/me/activity'
+      preLoaderRoute: typeof ApiAuthMeActivityRouteImport
+      parentRoute: typeof ApiAuthMeRoute
+    }
+    '/api/admin/catalogue/$sectionId/publish': {
+      id: '/api/admin/catalogue/$sectionId/publish'
+      path: '/publish'
+      fullPath: '/api/admin/catalogue/$sectionId/publish'
+      preLoaderRoute: typeof ApiAdminCatalogueSectionIdPublishRouteImport
+      parentRoute: typeof ApiAdminCatalogueSectionIdRoute
+    }
+    '/api/auth/me/progress/$quizId': {
+      id: '/api/auth/me/progress/$quizId'
+      path: '/progress/$quizId'
+      fullPath: '/api/auth/me/progress/$quizId'
+      preLoaderRoute: typeof ApiAuthMeProgressQuizIdRouteImport
+      parentRoute: typeof ApiAuthMeRoute
+    }
   }
 }
 
@@ -500,6 +718,46 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface ApiAdminCatalogueSectionIdRouteChildren {
+  ApiAdminCatalogueSectionIdPublishRoute: typeof ApiAdminCatalogueSectionIdPublishRoute
+}
+
+const ApiAdminCatalogueSectionIdRouteChildren: ApiAdminCatalogueSectionIdRouteChildren =
+  {
+    ApiAdminCatalogueSectionIdPublishRoute:
+      ApiAdminCatalogueSectionIdPublishRoute,
+  }
+
+const ApiAdminCatalogueSectionIdRouteWithChildren =
+  ApiAdminCatalogueSectionIdRoute._addFileChildren(
+    ApiAdminCatalogueSectionIdRouteChildren,
+  )
+
+interface ApiAdminCatalogueRouteChildren {
+  ApiAdminCatalogueSectionIdRoute: typeof ApiAdminCatalogueSectionIdRouteWithChildren
+}
+
+const ApiAdminCatalogueRouteChildren: ApiAdminCatalogueRouteChildren = {
+  ApiAdminCatalogueSectionIdRoute: ApiAdminCatalogueSectionIdRouteWithChildren,
+}
+
+const ApiAdminCatalogueRouteWithChildren =
+  ApiAdminCatalogueRoute._addFileChildren(ApiAdminCatalogueRouteChildren)
+
+interface ApiAuthMeRouteChildren {
+  ApiAuthMeActivityRoute: typeof ApiAuthMeActivityRoute
+  ApiAuthMeProgressQuizIdRoute: typeof ApiAuthMeProgressQuizIdRoute
+}
+
+const ApiAuthMeRouteChildren: ApiAuthMeRouteChildren = {
+  ApiAuthMeActivityRoute: ApiAuthMeActivityRoute,
+  ApiAuthMeProgressQuizIdRoute: ApiAuthMeProgressQuizIdRoute,
+}
+
+const ApiAuthMeRouteWithChildren = ApiAuthMeRoute._addFileChildren(
+  ApiAuthMeRouteChildren,
+)
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
@@ -520,9 +778,16 @@ const rootRouteChildren: RootRouteChildren = {
   QuizzesIdRoute: QuizzesIdRoute,
   ApiIndexRoute: ApiIndexRoute,
   CertificateIndexRoute: CertificateIndexRoute,
+  ApiAdminAuditLogRoute: ApiAdminAuditLogRoute,
+  ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
+  ApiAuthLoginRoute: ApiAuthLoginRoute,
+  ApiAuthLogoutRoute: ApiAuthLogoutRoute,
+  ApiAuthMeRoute: ApiAuthMeRouteWithChildren,
+  ApiAuthRegisterRoute: ApiAuthRegisterRoute,
   ApiCertificatesCodeRoute: ApiCertificatesCodeRoute,
   ApiQuizzesIdRoute: ApiQuizzesIdRoute,
   ApiQuizzesIndexRoute: ApiQuizzesIndexRoute,
+  ApiAdminLeaderboardIdRoute: ApiAdminLeaderboardIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

@@ -2,10 +2,23 @@ import type { FastifyReply, FastifyRequest } from "fastify";
 
 export const sessionCookieName = "quitech_session";
 
-const secureCookiePart =
-  process.env["NODE_ENV"] === "production" ? "Secure; " : "";
-const cookieOptions = `Path=/; HttpOnly; SameSite=Lax; ${secureCookiePart}Max-Age=2592000`;
-const expiredCookieOptions = `Path=/; HttpOnly; SameSite=Lax; ${secureCookiePart}Max-Age=0`;
+const isProduction = process.env["NODE_ENV"] === "production";
+const cookieDomain = process.env["SESSION_COOKIE_DOMAIN"]?.trim();
+const configuredSameSite = process.env["SESSION_COOKIE_SAMESITE"]?.trim().toLowerCase();
+const sameSite =
+  configuredSameSite === "strict"
+    ? "Strict"
+    : configuredSameSite === "lax"
+      ? "Lax"
+      : configuredSameSite === "none"
+        ? "None"
+        : isProduction
+          ? "None"
+          : "Lax";
+const domainPart = cookieDomain ? `Domain=${cookieDomain}; ` : "";
+const secureCookiePart = isProduction || sameSite.toLowerCase() === "none" ? "Secure; " : "";
+const cookieOptions = `Path=/; ${domainPart}HttpOnly; SameSite=${sameSite}; ${secureCookiePart}Max-Age=2592000`;
+const expiredCookieOptions = `Path=/; ${domainPart}HttpOnly; SameSite=${sameSite}; ${secureCookiePart}Max-Age=0`;
 
 export function setSessionCookie(reply: FastifyReply, token: string): void {
   reply.header("set-cookie", `${sessionCookieName}=${token}; ${cookieOptions}`);

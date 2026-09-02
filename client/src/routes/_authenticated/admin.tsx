@@ -507,8 +507,8 @@ function AdminPage() {
               <div>
                 <p className="font-medium text-foreground">Some admin data could not be loaded.</p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Check `VITE_API_URL`, the API process, and PostgreSQL availability if this
-                  persists.
+                  Check `SERVER_API_URL` or `VITE_API_URL`, the API process, SSL, and PostgreSQL
+                  availability if this persists.
                 </p>
               </div>
             </div>

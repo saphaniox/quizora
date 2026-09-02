@@ -1,11 +1,11 @@
 CREATE TABLE IF NOT EXISTS catalogue_section_edits (
   section_id TEXT PRIMARY KEY,
   draft_title TEXT NOT NULL CHECK (char_length(trim(draft_title)) BETWEEN 2 AND 120),
-  draft_description TEXT NOT NULL CHECK (char_length(trim(draft_description)) BETWEEN 40 AND 500),
+  draft_description TEXT NOT NULL CHECK (char_length(trim(draft_description)) BETWEEN 10 AND 500),
   draft_difficulty TEXT NOT NULL CHECK (draft_difficulty IN ('Easy', 'Medium', 'Hard')),
   draft_is_visible BOOLEAN NOT NULL DEFAULT TRUE,
   published_title TEXT NOT NULL CHECK (char_length(trim(published_title)) BETWEEN 2 AND 120),
-  published_description TEXT NOT NULL CHECK (char_length(trim(published_description)) BETWEEN 40 AND 500),
+  published_description TEXT NOT NULL CHECK (char_length(trim(published_description)) BETWEEN 10 AND 500),
   published_difficulty TEXT NOT NULL CHECK (published_difficulty IN ('Easy', 'Medium', 'Hard')),
   published_is_visible BOOLEAN NOT NULL DEFAULT TRUE,
   updated_by UUID REFERENCES users(id) ON DELETE SET NULL,

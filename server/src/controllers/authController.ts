@@ -66,7 +66,7 @@ const progressSchema = z.object({
 
 const catalogueDraftSchema = z.object({
   title: z.string().trim().min(2).max(120),
-  description: z.string().trim().min(40).max(500),
+  description: z.string().trim().min(10).max(500),
   difficulty: z.enum(["Easy", "Medium", "Hard"]),
   published: z.boolean(),
 });

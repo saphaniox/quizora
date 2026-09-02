@@ -4,6 +4,11 @@ export const Route = createFileRoute("/api/quizzes/$id")({
   server: {
     handlers: {
       GET: async ({ request, params }) => {
+        const { hasServerApiBase, proxyApiRequest } = await import("@/lib/api-proxy.server");
+        if (hasServerApiBase(request)) {
+          return proxyApiRequest(request, `/quizzes/${encodeURIComponent(params.id)}`);
+        }
+
         const url = new URL(request.url);
         const { getQuizById } = await import("@/quiz-engine/controllers/quizController.server");
         const result = getQuizById(

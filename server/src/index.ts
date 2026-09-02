@@ -6,9 +6,15 @@ import { closeDatabase, checkDatabase } from "./db.js";
 
 export async function createApp() {
   const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 100_000 });
+  const defaultProductionOrigins = [
+    "https://quitech.online",
+    "https://www.quitech.online",
+    "https://quizora-two-mocha.vercel.app",
+  ];
   const configuredOrigins = process.env["CLIENT_ORIGIN"]?.split(",").map((origin) => origin.trim()).filter(Boolean);
+  const productionOrigins = [...new Set([...defaultProductionOrigins, ...(configuredOrigins ?? [])])];
   await app.register(cors, {
-    origin: configuredOrigins?.length ? configuredOrigins : process.env["NODE_ENV"] === "production" ? false : true,
+    origin: process.env["NODE_ENV"] === "production" ? productionOrigins : true,
     credentials: true,
   });
   await app.register(helmet);
