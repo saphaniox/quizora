@@ -60,7 +60,7 @@ export function CountrySelect({
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}
           className={cn(
-            "flex w-full items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+            "flex w-full min-w-0 items-center justify-between gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-left text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
             buttonClassName,
           )}
         >
@@ -81,7 +81,7 @@ export function CountrySelect({
         </button>
 
         {open && (
-          <div className="absolute left-0 right-0 z-30 mt-1 overflow-hidden rounded-lg border border-border bg-popover shadow-lg sm:w-80">
+          <div className="absolute left-0 right-0 z-50 mt-1 max-w-[calc(100vw-2rem)] overflow-hidden rounded-lg border border-border bg-popover shadow-lg sm:right-auto sm:w-80">
             <div className="border-b border-border p-2">
               <label className="relative block">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />

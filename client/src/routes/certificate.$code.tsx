@@ -107,16 +107,16 @@ function CertificatePage() {
   };
 
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6 lg:px-8">
-      <div className="relative overflow-hidden rounded-lg border border-slate-300 bg-[#fbfcf8] px-6 py-14 text-center text-slate-900 shadow-xl shadow-slate-200/70 sm:p-16 print:border-slate-300 print:shadow-none">
-        <div className="pointer-events-none absolute inset-[18px] rounded-lg border border-slate-950/70" />
-        <div className="pointer-events-none absolute inset-[28px] rounded-md border-[3px] border-blue-700/80" />
-        <div className="pointer-events-none absolute inset-[42px] border border-amber-500/70" />
-        <div className="pointer-events-none absolute inset-[54px] border border-slate-200" />
-        <div className="pointer-events-none absolute left-1/2 top-[28px] h-1 w-48 -translate-x-1/2 bg-blue-100" />
-        <div className="pointer-events-none absolute bottom-[28px] left-1/2 h-1 w-48 -translate-x-1/2 bg-blue-100" />
-        <div className="pointer-events-none absolute left-1/2 top-[42px] h-px w-36 -translate-x-1/2 bg-amber-500/70" />
-        <div className="pointer-events-none absolute bottom-[42px] left-1/2 h-px w-36 -translate-x-1/2 bg-amber-500/70" />
+    <div className="mx-auto max-w-6xl px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="relative overflow-hidden rounded-lg border border-slate-300 bg-[#fbfcf8] px-5 py-10 text-center text-slate-900 shadow-xl shadow-slate-200/70 sm:p-16 print:border-slate-300 print:shadow-none">
+        <div className="pointer-events-none absolute inset-2 rounded-lg border border-slate-950/70 sm:inset-[18px]" />
+        <div className="pointer-events-none absolute inset-4 rounded-md border-2 border-blue-700/80 sm:inset-[28px] sm:border-[3px]" />
+        <div className="pointer-events-none absolute inset-6 border border-amber-500/70 sm:inset-[42px]" />
+        <div className="pointer-events-none absolute inset-[34px] hidden border border-slate-200 sm:block sm:inset-[54px]" />
+        <div className="pointer-events-none absolute left-1/2 top-4 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:top-[28px] sm:w-48" />
+        <div className="pointer-events-none absolute bottom-4 left-1/2 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:bottom-[28px] sm:w-48" />
+        <div className="pointer-events-none absolute left-1/2 top-6 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:top-[42px] sm:w-36" />
+        <div className="pointer-events-none absolute bottom-6 left-1/2 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:bottom-[42px] sm:w-36" />
         <div className="pointer-events-none absolute left-12 top-12 hidden h-24 w-24 border-l-[3px] border-t-[3px] border-amber-600 sm:block" />
         <div className="pointer-events-none absolute right-12 top-12 hidden h-24 w-24 border-r-[3px] border-t-[3px] border-amber-600 sm:block" />
         <div className="pointer-events-none absolute bottom-12 left-12 hidden h-24 w-24 border-b-[3px] border-l-[3px] border-amber-600 sm:block" />
@@ -128,7 +128,7 @@ function CertificatePage() {
         <img
           src="/logo.png"
           alt=""
-          className="pointer-events-none absolute left-1/2 top-1/2 h-72 w-72 -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.05]"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.05] sm:h-72 sm:w-72"
         />
 
         <div className="relative z-10">
@@ -166,13 +166,15 @@ function CertificatePage() {
               <span className="h-px flex-1 bg-amber-500/70" />
             </div>
             <p className="mt-5 text-sm text-slate-600">This certifies that</p>
-            <h1 className="mt-3 break-words text-4xl font-bold text-slate-950">
+            <h1 className="mt-3 break-words text-3xl font-bold text-slate-950 sm:text-4xl">
               {certificate.playerName}
             </h1>
             <p className="mt-5 text-sm text-slate-600">
               has successfully completed the full Quitech section
             </p>
-            <p className="mt-3 text-2xl font-semibold text-slate-950">{certificate.quizTitle}</p>
+            <p className="mt-3 break-words text-xl font-semibold text-slate-950 sm:text-2xl">
+              {certificate.quizTitle}
+            </p>
             <p className="mt-2 text-sm text-slate-600">
               {certificate.levelName} - {certificate.category}
             </p>
@@ -218,11 +220,11 @@ function CertificatePage() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-wrap justify-center gap-2 print:hidden">
+      <div className="mt-6 grid gap-2 print:hidden sm:flex sm:flex-wrap sm:justify-center">
         <button
           type="button"
           onClick={() => window.print()}
-          className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:py-2"
         >
           <Printer className="h-4 w-4" /> Print
         </button>
@@ -230,7 +232,7 @@ function CertificatePage() {
           type="button"
           onClick={() => void handleDownload()}
           disabled={downloading}
-          className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
         >
           {downloading ? (
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -242,13 +244,13 @@ function CertificatePage() {
         <button
           type="button"
           onClick={() => void handleShare()}
-          className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+          className="inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
         >
           <Share2 className="h-4 w-4" /> Share
         </button>
         <Link
           to="/"
-          className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+          className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
         >
           Back to quizzes
         </Link>

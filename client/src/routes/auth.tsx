@@ -161,8 +161,8 @@ function AuthPage() {
   };
 
   return (
-    <div className="mx-auto max-w-md px-4 py-16 sm:px-6">
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+    <div className="mx-auto max-w-md px-4 py-8 sm:px-6 sm:py-16">
+      <div className="rounded-lg border border-border bg-card p-5 shadow-sm sm:p-8">
         <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">
           {mode === "signin" ? "Welcome back" : "Create your account"}
         </h1>
@@ -339,7 +339,7 @@ function AuthPage() {
         </p>
       </div>
 
-      <p className="mt-6 text-center text-sm text-muted-foreground">
+      <p className="mt-6 text-center text-sm leading-6 text-muted-foreground">
         You can keep practising without an account -{" "}
         <Link to="/" className="font-medium text-primary hover:underline">
           browse sections

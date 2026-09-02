@@ -39,7 +39,7 @@ function LeaderboardPage() {
   const levels = levelsData?.levels ?? [];
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className="flex items-center gap-3">
         <Trophy className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Leaderboard</h1>
@@ -49,11 +49,11 @@ function LeaderboardPage() {
         your attempt if you want it shown.
       </p>
 
-      <div className="mt-6 flex flex-wrap gap-2">
+      <div className="mt-6 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
         <button
           onClick={() => setLevelId("")}
           className={cn(
-            "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+            "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
             levelId === ""
               ? "border-primary bg-primary text-primary-foreground"
               : "border-border bg-card text-muted-foreground hover:text-foreground",
@@ -66,7 +66,7 @@ function LeaderboardPage() {
             key={level.id}
             onClick={() => setLevelId(level.id)}
             className={cn(
-              "rounded-full border px-4 py-2 text-sm font-medium transition-colors",
+              "shrink-0 rounded-full border px-4 py-2 text-sm font-medium transition-colors",
               levelId === level.id
                 ? "border-primary bg-primary text-primary-foreground"
                 : "border-border bg-card text-muted-foreground hover:text-foreground",
@@ -79,9 +79,9 @@ function LeaderboardPage() {
 
       <div className="mt-8">
         {isLoading ? (
-          <div className="h-64 animate-pulse rounded-xl border border-border bg-muted/40" />
+          <div className="h-64 animate-pulse rounded-lg border border-border bg-muted/40" />
         ) : entries.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-border p-12 text-center">
+          <div className="rounded-lg border border-dashed border-border p-8 text-center sm:p-12">
             <p className="font-medium text-foreground">No scores here yet</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Be the first to complete a section on this level.

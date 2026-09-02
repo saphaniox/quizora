@@ -12,6 +12,13 @@ dist/
 build/
 .output/
 .tanstack/
+**/android/.gradle/
+**/android/**/build/
+**/android/keystore.properties
+*.apk
+*.aab
+*.jks
+*.keystore
 
 # Logs and caches
 *.log

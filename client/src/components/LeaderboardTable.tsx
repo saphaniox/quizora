@@ -17,8 +17,42 @@ function countryDisplay(entry: LeaderboardEntry): string {
 
 export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
   return (
-    <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
-      <table className="w-full min-w-[760px] text-left text-sm">
+    <div>
+      <div className="grid gap-3 md:hidden">
+        {entries.map((entry, index) => (
+          <article key={entry.id} className="rounded-lg border border-border bg-card p-4 shadow-sm">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="inline-flex items-center gap-1.5 text-sm font-semibold text-foreground">
+                  {index < 3 ? <Medal className={cn("h-4 w-4", medalColor[index])} /> : null}
+                  Rank {index + 1}
+                </p>
+                <p className="mt-2 break-words text-base font-semibold text-card-foreground">
+                  {entry.playerName}
+                </p>
+                <p className="mt-1 text-xs text-muted-foreground">{countryDisplay(entry)}</p>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-base font-semibold tabular-nums text-foreground">
+                  {entry.percentage}%
+                </p>
+                <p className="text-xs tabular-nums text-muted-foreground">
+                  {entry.score}/{entry.maxScore}
+                </p>
+              </div>
+            </div>
+            <div className="mt-4 border-t border-border pt-3">
+              <p className="break-words text-sm font-medium text-foreground">{entry.quizTitle}</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {entry.levelName} - {formatTime(entry.timeSpentSeconds)}
+              </p>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div className="hidden overflow-x-auto rounded-lg border border-border bg-card shadow-sm md:block">
+        <table className="w-full min-w-[760px] text-left text-sm">
         <caption className="sr-only">Top quiz scores</caption>
         <thead className="border-b border-border text-xs uppercase tracking-wide text-muted-foreground">
           <tr>
@@ -70,7 +104,8 @@ export function LeaderboardTable({ entries }: { entries: LeaderboardEntry[] }) {
             </tr>
           ))}
         </tbody>
-      </table>
+        </table>
+      </div>
     </div>
   );
 }

@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Quitech</string>
+    <string name="title_activity_main">Quitech</string>
+    <string name="package_name">com.saptechug.quitech</string>
+    <string name="custom_url_scheme">com.saptechug.quitech</string>
+</resources>

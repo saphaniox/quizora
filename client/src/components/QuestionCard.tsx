@@ -29,8 +29,8 @@ export function QuestionCard({
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
   return (
-    <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
-      <div className="flex items-center justify-between text-sm text-muted-foreground">
+    <div className="rounded-lg border border-border bg-card p-4 shadow-sm sm:p-6 lg:p-8">
+      <div className="flex flex-col gap-1 text-sm text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <span>
           Question {questionNumber} of {totalQuestions}
         </span>
@@ -44,10 +44,10 @@ export function QuestionCard({
           style={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
         />
       </div>
-      <h2 className="mt-6 text-xl font-semibold leading-snug text-card-foreground sm:text-2xl">
+      <h2 className="mt-5 break-words text-lg font-semibold leading-snug text-card-foreground sm:mt-6 sm:text-xl lg:text-2xl">
         {question.text}
       </h2>
-      <div className="mt-8 grid gap-3">
+      <div className="mt-6 grid gap-3 sm:mt-8">
         {question.options.map((option, index) => {
           const isSelected = selectedOption === index;
           const isCorrectOption = showFeedback && correctOptionIndex === index;
@@ -63,7 +63,7 @@ export function QuestionCard({
               onMouseEnter={() => setHoveredIndex(index)}
               onMouseLeave={() => setHoveredIndex(null)}
               className={cn(
-                "flex items-center justify-between rounded-lg border px-4 py-3.5 text-left transition-all",
+                "flex min-h-12 items-start justify-between gap-3 rounded-lg border px-3 py-3 text-left transition-all sm:px-4 sm:py-3.5",
                 "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2",
                 isCorrectOption && "border-emerald-500 bg-emerald-50 text-emerald-900",
                 isWrongSelection && "border-rose-500 bg-rose-50 text-rose-900",
@@ -82,10 +82,12 @@ export function QuestionCard({
                   "border-border bg-background hover:border-primary/50 hover:bg-accent",
               )}
             >
-              <span className="font-medium">{option}</span>
-              {isCorrectOption && <CheckCircle2 className="h-5 w-5 text-emerald-600" />}
-              {isWrongSelection && <XCircle className="h-5 w-5 text-rose-600" />}
-              {!showFeedback && isSelected && <ArrowRight className="h-4 w-4 text-primary" />}
+              <span className="min-w-0 break-words font-medium">{option}</span>
+              {isCorrectOption && <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />}
+              {isWrongSelection && <XCircle className="h-5 w-5 shrink-0 text-rose-600" />}
+              {!showFeedback && isSelected && (
+                <ArrowRight className="h-4 w-4 shrink-0 text-primary" />
+              )}
             </button>
           );
         })}

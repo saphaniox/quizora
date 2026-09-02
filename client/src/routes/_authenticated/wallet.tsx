@@ -127,7 +127,7 @@ function WalletPage() {
   };
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-5xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className="flex items-center gap-3">
         <ShieldCheck className="h-6 w-6 text-primary" />
         <div>
@@ -141,7 +141,7 @@ function WalletPage() {
       </div>
 
       {user && (
-        <section className="mt-8 rounded-lg border border-border bg-card p-5 shadow-sm">
+        <section className="mt-8 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6">
           <div className="flex flex-col gap-5 lg:flex-row lg:items-start lg:justify-between">
             <div>
               <div className="flex items-center gap-2 text-sm font-semibold text-card-foreground">
@@ -152,9 +152,11 @@ function WalletPage() {
                 <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-secondary text-secondary-foreground">
                   <UserRound className="h-5 w-5" />
                 </span>
-                <div>
-                  <p className="text-sm font-medium text-card-foreground">{user.displayName}</p>
-                  <p className="text-sm text-muted-foreground">{accountContact}</p>
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-medium text-card-foreground">
+                    {user.displayName}
+                  </p>
+                  <p className="break-all text-sm text-muted-foreground">{accountContact}</p>
                 </div>
                 {user.role === "admin" && (
                   <span className="w-fit rounded-md border border-emerald-500/25 bg-emerald-500/10 px-2 py-1 text-xs font-semibold text-emerald-700 dark:text-emerald-300">
@@ -202,7 +204,7 @@ function WalletPage() {
           {deleteOpen && (
             <form
               onSubmit={(event) => void handleDelete(event)}
-              className="mt-5 rounded-lg border border-destructive/25 bg-destructive/5 p-4"
+              className="mt-5 rounded-lg border border-destructive/25 bg-destructive/5 p-4 sm:p-5"
             >
               <div className="flex items-start gap-3">
                 <ShieldAlert className="mt-0.5 h-5 w-5 shrink-0 text-destructive" />
@@ -225,11 +227,11 @@ function WalletPage() {
                     autoComplete="off"
                     className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                  <div className="mt-3 flex flex-wrap gap-2">
+                  <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
                     <button
                       type="submit"
                       disabled={!canDelete}
-                      className="inline-flex items-center gap-2 rounded-md bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex items-center justify-center gap-2 rounded-md bg-destructive px-4 py-2.5 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90 disabled:cursor-not-allowed disabled:opacity-60"
                     >
                       {deleting ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
@@ -277,7 +279,7 @@ function WalletPage() {
       )}
 
       {certificates.length === 0 ? (
-        <div className="mt-10 rounded-xl border border-dashed border-border p-10 text-center">
+        <div className="mt-10 rounded-lg border border-dashed border-border p-8 text-center sm:p-10">
           <Award className="mx-auto h-8 w-8 text-muted-foreground" />
           <p className="mt-3 font-medium text-foreground">No certificates yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -297,16 +299,20 @@ function WalletPage() {
               key={certificate.code}
               to="/certificate/$code"
               params={{ code: certificate.code }}
-              className="rounded-xl border border-border bg-card p-5 shadow-sm hover:border-primary/40"
+              className="min-w-0 rounded-lg border border-border bg-card p-5 shadow-sm hover:border-primary/40"
             >
               <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
                 {certificate.levelName}
               </p>
-              <h2 className="mt-1 font-semibold text-card-foreground">{certificate.quizTitle}</h2>
+              <h2 className="mt-1 break-words font-semibold text-card-foreground">
+                {certificate.quizTitle}
+              </h2>
               <p className="mt-1 text-xs text-muted-foreground">
                 {certificate.category} - {certificate.percentage}% score
               </p>
-              <p className="mt-4 font-mono text-xs text-muted-foreground">{certificate.code}</p>
+              <p className="mt-4 break-all font-mono text-xs text-muted-foreground">
+                {certificate.code}
+              </p>
             </Link>
           ))}
         </div>

@@ -95,7 +95,7 @@ function HomePage() {
         />
         <div className="absolute inset-0 -z-10 bg-linear-to-r from-background via-background/90 to-background/35 dark:from-background dark:via-background/95 dark:to-background/70" />
 
-        <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6 sm:py-20 lg:px-8">
+        <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20 lg:px-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             {data
@@ -103,7 +103,7 @@ function HomePage() {
               : "Thousands of questions"}{" "}
             for learners 13+
           </span>
-          <h1 className="mt-5 max-w-3xl text-4xl font-bold tracking-tight text-foreground sm:text-5xl">
+          <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight text-foreground sm:text-5xl">
             Learn, challenge, and keep your progress moving.
           </h1>
           <p className="mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:text-lg">
@@ -113,7 +113,7 @@ function HomePage() {
           </p>
 
           {showAuthActions && (
-            <div className="mt-7 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-7 grid gap-3 sm:flex sm:flex-row">
               <a
                 href="/auth?mode=signup"
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
@@ -155,7 +155,7 @@ function HomePage() {
             ].map(({ icon: Icon, label, value }) => (
               <div
                 key={label}
-                className="rounded-xl border border-border bg-card/85 p-4 shadow-sm backdrop-blur"
+                className="rounded-lg border border-border bg-card/85 p-4 shadow-sm backdrop-blur"
               >
                 <Icon className="h-5 w-5 text-primary" />
                 <dt className="mt-3 text-xs font-medium uppercase tracking-wide text-muted-foreground">
@@ -170,7 +170,7 @@ function HomePage() {
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
         {isError && (
-          <div className="rounded-xl border border-destructive/30 bg-destructive/5 p-6">
+          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-5 sm:p-6">
             <p className="font-medium text-foreground">We could not reach the quiz catalogue.</p>
             <p className="mt-1 text-sm text-muted-foreground">
               This usually means the API is waking up or temporarily offline. The exact response was{" "}
@@ -190,7 +190,7 @@ function HomePage() {
             {Array.from({ length: 6 }).map((_, index) => (
               <div
                 key={index}
-                className="h-52 animate-pulse rounded-xl border border-border bg-muted/50"
+                className="h-52 animate-pulse rounded-lg border border-border bg-muted/50"
               />
             ))}
           </div>
@@ -204,7 +204,7 @@ function HomePage() {
                   Browse the catalogue
                 </p>
                 <h2 className="mt-2 text-2xl font-semibold tracking-tight text-foreground">
-                  What do you want to work on today?
+                  What would you like to strengthen today?
                 </h2>
                 <p className="mt-1 text-sm text-muted-foreground">
                   Choose a quick refresh, school practice, career growth, or a topic you simply want
@@ -227,7 +227,7 @@ function HomePage() {
                       aria-selected={selected}
                       onClick={() => setActiveLevel(level.id)}
                       className={cn(
-                        "group flex items-center gap-3 rounded-xl border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+                        "group flex min-w-0 items-center gap-3 rounded-lg border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
                           ? "border-primary bg-primary text-primary-foreground shadow-sm"
                           : "border-border bg-card text-foreground hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm",

@@ -62,7 +62,7 @@ function HistoryPage() {
     : 0;
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
       <div className="flex items-center gap-3">
         <HistoryIcon className="h-6 w-6 text-primary" />
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">My progress</h1>
@@ -73,13 +73,13 @@ function HistoryPage() {
           : "Saved privately on this device - no account needed."}
       </p>
 
-      <dl className="mt-6 grid grid-cols-3 gap-4">
+      <dl className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
         {[
           { label: "Attempts", value: attempts },
           { label: "Best score", value: `${best}%` },
           { label: "Average", value: `${average}%` },
         ].map((stat) => (
-          <div key={stat.label} className="rounded-xl border border-border bg-card p-4 shadow-sm">
+          <div key={stat.label} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <dt className="text-xs uppercase tracking-wide text-muted-foreground">{stat.label}</dt>
             <dd className="mt-1 text-2xl font-semibold text-card-foreground">{stat.value}</dd>
           </div>
@@ -93,9 +93,9 @@ function HistoryPage() {
             {certificates.map((certificate) => (
               <li
                 key={certificate.code}
-                className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm"
+                className="flex flex-col gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="text-foreground">
+                <span className="break-words text-foreground">
                   {certificate.quizTitle} - {certificate.percentage}%
                 </span>
                 {certificate.countryName && (
@@ -106,7 +106,7 @@ function HistoryPage() {
                 <Link
                   to="/certificate/$code"
                   params={{ code: certificate.code }}
-                  className="font-mono text-xs font-semibold text-primary hover:underline"
+                  className="break-all font-mono text-xs font-semibold text-primary hover:underline"
                 >
                   {certificate.code}
                 </Link>
@@ -116,7 +116,7 @@ function HistoryPage() {
         </>
       )}
 
-      <div className="mt-10 flex items-center justify-between">
+      <div className="mt-10 flex items-center justify-between gap-3">
         <h2 className="text-lg font-semibold text-foreground">Recent attempts</h2>
         {attempts > 0 && !accountSynced && (
           <button
@@ -133,7 +133,7 @@ function HistoryPage() {
       </div>
 
       {attempts === 0 ? (
-        <div className="mt-4 rounded-xl border border-dashed border-border p-12 text-center">
+        <div className="mt-4 rounded-lg border border-dashed border-border p-8 text-center sm:p-12">
           <p className="font-medium text-foreground">Nothing here yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
             Complete a section and your results will show up here.
@@ -150,10 +150,10 @@ function HistoryPage() {
           {items.map((item, index) => (
             <li
               key={`${item.quizId}-${item.completedAt}-${index}`}
-              className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-border bg-card px-4 py-3"
+              className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
             >
-              <div>
-                <p className="text-sm font-medium text-foreground">{item.quizTitle}</p>
+              <div className="min-w-0">
+                <p className="break-words text-sm font-medium text-foreground">{item.quizTitle}</p>
                 <p className="text-xs text-muted-foreground">
                   {item.levelName} - {new Date(item.completedAt).toLocaleString()}
                 </p>

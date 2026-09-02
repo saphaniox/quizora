@@ -55,7 +55,7 @@ export function Timer({ totalSeconds, onExpire, running, startedAtMs, className 
   return (
     <div
       className={cn(
-        "flex items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm",
+        "flex w-full items-center gap-3 rounded-lg border border-border bg-card px-4 py-3 shadow-sm sm:w-auto sm:min-w-56",
         className,
       )}
     >
@@ -82,11 +82,11 @@ export function Timer({ totalSeconds, onExpire, running, startedAtMs, className 
         </svg>
         <Clock className={cn("absolute h-4 w-4", isLow ? "text-destructive" : "text-primary")} />
       </div>
-      <div>
+      <div className="min-w-0">
         <p className="text-xs font-medium text-muted-foreground">Time remaining</p>
         <p
           className={cn(
-            "text-lg font-semibold tabular-nums tracking-tight",
+            "w-16 text-lg font-semibold tabular-nums tracking-tight",
             isLow && "text-destructive",
           )}
         >

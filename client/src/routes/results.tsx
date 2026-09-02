@@ -77,14 +77,14 @@ function ResultsPage() {
   };
 
   return (
-    <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
-        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-center sm:justify-between">
-          <div>
+    <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
+      <div className="rounded-lg border border-border bg-card p-5 shadow-sm sm:p-8">
+        <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {attempt.levelName}
             </p>
-            <h1 className="mt-1 text-2xl font-semibold tracking-tight text-card-foreground">
+            <h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-card-foreground">
               {attempt.quizTitle}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
@@ -106,24 +106,24 @@ function ResultsPage() {
           <ScoreRing percentage={result.percentage} size="lg" label="Final score" />
         </div>
 
-        <div className="mt-6 flex flex-wrap gap-2">
+        <div className="mt-6 grid gap-2 sm:flex sm:flex-wrap">
           <Link
             to="/quizzes/$id"
             params={{ id: attempt.quizId }}
-            className="inline-flex items-center gap-1.5 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:py-2"
           >
             <RotateCcw className="h-4 w-4" /> Retake quiz
           </Link>
           <button
             type="button"
             onClick={() => void share()}
-            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
           >
             <Share2 className="h-4 w-4" /> {copied ? "Copied!" : "Share result"}
           </button>
           <Link
             to="/leaderboard"
-            className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+            className="inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
           >
             <Trophy className="h-4 w-4" /> Leaderboard
           </Link>
@@ -134,10 +134,10 @@ function ResultsPage() {
       </div>
 
       {certificate ? (
-        <div className="mt-6 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-6">
-          <div className="flex items-start gap-3">
+        <div className="mt-6 rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-5 sm:p-6">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
             <Award className="h-6 w-6 shrink-0 text-emerald-600 dark:text-emerald-400" />
-            <div>
+            <div className="min-w-0">
               <h2 className="text-lg font-semibold text-foreground">Certificate earned</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 {certificate.playerName}, you passed with {certificate.percentage}%. Your
@@ -147,7 +147,7 @@ function ResultsPage() {
               <Link
                 to="/certificate/$code"
                 params={{ code: certificate.code }}
-                className="mt-4 inline-flex rounded-md bg-emerald-600 px-4 py-2 text-sm font-medium text-white hover:bg-emerald-700"
+                className="mt-4 inline-flex w-full justify-center rounded-md bg-emerald-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-emerald-700 sm:w-auto sm:py-2"
               >
                 View & print certificate
               </Link>
@@ -156,26 +156,26 @@ function ResultsPage() {
         </div>
       ) : (
         result.certificateMessage && (
-          <div className="mt-6 rounded-xl border border-border bg-muted/40 p-5 text-sm text-muted-foreground">
+          <div className="mt-6 rounded-lg border border-border bg-muted/40 p-5 text-sm text-muted-foreground">
             {result.certificateMessage}
           </div>
         )
       )}
 
       {topEntries.length > 0 && (
-        <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm">
+        <div className="mt-6 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-6">
           <h2 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
             Top scores here
           </h2>
           <ol className="mt-3 space-y-2">
             {topEntries.map((entry, position) => (
-              <li key={entry.id} className="flex items-center justify-between gap-3 text-sm">
+              <li key={entry.id} className="flex items-start justify-between gap-3 text-sm">
                 <span className="min-w-0 text-foreground">
                   <span className="font-medium">
                     {position + 1}. {entry.playerName}
                   </span>
                   {entry.countryName && (
-                    <span className="ml-2 text-xs text-muted-foreground">
+                    <span className="mt-0.5 block text-xs text-muted-foreground sm:ml-2 sm:mt-0 sm:inline">
                       {countryFlag(entry.countryCode ?? "")} {entry.countryName}
                     </span>
                   )}
@@ -188,7 +188,7 @@ function ResultsPage() {
       )}
 
       <h2 className="mt-10 text-xl font-semibold tracking-tight text-foreground">Answer review</h2>
-      <div className="mt-4 rounded-xl border border-border bg-card p-5 shadow-sm">
+      <div className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5">
             <span className="inline-block h-3 w-3 rounded bg-emerald-500" /> Correct
@@ -200,7 +200,7 @@ function ResultsPage() {
             <span className="inline-block h-3 w-3 rounded bg-muted" /> Skipped
           </span>
         </div>
-        <div className="mt-3 grid grid-cols-8 gap-1.5 sm:grid-cols-12 lg:grid-cols-16">
+        <div className="mt-3 grid max-h-72 grid-cols-[repeat(auto-fill,minmax(2.25rem,1fr))] gap-1.5 overflow-y-auto pr-1">
           {attempt.questions.map((question, questionIndex) => {
             const answered = attempt.answers[question.id] !== undefined;
             const correct = result.correctAnswers[question.id];
@@ -209,7 +209,7 @@ function ResultsPage() {
                 key={question.id}
                 href={`#question-${questionIndex + 1}`}
                 title={`Question ${questionIndex + 1}: ${!answered ? "skipped" : correct ? "correct" : "wrong"}`}
-                className={`flex h-8 items-center justify-center gap-0.5 rounded text-[11px] font-semibold ${
+                className={`flex h-9 items-center justify-center rounded text-[11px] font-semibold tabular-nums ${
                   !answered
                     ? "bg-muted text-muted-foreground"
                     : correct
@@ -218,7 +218,9 @@ function ResultsPage() {
                 }`}
               >
                 {questionIndex + 1}
-                {answered ? (correct ? "✓" : "×") : ""}
+                <span className="sr-only">
+                  {!answered ? "skipped" : correct ? "correct" : "wrong"}
+                </span>
               </a>
             );
           })}

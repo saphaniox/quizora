@@ -278,7 +278,7 @@ function QuizPage() {
 
   if (!started) {
     return (
-      <div className="mx-auto max-w-2xl px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-2xl px-4 py-10 sm:px-6 sm:py-16 lg:px-8">
         <Link
           to="/"
           className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground"
@@ -286,7 +286,7 @@ function QuizPage() {
           <ArrowLeft className="h-4 w-4" /> All sections
         </Link>
 
-        <div className="mt-6 rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+        <div className="mt-6 rounded-lg border border-border bg-card p-5 shadow-sm sm:p-8">
           <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">
             Set up your practice
           </h1>
@@ -359,9 +359,9 @@ function QuizPage() {
                 type="button"
                 disabled={!playerName.trim()}
                 onClick={() => beginQuiz(option.value)}
-                className="flex items-start justify-between gap-4 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                className="flex min-h-20 items-start justify-between gap-4 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               >
-                <span>
+                <span className="min-w-0">
                   <span className="block text-sm font-semibold text-foreground">
                     {option.title}
                   </span>
@@ -431,13 +431,13 @@ function QuizPage() {
   }
 
   return (
-    <div className="mx-auto max-w-5xl px-4 py-10 sm:px-6 lg:px-8">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
             {quiz.levelName}
           </p>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-foreground">
+          <h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-foreground">
             {quiz.title}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -456,7 +456,7 @@ function QuizPage() {
             onExpire={() => void handleSubmit()}
           />
         ) : (
-          <div className="rounded-lg border border-border bg-card px-4 py-3 shadow-sm">
+          <div className="w-full rounded-lg border border-border bg-card px-4 py-3 shadow-sm sm:w-auto">
             <p className="text-xs font-medium text-muted-foreground">Self-paced - time on task</p>
             <p className="text-lg font-semibold tabular-nums tracking-tight text-foreground">
               {Math.floor(elapsed / 3600)
@@ -472,7 +472,7 @@ function QuizPage() {
         )}
       </div>
 
-      <div className="mt-8 grid gap-6 lg:grid-cols-[1fr_220px]">
+      <div className="mt-6 grid gap-5 lg:mt-8 lg:grid-cols-[minmax(0,1fr)_240px]">
         <div>
           {current && (
             <QuestionCard
@@ -486,13 +486,13 @@ function QuizPage() {
             />
           )}
 
-          <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex gap-2">
+          <div className="mt-6 grid gap-3 sm:flex sm:flex-wrap sm:items-center sm:justify-between">
+            <div className="grid grid-cols-2 gap-2 sm:flex">
               <button
                 type="button"
                 onClick={() => setIndex((prev) => Math.max(0, prev - 1))}
                 disabled={index === 0}
-                className="inline-flex items-center gap-1.5 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground disabled:opacity-40"
+                className="inline-flex items-center justify-center gap-1.5 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground disabled:opacity-40 sm:py-2"
               >
                 <ArrowLeft className="h-4 w-4" /> Previous
               </button>
@@ -507,7 +507,7 @@ function QuizPage() {
                   )
                 }
                 className={cn(
-                  "inline-flex items-center gap-1.5 rounded-md border px-4 py-2 text-sm font-medium",
+                  "inline-flex items-center justify-center gap-1.5 rounded-md border px-4 py-2.5 text-sm font-medium sm:py-2",
                   current && flagged.includes(current.id)
                     ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
                     : "border-input bg-background text-muted-foreground",
@@ -521,7 +521,7 @@ function QuizPage() {
               <button
                 type="button"
                 onClick={() => setIndex((prev) => Math.min(questions.length - 1, prev + 1))}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:w-auto sm:py-2"
               >
                 Next <ArrowRight className="h-4 w-4" />
               </button>
@@ -530,7 +530,7 @@ function QuizPage() {
                 type="button"
                 onClick={() => void handleSubmit()}
                 disabled={submitting}
-                className="inline-flex items-center gap-1.5 rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                className="inline-flex w-full items-center justify-center gap-1.5 rounded-md bg-primary px-5 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60 sm:w-auto sm:py-2"
               >
                 {submitting ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -545,11 +545,16 @@ function QuizPage() {
           {submitError && <p className="mt-3 text-sm text-destructive">{submitError}</p>}
         </div>
 
-        <aside className="rounded-xl border border-border bg-card p-4 shadow-sm">
-          <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-            Question map
-          </p>
-          <div className="mt-3 grid grid-cols-6 gap-1.5 lg:grid-cols-5">
+        <aside className="rounded-lg border border-border bg-card p-4 shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">
+          <div className="flex items-center justify-between gap-3">
+            <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+              Question map
+            </p>
+            <p className="text-xs font-medium text-muted-foreground">
+              {answeredCount}/{questions.length}
+            </p>
+          </div>
+          <div className="mt-3 grid max-h-56 grid-cols-[repeat(auto-fill,minmax(2.25rem,1fr))] gap-1.5 overflow-y-auto pr-1 lg:max-h-none">
             {questions.map((question, questionIndex) => (
               <button
                 key={question.id}
@@ -557,7 +562,7 @@ function QuizPage() {
                 onClick={() => setIndex(questionIndex)}
                 aria-label={`Go to question ${questionIndex + 1}`}
                 className={cn(
-                  "h-8 rounded text-xs font-medium transition-colors",
+                  "h-9 rounded text-xs font-medium tabular-nums transition-colors",
                   questionIndex === index && "ring-2 ring-ring",
                   flagged.includes(question.id)
                     ? "bg-amber-500/20 text-amber-700 dark:text-amber-300"
@@ -574,14 +579,14 @@ function QuizPage() {
             type="button"
             onClick={() => void handleSubmit()}
             disabled={submitting}
-            className="mt-4 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60"
+            className="mt-4 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60 lg:py-2"
           >
             Submit now
           </button>
           <button
             type="button"
             onClick={() => void navigate({ to: "/" })}
-            className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-accent"
+            className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent lg:py-2"
           >
             Pause and come back
           </button>

@@ -466,7 +466,7 @@ function AdminPage() {
               production readiness from one place.
             </p>
             <div className="mt-4 flex flex-wrap gap-2 text-xs text-muted-foreground">
-              <span className="rounded-md border border-border bg-background px-2.5 py-1">
+              <span className="min-w-0 break-words rounded-md border border-border bg-background px-2.5 py-1">
                 Signed in as <span className="font-medium text-foreground">{accountContact}</span>
               </span>
               <span className="rounded-md border border-border bg-background px-2.5 py-1">
@@ -474,10 +474,10 @@ function AdminPage() {
               </span>
             </div>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap">
             <a
               href="/"
-              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+              className="inline-flex items-center justify-center rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
             >
               View site
             </a>
@@ -490,7 +490,7 @@ function AdminPage() {
                 void auditQuery.refetch();
                 void leaderboardQuery.refetch();
               }}
-              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground hover:bg-accent"
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
             >
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
               Refresh
@@ -561,7 +561,7 @@ function AdminPage() {
                   </p>
                 </div>
                 <div className="flex flex-col gap-2 sm:flex-row">
-                  <label className="relative block sm:w-64">
+                  <label className="relative block w-full sm:w-64">
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="search"
@@ -574,7 +574,7 @@ function AdminPage() {
                   <select
                     value={selectedLevel}
                     onChange={(event) => setSelectedLevel(event.target.value)}
-                    className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
                   >
                     <option value="all">All levels</option>
                     {levels.map((level) => (
