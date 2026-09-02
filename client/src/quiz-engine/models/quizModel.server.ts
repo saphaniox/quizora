@@ -142,7 +142,11 @@ function targetFor(levelId: string, section: SectionDefinition): number {
 }
 
 /** Seconds allowed for a timed practice run. Full sections are self-paced. */
-const PRACTICE_SECONDS_PER_QUESTION = 45;
+const PRACTICE_SECONDS_PER_QUESTION: Record<Difficulty, number> = {
+  Easy: 45,
+  Medium: 60,
+  Hard: 75,
+};
 
 interface SectionMeta {
   level: (typeof levelDefinitions)[number];
@@ -276,7 +280,9 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
     sectionId: quiz.sectionId,
     difficulty: quiz.difficulty,
     // Full certificate sections are self-paced (0 = untimed) so learners can rest.
-    timeLimitSeconds: certificateEligible ? 0 : questions.length * PRACTICE_SECONDS_PER_QUESTION,
+    timeLimitSeconds: certificateEligible
+      ? 0
+      : questions.length * PRACTICE_SECONDS_PER_QUESTION[quiz.difficulty],
     totalQuestionsInSection: total,
     certificateEligible,
     passMark: PASS_MARK,

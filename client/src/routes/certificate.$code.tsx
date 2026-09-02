@@ -7,6 +7,8 @@ import { downloadCertificatePdf } from "@/lib/certificate-pdf";
 import { countryFlag } from "@/lib/countries";
 import type { Certificate } from "@/types/quiz";
 
+const APP_URL = "https://quitech.online";
+
 /** Look the code up through the client-hosted API. */
 async function verify(code: string): Promise<{ certificate: Certificate }> {
   return getCertificate(code);
@@ -88,7 +90,7 @@ function CertificatePage() {
 
   const handleShare = async () => {
     const title = `${certificate.playerName}'s Quitech certificate`;
-    const text = `${certificate.playerName} earned ${certificate.percentage}% in ${certificate.quizTitle} on Quitech.`;
+    const text = `${certificate.playerName} earned ${certificate.percentage}% in ${certificate.quizTitle} on Quitech.\n\nView the certificate: ${certificateUrl}\nTry Quitech yourself at ${APP_URL}`;
 
     try {
       if (navigator.share) {
@@ -96,7 +98,7 @@ function CertificatePage() {
         return;
       }
 
-      await navigator.clipboard.writeText(certificateUrl);
+      await navigator.clipboard.writeText(text);
       setShareStatus("Certificate link copied");
       window.setTimeout(() => setShareStatus(""), 2500);
     } catch (error) {
@@ -109,19 +111,18 @@ function CertificatePage() {
   return (
     <div className="mx-auto max-w-6xl px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="relative overflow-hidden rounded-lg border border-slate-300 bg-[#fbfcf8] px-5 py-10 text-center text-slate-900 shadow-xl shadow-slate-200/70 sm:p-16 print:border-slate-300 print:shadow-none">
-        <div className="pointer-events-none absolute inset-2 rounded-lg border border-slate-950/70 sm:inset-[18px]" />
-        <div className="pointer-events-none absolute inset-4 rounded-md border-2 border-blue-700/80 sm:inset-[28px] sm:border-[3px]" />
-        <div className="pointer-events-none absolute inset-6 border border-amber-500/70 sm:inset-[42px]" />
-        <div className="pointer-events-none absolute inset-[34px] hidden border border-slate-200 sm:block sm:inset-[54px]" />
-        <div className="pointer-events-none absolute left-1/2 top-4 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:top-[28px] sm:w-48" />
-        <div className="pointer-events-none absolute bottom-4 left-1/2 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:bottom-[28px] sm:w-48" />
-        <div className="pointer-events-none absolute left-1/2 top-6 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:top-[42px] sm:w-36" />
-        <div className="pointer-events-none absolute bottom-6 left-1/2 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:bottom-[42px] sm:w-36" />
+        <div className="pointer-events-none absolute inset-2 rounded-lg border border-slate-950/70 sm:inset-4.5" />
+        <div className="pointer-events-none absolute inset-4 rounded-md border-2 border-blue-700/80 sm:inset-7 sm:border-[3px]" />
+        <div className="pointer-events-none absolute inset-6 border border-amber-500/70 sm:inset-10.5" />
+        <div className="pointer-events-none absolute inset-8.5 hidden border border-slate-200 sm:block sm:inset-13.5" />
+        <div className="pointer-events-none absolute left-1/2 top-4 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:top-7 sm:w-48" />
+        <div className="pointer-events-none absolute bottom-4 left-1/2 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:bottom-7 sm:w-48" />
+        <div className="pointer-events-none absolute left-1/2 top-6 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:top-10.5 sm:w-36" />
+        <div className="pointer-events-none absolute bottom-6 left-1/2 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:bottom-10.5 sm:w-36" />
         <div className="pointer-events-none absolute left-12 top-12 hidden h-24 w-24 border-l-[3px] border-t-[3px] border-amber-600 sm:block" />
         <div className="pointer-events-none absolute right-12 top-12 hidden h-24 w-24 border-r-[3px] border-t-[3px] border-amber-600 sm:block" />
         <div className="pointer-events-none absolute bottom-12 left-12 hidden h-24 w-24 border-b-[3px] border-l-[3px] border-amber-600 sm:block" />
         <div className="pointer-events-none absolute bottom-12 right-12 hidden h-24 w-24 border-b-[3px] border-r-[3px] border-amber-600 sm:block" />
-        <div className="pointer-events-none absolute left-16 top-16 hidden h-16 w-16 border-l border-t border-blue-700/60 sm:block" />
         <div className="pointer-events-none absolute right-16 top-16 hidden h-16 w-16 border-r border-t border-blue-700/60 sm:block" />
         <div className="pointer-events-none absolute bottom-16 left-16 hidden h-16 w-16 border-b border-l border-blue-700/60 sm:block" />
         <div className="pointer-events-none absolute bottom-16 right-16 hidden h-16 w-16 border-b border-r border-blue-700/60 sm:block" />
@@ -166,13 +167,13 @@ function CertificatePage() {
               <span className="h-px flex-1 bg-amber-500/70" />
             </div>
             <p className="mt-5 text-sm text-slate-600">This certifies that</p>
-            <h1 className="mt-3 break-words text-3xl font-bold text-slate-950 sm:text-4xl">
+            <h1 className="mt-3 wrap-break-word text-3xl font-bold text-slate-950 sm:text-4xl">
               {certificate.playerName}
             </h1>
             <p className="mt-5 text-sm text-slate-600">
               has successfully completed the full Quitech section
             </p>
-            <p className="mt-3 break-words text-xl font-semibold text-slate-950 sm:text-2xl">
+            <p className="mt-3 wrap-break-word text-xl font-semibold text-slate-950 sm:text-2xl">
               {certificate.quizTitle}
             </p>
             <p className="mt-2 text-sm text-slate-600">

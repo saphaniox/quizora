@@ -8,6 +8,8 @@ import { getLeaderboard } from "@/lib/api";
 import { loadAttempt, type StoredAttempt } from "@/lib/attempt-store";
 import { countryFlag } from "@/lib/countries";
 
+const APP_URL = "https://quitech.online";
+
 export const Route = createFileRoute("/results")({
   ssr: false,
   head: () => ({
@@ -63,9 +65,10 @@ function ResultsPage() {
   const leaderboardImproved = result.leaderboardImproved !== false;
 
   const share = async () => {
-    const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quitech!`;
+    const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quitech!\n\nTry it yourself at ${APP_URL}`;
     try {
-      if (navigator.share) await navigator.share({ title: "Quitech result", text });
+      if (navigator.share)
+        await navigator.share({ title: "My Quitech result", text, url: APP_URL });
       else {
         await navigator.clipboard.writeText(text);
         setCopied(true);
@@ -84,7 +87,7 @@ function ResultsPage() {
             <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
               {attempt.levelName}
             </p>
-            <h1 className="mt-1 break-words text-2xl font-semibold tracking-tight text-card-foreground">
+            <h1 className="mt-1 wrap-break-word text-2xl font-semibold tracking-tight text-card-foreground">
               {attempt.quizTitle}
             </h1>
             <p className="mt-2 text-sm text-muted-foreground">
