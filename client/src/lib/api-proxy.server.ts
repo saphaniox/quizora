@@ -126,10 +126,15 @@ export async function proxyApiRequest(request: Request, serverPath: string): Pro
 
   try {
     const upstreamResponse = await fetch(upstreamUrl, init);
+    const responseHeaders = responseHeadersForProxy(upstreamResponse);
+    if (serverPath.startsWith("/auth/")) {
+      responseHeaders.set("cache-control", "no-store");
+      responseHeaders.set("vary", "Cookie");
+    }
     return new Response(await upstreamResponse.arrayBuffer(), {
       status: upstreamResponse.status,
       statusText: upstreamResponse.statusText,
-      headers: responseHeadersForProxy(upstreamResponse),
+      headers: responseHeaders,
     });
   } catch {
     return jsonError("Could not reach the server API. Check the API deployment URL and try again.", 502);

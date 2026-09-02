@@ -115,14 +115,14 @@ function WalletPage() {
     setDeleteError(null);
     try {
       await logoutAccount();
-      setUser(null);
-      queryClient.setQueryData(["auth", "me"], { user: null });
-      void navigate({ to: "/", replace: true });
     } catch (failure) {
       const message = failure instanceof Error ? failure.message : "Sign out failed";
       setDeleteError(message);
     } finally {
+      setUser(null);
+      queryClient.setQueryData(["auth", "me"], { user: null });
       setSigningOut(false);
+      void navigate({ to: "/", replace: true });
     }
   };
 

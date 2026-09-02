@@ -241,7 +241,7 @@ export async function logout(
   reply: FastifyReply,
 ): Promise<void> {
   await auth.logout(readSessionToken(request));
-  clearSessionCookie(reply).send({ ok: true });
+  clearSessionCookie(reply).header("cache-control", "no-store").send({ ok: true });
 }
 
 export async function deleteAccount(
@@ -253,7 +253,7 @@ export async function deleteAccount(
     reply.code(401).send({ error: "Sign in before deleting your account" });
     return;
   }
-  clearSessionCookie(reply).send({ ok: true });
+  clearSessionCookie(reply).header("cache-control", "no-store").send({ ok: true });
 }
 
 export async function deleteLeaderboardEntry(
