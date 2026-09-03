@@ -42,7 +42,7 @@ function CertificatePage() {
     retry: false,
   });
 
-  if (isLoading) {
+        queryKey: ["certificate", code],
     return (
       <div className="mx-auto max-w-3xl px-4 py-20 text-center text-muted-foreground">
         Checking code...
