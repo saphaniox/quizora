@@ -174,6 +174,18 @@ export function loadProgress(quizId: string): SavedProgress | null {
   return read<SavedProgress | null>(`${PROGRESS_PREFIX}${quizId}`, null);
 }
 
+export function loadAllProgress(): SavedProgress[] {
+  if (!browser()) return [];
+  const progress: SavedProgress[] = [];
+  for (let index = 0; index < localStorage.length; index += 1) {
+    const key = localStorage.key(index);
+    if (!key?.startsWith(PROGRESS_PREFIX)) continue;
+    const saved = read<SavedProgress | null>(key, null);
+    if (saved) progress.push(saved);
+  }
+  return progress.sort((left, right) => right.savedAt.localeCompare(left.savedAt));
+}
+
 export function clearProgress(quizId: string): void {
   if (browser()) localStorage.removeItem(`${PROGRESS_PREFIX}${quizId}`);
 }

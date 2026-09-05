@@ -1,8 +1,15 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { History as HistoryIcon, Trash2 } from "lucide-react";
-import { clearHistory, loadCertificates, loadHistory, type HistoryItem } from "@/lib/attempt-store";
-import { getMyActivity } from "@/lib/api";
+import { History as HistoryIcon, Play, Trash2 } from "lucide-react";
+import {
+  clearHistory,
+  loadAllProgress,
+  loadCertificates,
+  loadHistory,
+  type HistoryItem,
+  type SavedProgress,
+} from "@/lib/attempt-store";
+import { getAccountProgressList, getMyActivity, getQuizzes } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
 import type { Certificate, LeaderboardEntry } from "@/types/quiz";
 
@@ -30,14 +37,25 @@ export const Route = createFileRoute("/history")({
 function HistoryPage() {
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [certificates, setCertificates] = useState<Certificate[]>([]);
+  const [progress, setProgress] = useState<SavedProgress[]>([]);
+  const [quizTitles, setQuizTitles] = useState<Record<string, string>>({});
   const [accountSynced, setAccountSynced] = useState(false);
 
   useEffect(() => {
     let active = true;
     const localHistory = loadHistory();
     const localCertificates = loadCertificates();
+    const localProgress = loadAllProgress();
     setItems(localHistory);
     setCertificates(localCertificates);
+    setProgress(localProgress);
+
+    void getQuizzes()
+      .then(({ quizzes }) => {
+        if (!active) return;
+        setQuizTitles(Object.fromEntries(quizzes.map((quiz) => [quiz.id, quiz.title])));
+      })
+      .catch(() => undefined);
 
     void getMyActivity()
       .then(({ history, certificates }) => {
@@ -49,6 +67,18 @@ function HistoryPage() {
       .catch(() => {
         if (active) setAccountSynced(false);
       });
+
+    void getAccountProgressList()
+      .then(({ progress: remoteProgress }) => {
+        if (!active) return;
+        const merged = new Map(localProgress.map((item) => [item.quizId, item]));
+        for (const item of remoteProgress) {
+          const local = merged.get(item.quizId);
+          if (!local || item.savedAt > local.savedAt) merged.set(item.quizId, item);
+        }
+        setProgress([...merged.values()].sort((left, right) => right.savedAt.localeCompare(left.savedAt)));
+      })
+      .catch(() => undefined);
 
     return () => {
       active = false;
@@ -131,6 +161,35 @@ function HistoryPage() {
           </button>
         )}
       </div>
+
+      {progress.length > 0 && (
+        <section className="mt-4">
+          <ul className="space-y-2">
+            {progress.map((item) => (
+              <li
+                key={item.quizId}
+                className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="min-w-0">
+                  <p className="break-words text-sm font-medium text-foreground">
+                    {quizTitles[item.quizId] ?? "Unfinished quiz"}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {Object.keys(item.answers).length} answers saved - last opened {new Date(item.savedAt).toLocaleString()}
+                  </p>
+                </div>
+                <Link
+                  to="/quizzes/$id"
+                  params={{ id: item.quizId }}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  <Play className="h-4 w-4" /> Resume
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {attempts === 0 ? (
         <div className="mt-4 rounded-lg border border-dashed border-border p-8 text-center sm:p-12">

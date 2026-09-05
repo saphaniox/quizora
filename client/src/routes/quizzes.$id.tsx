@@ -592,7 +592,10 @@ function QuizPage() {
           </button>
           <button
             type="button"
-            onClick={() => void navigate({ to: "/" })}
+            onClick={() => {
+              if (window.history.length > 1) window.history.back();
+              else void navigate({ to: "/" });
+            }}
             className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent lg:py-2"
           >
             Pause and come back

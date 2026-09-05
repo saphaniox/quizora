@@ -191,6 +191,15 @@ export async function getProgress(
   reply.send({ progress: await progressModel.find(user.id, quizId) });
 }
 
+export async function listProgress(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await requireUser(request, reply, "Sign in to load saved progress");
+  if (!user) return;
+  reply.send({ progress: await progressModel.list(user.id) });
+}
+
 export async function saveProgress(
   request: FastifyRequest,
   reply: FastifyReply,

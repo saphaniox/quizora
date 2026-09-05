@@ -42,6 +42,17 @@ export async function find(
   return result.rows[0] ? toProgress(result.rows[0]) : null;
 }
 
+export async function list(userId: string): Promise<AccountProgress[]> {
+  const result = await pool.query<ProgressRow>(
+    `SELECT quiz_id, mode, seed, answers, flagged, current_index, elapsed_seconds, version, device_label, updated_at
+     FROM quiz_progress
+     WHERE user_id = $1
+     ORDER BY updated_at DESC`,
+    [userId],
+  );
+  return result.rows.map(toProgress);
+}
+
 export async function save(
   userId: string,
   progress: Omit<AccountProgress, "savedAt" | "version">,

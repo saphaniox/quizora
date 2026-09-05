@@ -222,6 +222,10 @@ export async function getAccountProgress(
   );
 }
 
+export async function getAccountProgressList(): Promise<{ progress: AccountProgress[] }> {
+  return fetchJson<{ progress: AccountProgress[] }>('/auth/me/progress');
+}
+
 export async function saveAccountProgress(
   progress: SavedProgress,
 ): Promise<{ progress: AccountProgress }> {
