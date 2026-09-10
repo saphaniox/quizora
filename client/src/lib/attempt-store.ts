@@ -6,6 +6,7 @@ const PROFILE_KEY = "quitech-player-name";
 const COUNTRY_KEY = "quitech-player-country";
 const VISITOR_KEY = "quitech-visitor-id";
 const PROGRESS_PREFIX = "quitech-progress-";
+const API_CACHE_PREFIX = "quitech-api-cache-";
 const CERTS_KEY = "quitech-certificates";
 
 export interface PlayerCountry {
@@ -70,6 +71,21 @@ function write(key: string, value: unknown): void {
   } catch {
     /* storage full or blocked - non-fatal */
   }
+}
+
+export function saveApiCache(path: string, value: unknown): void {
+  write(`${API_CACHE_PREFIX}${encodeURIComponent(path)}`, {
+    value,
+    savedAt: new Date().toISOString(),
+  });
+}
+
+export function loadApiCache<T>(path: string): T | null {
+  const cached = read<{ value?: T } | null>(
+    `${API_CACHE_PREFIX}${encodeURIComponent(path)}`,
+    null,
+  );
+  return cached?.value ?? null;
 }
 
 /* ---------- current attempt ---------- */

@@ -157,6 +157,49 @@ const gaming: Facts = [
   ["What is a game's release version available before launch often called?", "A beta"],
 ];
 
+const premierLeagueClubDefinitions: Array<readonly [string, string, string, Facts]> = [
+  ["popular-manchester-united", "Manchester United", "Manchester United history, Old Trafford, identity and rivalries.", [
+    ["Which stadium is Manchester United's home ground?", "Old Trafford"], ["What is Manchester United's famous nickname?", "The Red Devils"],
+    ["Which city is Manchester United associated with?", "Manchester"], ["What colours are strongly associated with the club?", "Red, white and black"],
+    ["What is the Manchester derby?", "A match between Manchester United and Manchester City"], ["What does a club academy develop?", "Young players"],
+  ]],
+  ["popular-chelsea", "Chelsea", "Chelsea history, Stamford Bridge, identity and London rivalries.", [
+    ["Which stadium is Chelsea's home ground?", "Stamford Bridge"], ["What is Chelsea's common nickname?", "The Blues"],
+    ["Which city is Chelsea associated with?", "London"], ["What colour is strongly associated with Chelsea's home kit?", "Blue"],
+    ["In which part of London is Chelsea based?", "West London"], ["What is a London derby?", "A match between London clubs"],
+  ]],
+  ["popular-arsenal", "Arsenal", "Arsenal history, the Emirates Stadium, identity and North London rivalry.", [
+    ["Which stadium is Arsenal's home ground?", "The Emirates Stadium"], ["What is Arsenal's famous nickname?", "The Gunners"],
+    ["Which city is Arsenal associated with?", "London"], ["What colour is strongly associated with Arsenal's home kit?", "Red"],
+    ["What is the North London derby?", "A match between Arsenal and Tottenham Hotspur"], ["What does a football academy focus on?", "Developing young players"],
+  ]],
+  ["popular-liverpool", "Liverpool", "Liverpool history, Anfield, identity and Merseyside rivalries.", [
+    ["Which stadium is Liverpool's home ground?", "Anfield"], ["What is Liverpool's common nickname?", "The Reds"],
+    ["Which city is Liverpool associated with?", "Liverpool"], ["What colour is strongly associated with Liverpool's home kit?", "Red"],
+    ["What is the Merseyside derby?", "A match between Liverpool and Everton"], ["What is a club anthem?", "A song strongly associated with a club"],
+  ]],
+  ["popular-manchester-city", "Manchester City", "Manchester City history, the Etihad Stadium, identity and Manchester rivalry.", [
+    ["Which stadium is Manchester City's home ground?", "The Etihad Stadium"], ["What is Manchester City's common nickname?", "The Citizens"],
+    ["Which city is Manchester City associated with?", "Manchester"], ["What colour is strongly associated with Manchester City's home kit?", "Sky blue"],
+    ["What is the Manchester derby?", "A match between Manchester City and Manchester United"], ["What is a league title?", "The championship awarded to the team finishing top"],
+  ]],
+  ["popular-tottenham", "Tottenham Hotspur", "Tottenham Hotspur history, stadium, identity and North London rivalry.", [
+    ["Which stadium is Tottenham Hotspur's home ground?", "Tottenham Hotspur Stadium"], ["What is Tottenham Hotspur's common nickname?", "Spurs"],
+    ["Which city is Tottenham Hotspur associated with?", "London"], ["What colour is strongly associated with Tottenham's home kit?", "White"],
+    ["What is the North London derby?", "A match between Tottenham Hotspur and Arsenal"], ["What is home advantage?", "The benefit of playing at a team's own stadium"],
+  ]],
+  ["popular-newcastle-united", "Newcastle United", "Newcastle United history, St James' Park, identity and North East football.", [
+    ["Which stadium is Newcastle United's home ground?", "St James' Park"], ["What is Newcastle United's common nickname?", "The Magpies"],
+    ["Which city is Newcastle United associated with?", "Newcastle upon Tyne"], ["What colours are strongly associated with Newcastle's home kit?", "Black and white"],
+    ["What region of England is Newcastle associated with?", "The North East"], ["What is a club rivalry?", "A longstanding competitive relationship between clubs"],
+  ]],
+  ["popular-aston-villa", "Aston Villa", "Aston Villa history, Villa Park, identity and Birmingham rivalry.", [
+    ["Which stadium is Aston Villa's home ground?", "Villa Park"], ["What is Aston Villa's common nickname?", "The Villans"],
+    ["Which city is Aston Villa associated with?", "Birmingham"], ["What colours are strongly associated with Aston Villa's home kit?", "Claret and blue"],
+    ["What is the Second City derby?", "A match between Aston Villa and Birmingham City"], ["What is a football honour?", "A competition or title won by a club"],
+  ]],
+];
+
 const footballSubtopicDefinitions: Array<readonly [string, string, string, Facts]> = [
   ["popular-world-cup", "World Cup", "World Cup tournaments, nations, records and famous moments.", [
     ["How often is the FIFA World Cup normally held?", "Every four years"], ["Which country hosted the first World Cup?", "Uruguay"],
@@ -245,8 +288,13 @@ const footballSubtopics: SectionDefinition[] = footballSubtopicDefinitions.map((
   topic(id, name, description, entries),
 );
 
+const premierLeagueClubSections: SectionDefinition[] = premierLeagueClubDefinitions.map(([id, name, description, entries]) =>
+  topic(id, name, description, entries),
+);
+
 export const popularTopicSections: SectionDefinition[] = [
   topic("popular-football", "Football", "Clubs, competitions, rules, players and football history.", football),
+  ...premierLeagueClubSections,
   ...footballSubtopics,
   topic("popular-general-knowledge", "General Knowledge", "A broad challenge across science, history, geography and everyday facts.", generalKnowledge),
   topic("popular-movies-music", "Movies & Music", "Film language, music theory, performers and entertainment culture.", moviesAndMusic),

@@ -29,6 +29,16 @@ import {
 import { findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/quizzes/$id")({
   ssr: false,
@@ -105,6 +115,7 @@ function QuizPage() {
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const startedAt = useRef<number>(0);
   const lastAccountSaveAt = useRef(0);
   const lastAccountSaveKey = useRef("");
@@ -592,10 +603,7 @@ function QuizPage() {
           </button>
           <button
             type="button"
-            onClick={() => {
-              if (window.history.length > 1) window.history.back();
-              else void navigate({ to: "/" });
-            }}
+            onClick={() => setPauseDialogOpen(true)}
             className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-muted-foreground hover:bg-accent lg:py-2"
           >
             Pause and come back
@@ -605,6 +613,29 @@ function QuizPage() {
           </p>
         </aside>
       </div>
+
+      <AlertDialog open={pauseDialogOpen} onOpenChange={setPauseDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Save this quiz for later?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Your answers and current question have been saved. You can resume this quiz from My
+              progress whenever you are ready.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep practicing</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (window.history.length > 1) window.history.back();
+                else void navigate({ to: "/" });
+              }}
+            >
+              Save and leave
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -66,6 +66,7 @@ function HomePage() {
   const showAuthActions = !accountLoading && !user;
   const [activeLevel, setActiveLevel] = useState<string | null>(null);
   const [search, setSearch] = useState("");
+  const quizSectionRef = useRef<HTMLDivElement>(null);
 
   const currentLevelId = activeLevel ?? levels[0]?.id ?? null;
   const currentLevel = levels.find((level) => level.id === currentLevelId);
@@ -225,7 +226,12 @@ function HomePage() {
                       key={level.id}
                       role="tab"
                       aria-selected={selected}
-                      onClick={() => setActiveLevel(level.id)}
+                      onClick={() => {
+                        setActiveLevel(level.id);
+                        window.requestAnimationFrame(() => {
+                          quizSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                        });
+                      }}
                       className={cn(
                         "group flex min-w-0 items-center gap-3 rounded-lg border p-4 text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
                         selected
@@ -272,7 +278,7 @@ function HomePage() {
             </div>
 
             {currentLevel && (
-              <div className="mt-8">
+              <div ref={quizSectionRef} id="quiz-sections" className="mt-8 scroll-mt-24">
                 <div className="flex items-end justify-between gap-4">
                   <div>
                     <h2 className="text-2xl font-semibold tracking-tight text-foreground">

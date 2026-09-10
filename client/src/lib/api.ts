@@ -9,7 +9,8 @@ import type {
   Level,
   Certificate,
 } from "@/types/quiz";
-import type { SavedProgress } from "@/lib/attempt-store";
+import { loadApiCache, saveApiCache, type SavedProgress } from "@/lib/attempt-store";
+import { Capacitor } from "@capacitor/core";
 
 export interface AccountUser {
   id: string;
@@ -68,6 +69,7 @@ const CONTENT_PATHS = [
 ];
 const API_BASE = normalizeApiBase(import.meta.env["VITE_API_URL"] as string | undefined);
 const USE_DIRECT_API = import.meta.env["VITE_DIRECT_API"] === "true";
+const NATIVE_API_BASE = "https://api.quitech.online";
 
 function isContentPath(path: string): boolean {
   return CONTENT_PATHS.some(
@@ -98,6 +100,7 @@ function normalizeApiBase(value: string | undefined): string {
 }
 
 function baseFor(_path: string): string {
+  if (Capacitor.isNativePlatform()) return API_BASE || NATIVE_API_BASE;
   return USE_DIRECT_API && API_BASE ? API_BASE : LOCAL_API_BASE;
 }
 
@@ -124,29 +127,45 @@ function deviceLabel(): string {
 }
 
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
+  const timeoutController = new AbortController();
+  const timeout = globalThis.setTimeout(() => timeoutController.abort(), 12000);
   const requestInit: RequestInit = {
     headers: { "Content-Type": "application/json" },
     credentials: "include",
+    signal: timeoutController.signal,
     ...options,
   };
   let response: Response;
   const primaryBase = baseFor(path);
+  const cacheable = (!options?.method || options.method === "GET") && isContentPath(path);
 
   try {
-    response = await fetch(requestUrl(primaryBase, path), requestInit);
+    try {
+      response = await fetch(requestUrl(primaryBase, path), requestInit);
+    } catch (error) {
+      if (!canUseLocalContentFallback(path, primaryBase)) throw error;
+      response = await fetch(requestUrl(LOCAL_API_BASE, path), requestInit);
+    }
   } catch (error) {
-    if (!canUseLocalContentFallback(path, primaryBase)) throw error;
-    response = await fetch(requestUrl(LOCAL_API_BASE, path), requestInit);
+    const cached = cacheable ? loadApiCache<T>(path) : null;
+    if (cached !== null) return cached;
+    throw error;
+  } finally {
+    globalThis.clearTimeout(timeout);
   }
 
   if (!response.ok) {
+    const cached = cacheable ? loadApiCache<T>(path) : null;
+    if (cached !== null) return cached;
     const error = (await response.json().catch(() => ({ error: "Request failed" }))) as {
       error?: string;
     };
     throw new Error(error.error || `Request failed with status ${response.status}`);
   }
 
-  return response.json() as Promise<T>;
+  const data = (await response.json()) as T;
+  if (cacheable) saveApiCache(path, data);
+  return data;
 }
 
 export async function getLevels(): Promise<{ levels: Level[]; totalQuestions: number }> {
