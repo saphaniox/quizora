@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
   Search,
@@ -21,6 +21,7 @@ import {
 import { getCurrentUser, getLevels } from "@/lib/api";
 import { QuizCard } from "@/components/QuizCard";
 import { cn } from "@/lib/utils";
+import { offlineCatalogue } from "@/lib/offline-catalogue";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -35,7 +36,7 @@ export const Route = createFileRoute("/")({
       {
         property: "og:description",
         content:
-          "Timed quizzes, instant feedback, leaderboards, and verifiable certificates from quitech.online.",
+          "Timed quizzes, instant feedback, leaderboards, and verifiable certificates from the Quitech app.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -51,9 +52,11 @@ const practiceNotes = [
 ] as const;
 
 function HomePage() {
-  const { data, isLoading, isError, error, refetch } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ["levels"],
     queryFn: () => getLevels(),
+    initialData: offlineCatalogue,
+    staleTime: 0,
   });
   const { data: accountData, isLoading: accountLoading } = useQuery({
     queryKey: ["auth", "me"],
@@ -115,20 +118,21 @@ function HomePage() {
 
           {showAuthActions && (
             <div className="mt-7 grid gap-3 sm:flex sm:flex-row">
-              <a
-                href="/auth?mode=signup"
+              <Link
+                to="/auth"
+                search={{ mode: "signup" }}
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <UserPlus className="h-4 w-4" />
                 Create free account
-              </a>
-              <a
-                href="/auth"
+              </Link>
+              <Link
+                to="/auth"
                 className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-5 py-3 text-sm font-semibold text-foreground transition-colors hover:bg-accent"
               >
                 <LogIn className="h-4 w-4" />
                 Sign in
-              </a>
+              </Link>
             </div>
           )}
 
@@ -170,22 +174,6 @@ function HomePage() {
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        {isError && (
-          <div className="rounded-lg border border-destructive/30 bg-destructive/5 p-5 sm:p-6">
-            <p className="font-medium text-foreground">We could not reach the quiz catalogue.</p>
-            <p className="mt-1 text-sm text-muted-foreground">
-              This usually means the API is waking up or temporarily offline. The exact response was{" "}
-              {(error as Error)?.message}.
-            </p>
-            <button
-              onClick={() => void refetch()}
-              className="mt-4 rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-            >
-              Try again
-            </button>
-          </div>
-        )}
-
         {isLoading && (
           <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {Array.from({ length: 6 }).map((_, index) => (
@@ -197,7 +185,7 @@ function HomePage() {
           </div>
         )}
 
-        {!isLoading && !isError && (
+        {!isLoading && (
           <>
             <div className="flex flex-col gap-6">
               <div>

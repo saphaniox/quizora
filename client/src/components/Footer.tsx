@@ -1,5 +1,5 @@
 import { Link } from "@tanstack/react-router";
-import { HeartHandshake, LifeBuoy, ShieldCheck } from "lucide-react";
+import { HeartHandshake, LifeBuoy, MessageCircle, ShieldCheck } from "lucide-react";
 
 const links = [
   { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
@@ -23,21 +23,21 @@ export function Footer() {
           <p className="mt-2 max-w-lg text-sm leading-6 text-muted-foreground">
             Learn, challenge & progress with practical quizzes for learners 13 and above.
           </p>
-          <p className="mt-3 text-xs text-muted-foreground">
-            Powered by{" "}
+          <div className="mt-4 flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Powered by</span>
             <a
-              href="https://www.saptechug.com"
+              href="https://saptechug.com"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 font-medium text-foreground underline-offset-4 hover:underline"
+              className="font-semibold text-amber-700 underline decoration-amber-300 underline-offset-4 transition-colors hover:text-amber-900 dark:text-amber-300 dark:hover:text-amber-200"
             >
               SAPTech Uganda
             </a>
-          </p>
+          </div>
         </div>
 
         <nav
-          className="grid w-full grid-cols-1 gap-2 sm:grid-cols-3 lg:w-auto"
+          className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-4"
           aria-label="Legal and support"
         >
           {links.map(({ to, label, icon: Icon }) => (
@@ -50,6 +50,15 @@ export function Footer() {
               {label}
             </Link>
           ))}
+          <a
+            href="https://wa.me/256706564628"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 lg:justify-start"
+          >
+            <MessageCircle className="h-4 w-4" />
+            WhatsApp Support
+          </a>
         </nav>
       </div>
     </footer>

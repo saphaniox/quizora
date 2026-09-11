@@ -10,7 +10,6 @@ import type {
   Certificate,
 } from "@/types/quiz";
 import { loadApiCache, saveApiCache, type SavedProgress } from "@/lib/attempt-store";
-import { Capacitor } from "@capacitor/core";
 
 export interface AccountUser {
   id: string;
@@ -58,7 +57,6 @@ export interface AdminCertificate {
   issuedAt: string;
 }
 
-const LOCAL_API_BASE = "/api";
 const CONTENT_PATHS = [
   "/health",
   "/levels",
@@ -67,9 +65,8 @@ const CONTENT_PATHS = [
   "/leaderboard",
   "/certificates",
 ];
-const API_BASE = normalizeApiBase(import.meta.env["VITE_API_URL"] as string | undefined);
-const USE_DIRECT_API = import.meta.env["VITE_DIRECT_API"] === "true";
-const NATIVE_API_BASE = "https://api.quitech.online";
+const API_BASE = "https://api.quitech.online";
+const NATIVE_API_FALLBACK = "https://api.quitech.online";
 
 function isContentPath(path: string): boolean {
   return CONTENT_PATHS.some(
@@ -77,40 +74,15 @@ function isContentPath(path: string): boolean {
   );
 }
 
-function normalizeApiBase(value: string | undefined): string {
-  const raw = value?.trim().replace(/\/+$/, "");
-  if (!raw) return "";
-  if (raw.startsWith("/")) return raw;
-  const base =
-    raw.startsWith("http://") || raw.startsWith("https://")
-      ? raw
-      : raw.startsWith("localhost") || raw.startsWith("127.0.0.1")
-        ? `http://${raw}`
-        : raw.includes(".") || raw.includes(":")
-          ? `https://${raw}`
-          : "";
-  if (!base) return "";
-  try {
-    const url = new URL(base);
-    if (url.protocol !== "http:" && url.protocol !== "https:") return "";
-    return url.toString().replace(/\/$/, "");
-  } catch {
-    return "";
+function apiBases(): readonly string[] {
+  if (typeof window !== "undefined") {
+    const nativeRuntime =
+      window.location.protocol === "capacitor:" ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+    if (nativeRuntime) return [NATIVE_API_FALLBACK, API_BASE];
   }
-}
-
-function baseFor(_path: string): string {
-  if (Capacitor.isNativePlatform()) return API_BASE || NATIVE_API_BASE;
-  return USE_DIRECT_API && API_BASE ? API_BASE : LOCAL_API_BASE;
-}
-
-function canUseLocalContentFallback(path: string, attemptedBase: string): boolean {
-  return (
-    typeof window !== "undefined" &&
-    Boolean(attemptedBase) &&
-    attemptedBase !== LOCAL_API_BASE &&
-    isContentPath(path)
-  );
+  return [API_BASE, NATIVE_API_FALLBACK];
 }
 
 function requestUrl(base: string, path: string): string {
@@ -135,35 +107,42 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
     signal: timeoutController.signal,
     ...options,
   };
-  let response: Response;
-  const primaryBase = baseFor(path);
+  let response: Response | null = null;
   const cacheable = (!options?.method || options.method === "GET") && isContentPath(path);
+  let lastError: unknown;
 
-  try {
+  for (const base of apiBases()) {
     try {
-      response = await fetch(requestUrl(primaryBase, path), requestInit);
+      response = await fetch(requestUrl(base, path), requestInit);
+      if (response.ok) break;
+      lastError = new Error(`Request failed with status ${response.status}`);
     } catch (error) {
-      if (!canUseLocalContentFallback(path, primaryBase)) throw error;
-      response = await fetch(requestUrl(LOCAL_API_BASE, path), requestInit);
+      lastError = error;
     }
+  }
+
+  globalThis.clearTimeout(timeout);
+
+  if (!response || !response.ok) {
+    const cached = cacheable ? loadApiCache<T>(path) : null;
+    if (cached !== null) return cached;
+    if (response) {
+      const error = (await response.json().catch(() => ({ error: "Request failed" }))) as {
+        error?: string;
+      };
+      throw new Error(error.error || `Request failed with status ${response.status}`);
+    }
+    throw lastError;
+  }
+
+  let data: T;
+  try {
+    data = (await response.json()) as T;
   } catch (error) {
     const cached = cacheable ? loadApiCache<T>(path) : null;
     if (cached !== null) return cached;
     throw error;
-  } finally {
-    globalThis.clearTimeout(timeout);
   }
-
-  if (!response.ok) {
-    const cached = cacheable ? loadApiCache<T>(path) : null;
-    if (cached !== null) return cached;
-    const error = (await response.json().catch(() => ({ error: "Request failed" }))) as {
-      error?: string;
-    };
-    throw new Error(error.error || `Request failed with status ${response.status}`);
-  }
-
-  const data = (await response.json()) as T;
   if (cacheable) saveApiCache(path, data);
   return data;
 }

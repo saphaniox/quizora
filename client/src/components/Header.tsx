@@ -79,20 +79,21 @@ export function Header() {
             </Link>
           ) : (
             <div className="ml-2 flex items-center gap-2">
-              <a
-                href="/auth"
+              <Link
+                to="/auth"
                 className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
               >
                 <LogIn className="h-4 w-4" />
                 Sign in
-              </a>
-              <a
-                href="/auth?mode=signup"
+              </Link>
+              <Link
+                to="/auth"
+                search={{ mode: "signup" }}
                 className="inline-flex items-center gap-2 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <UserPlus className="h-4 w-4" />
                 Create account
-              </a>
+              </Link>
             </div>
           )}
           <ThemeToggle />
@@ -151,22 +152,23 @@ export function Header() {
             </Link>
           ) : (
             <div className="mt-2 grid gap-2 border-t border-border pt-2">
-              <a
-                href="/auth"
+              <Link
+                to="/auth"
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2.5 text-sm font-medium text-foreground hover:bg-accent"
               >
                 <LogIn className="h-4 w-4" />
                 Sign in
-              </a>
-              <a
-                href="/auth?mode=signup"
+              </Link>
+              <Link
+                to="/auth"
+                search={{ mode: "signup" }}
                 onClick={() => setOpen(false)}
                 className="flex items-center justify-center gap-2 rounded-md bg-primary px-3 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
               >
                 <UserPlus className="h-4 w-4" />
                 Create account
-              </a>
+              </Link>
             </div>
           )}
         </nav>

@@ -8,7 +8,7 @@ import { getLeaderboard } from "@/lib/api";
 import { loadAttempt, type StoredAttempt } from "@/lib/attempt-store";
 import { countryFlag } from "@/lib/countries";
 
-const APP_URL = "https://quitech.online";
+const APP_URL = "app://quitech";
 
 export const Route = createFileRoute("/results")({
   ssr: false,

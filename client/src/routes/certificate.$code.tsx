@@ -3,11 +3,10 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Award, BadgeCheck, Download, Loader2, Printer, Share2 } from "lucide-react";
 import { getCertificate } from "@/lib/api";
-import { downloadCertificatePdf } from "@/lib/certificate-pdf";
 import { countryFlag } from "@/lib/countries";
 import type { Certificate } from "@/types/quiz";
 
-const APP_URL = "https://quitech.online";
+const APP_URL = "app://quitech";
 
 /** Look the code up through the client-hosted API. */
 async function verify(code: string): Promise<{ certificate: Certificate }> {
@@ -82,6 +81,7 @@ function CertificatePage() {
   const handleDownload = async () => {
     setDownloading(true);
     try {
+      const { downloadCertificatePdf } = await import("@/lib/certificate-pdf");
       await downloadCertificatePdf(certificate, certificateUrl);
     } finally {
       setDownloading(false);

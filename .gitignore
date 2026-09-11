@@ -20,6 +20,11 @@ build/
 *.jks
 *.keystore
 
+# Generated Capacitor web bundle (canonical assets live in client/public/)
+client/capacitor-www/assets/
+client/capacitor-www/hero-study.png
+client/capacitor-www/robots.txt
+
 # Logs and caches
 *.log
 npm-debug.log*
