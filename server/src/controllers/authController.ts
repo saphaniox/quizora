@@ -116,7 +116,7 @@ export async function register(
       parsed.data.displayName,
     );
     setSessionCookie(reply, result.token);
-    reply.code(201).send({ user: result.user });
+    reply.code(201).send({ user: result.user, token: result.token });
   } catch (error) {
     if ((error as { code?: string }).code === "23505")
       reply
@@ -144,7 +144,7 @@ export async function login(
     return;
   }
   setSessionCookie(reply, result.token);
-  reply.send({ user: result.user });
+  reply.send({ user: result.user, token: result.token });
 }
 
 export async function me(

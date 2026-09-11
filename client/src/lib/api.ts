@@ -67,6 +67,26 @@ const CONTENT_PATHS = [
 ];
 const API_BASE = "https://api.quitech.online";
 const NATIVE_API_FALLBACK = "https://api.quitech.online";
+const SESSION_TOKEN_KEY = "quitech-session-token";
+
+function sessionToken(): string | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.localStorage.getItem(SESSION_TOKEN_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function saveSessionToken(token: string | null): void {
+  if (typeof window === "undefined") return;
+  try {
+    if (token) window.localStorage.setItem(SESSION_TOKEN_KEY, token);
+    else window.localStorage.removeItem(SESSION_TOKEN_KEY);
+  } catch {
+    // Browser storage may be unavailable; cookie auth still works on the web.
+  }
+}
 
 function isContentPath(path: string): boolean {
   return CONTENT_PATHS.some(
@@ -101,8 +121,12 @@ function deviceLabel(): string {
 async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const timeoutController = new AbortController();
   const timeout = globalThis.setTimeout(() => timeoutController.abort(), 12000);
+  const token = sessionToken();
   const requestInit: RequestInit = {
-    headers: { "Content-Type": "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    },
     credentials: "include",
     signal: timeoutController.signal,
     ...options,
@@ -247,29 +271,41 @@ export async function registerAccount(payload: {
   phoneE164?: string;
   password: string;
   displayName: string;
-}): Promise<{ user: AccountUser }> {
-  return fetchJson<{ user: AccountUser }>("/auth/register", {
+}): Promise<{ user: AccountUser; token?: string }> {
+  const result = await fetchJson<{ user: AccountUser; token?: string }>("/auth/register", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  saveSessionToken(result.token ?? null);
+  return result;
 }
 
 export async function loginAccount(payload: {
   identifier: string;
   password: string;
-}): Promise<{ user: AccountUser }> {
-  return fetchJson<{ user: AccountUser }>("/auth/login", {
+}): Promise<{ user: AccountUser; token?: string }> {
+  const result = await fetchJson<{ user: AccountUser; token?: string }>("/auth/login", {
     method: "POST",
     body: JSON.stringify(payload),
   });
+  saveSessionToken(result.token ?? null);
+  return result;
 }
 
 export async function logoutAccount(): Promise<void> {
-  await fetchJson<{ ok: true }>("/auth/logout", { method: "POST" });
+  try {
+    await fetchJson<{ ok: true }>("/auth/logout", { method: "POST" });
+  } finally {
+    saveSessionToken(null);
+  }
 }
 
 export async function deleteCurrentAccount(): Promise<void> {
-  await fetchJson<{ ok: true }>("/auth/me", { method: "DELETE" });
+  try {
+    await fetchJson<{ ok: true }>("/auth/me", { method: "DELETE" });
+  } finally {
+    saveSessionToken(null);
+  }
 }
 
 export async function deleteLeaderboardEntry(id: string): Promise<void> {

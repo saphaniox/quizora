@@ -32,6 +32,11 @@ export function clearSessionCookie(reply: FastifyReply): FastifyReply {
 }
 
 export function readSessionToken(request: FastifyRequest): string | undefined {
+  const authorization = request.headers.authorization;
+  if (authorization?.startsWith("Bearer ")) {
+    const bearerToken = authorization.slice("Bearer ".length).trim();
+    if (bearerToken) return bearerToken;
+  }
   const value = request.headers.cookie
     ?.split(";")
     .map((item: string) => item.trim())
