@@ -122,9 +122,10 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const timeoutController = new AbortController();
   const timeout = globalThis.setTimeout(() => timeoutController.abort(), 12000);
   const token = sessionToken();
+  const hasBody = options?.body !== undefined && options.body !== null;
   const requestInit: RequestInit = {
     headers: {
-      "Content-Type": "application/json",
+      ...(hasBody ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
     },
     credentials: "include",
