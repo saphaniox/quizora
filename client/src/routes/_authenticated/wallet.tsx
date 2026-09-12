@@ -175,6 +175,12 @@ function WalletPage() {
                 removes your login account and active sessions; submitted certificate and
                 leaderboard records can be reviewed through privacy support.
               </p>
+              <Link
+                to="/delete-data"
+                className="mt-4 inline-flex text-sm font-medium text-primary hover:underline"
+              >
+                Request data deletion
+              </Link>
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-48">
