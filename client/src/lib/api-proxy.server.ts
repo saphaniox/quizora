@@ -74,6 +74,8 @@ function resolveServerApiBase(
 ): string {
   const candidates = [
     ...API_ENV_KEYS.map((key) => normalizeApiBase(process.env[key])),
+    normalizeApiBase(import.meta.env["VITE_SERVER_API_URL"]),
+    normalizeApiBase(import.meta.env["VITE_API_URL"]),
     ...(includeDefault ? [DEFAULT_SERVER_API_BASE] : []),
   ].filter(Boolean);
   const uniqueCandidates = [...new Set(candidates)];

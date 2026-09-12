@@ -15,11 +15,13 @@ export async function createApp() {
     "https://quizora-two-mocha.vercel.app",
     "capacitor://localhost",
     "http://localhost",
+    "https://localhost",
     "http://127.0.0.1",
   ];
   const localCapacitorOrigins = [
     "capacitor://localhost",
     "http://localhost",
+    "https://localhost",
     "http://localhost:3000",
     "http://127.0.0.1",
     "http://127.0.0.1:3000",

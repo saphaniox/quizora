@@ -7,7 +7,7 @@ Quitech is a professional quiz platform with a React client and API routes for q
 ## Architecture
 
 - `client/` contains the client application, TanStack routes, UI components, API client, Supabase client configuration, quiz banks, scoring, certificates, and API handlers.
-- `server/` is kept as a separate standalone Fastify/PostgreSQL option, but the client does not use it. All quiz requests use the client-hosted `/api/*` routes.
+- `server/` contains the Fastify/PostgreSQL API for accounts and persistent data. Web requests use the client-hosted `/api/*` proxy; native apps call the API directly.
 - Root configuration files support both applications without mixing their source code.
 
 ## Development
@@ -21,7 +21,9 @@ npm i
 npm run dev
 ```
 
-The deployed client can use its own `/api/*` routes. The separate `server/` app is available if you want to run the Fastify/PostgreSQL API from a VPS instead.
+Set `SERVER_API_URL` in the frontend server environment (or `VITE_API_URL` in `client/.env` at build time) to the Fastify API URL. For local backend development, use `http://localhost:3001`. Web requests stay on `/api`; native apps use `VITE_API_URL`. Account features require the PostgreSQL API.
+
+Run `npm --prefix client test` from the repository root for authentication regression tests. These exercise the real client and Fastify handlers with an in-memory database substitute; they do not contact production.
 
 ### PostgreSQL server setup
 
