@@ -86,6 +86,17 @@ const profileSchema = z.object({
   displayName: z.string().trim().min(1).max(80),
 });
 
+const adminUserUpdateSchema = z.object({
+  displayName: z.string().trim().min(1).max(80),
+});
+
+const passwordChangeSchema = z.object({
+  currentPassword: z.string().min(8).max(200),
+  newPassword: z.string().min(8).max(200),
+});
+
+const adminRoleSchema = z.object({ role: z.enum(["user", "admin"]) });
+
 async function requireUser(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -184,6 +195,31 @@ export async function updateMe(
     return;
   }
   reply.send({ user });
+}
+
+export async function changePassword(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = passwordChangeSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Both passwords must be at least 8 characters" });
+    return;
+  }
+  if (parsed.data.currentPassword === parsed.data.newPassword) {
+    reply.code(400).send({ error: "Choose a different password" });
+    return;
+  }
+  const changed = await auth.changeCurrentPassword(
+    readSessionToken(request),
+    parsed.data.currentPassword,
+    parsed.data.newPassword,
+  );
+  if (!changed) {
+    reply.code(401).send({ error: "The current password is not correct" });
+    return;
+  }
+  reply.send({ ok: true });
 }
 
 export async function activity(
@@ -359,6 +395,67 @@ export async function deleteAdminUser(
     return;
   }
   reply.header("cache-control", "no-store").send({ ok: true });
+}
+
+export async function updateAdminUser(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const userId = (request.params as { userId?: string }).userId?.trim();
+  const parsed = adminUserUpdateSchema.safeParse(request.body);
+  if (!userId || !parsed.success) {
+    reply.code(400).send({ error: "User id and display name are required" });
+    return;
+  }
+  if (!(await adminDataModel.updateUserDisplayName(userId, parsed.data.displayName))) {
+    reply.code(404).send({ error: "User not found" });
+    return;
+  }
+  reply.send({ ok: true });
+}
+
+export async function resetAdminUserPassword(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const userId = (request.params as { userId?: string }).userId?.trim();
+  if (!userId) {
+    reply.code(400).send({ error: "User id is required" });
+    return;
+  }
+  const temporaryPassword = await auth.setTemporaryPassword(userId);
+  if (!temporaryPassword) {
+    reply.code(404).send({ error: "User not found" });
+    return;
+  }
+  reply.send({ temporaryPassword });
+}
+
+export async function updateAdminUserRole(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const userId = (request.params as { userId?: string }).userId?.trim();
+  const parsed = adminRoleSchema.safeParse(request.body);
+  if (!userId || !parsed.success) {
+    reply.code(400).send({ error: "User id and role are required" });
+    return;
+  }
+  if (userId === admin.id && parsed.data.role !== "admin") {
+    reply.code(400).send({ error: "You cannot remove your own admin access" });
+    return;
+  }
+  if (!(await adminDataModel.updateUserRole(userId, parsed.data.role))) {
+    reply.code(404).send({ error: "User not found" });
+    return;
+  }
+  reply.send({ ok: true });
 }
 
 export async function listAdminCertificates(

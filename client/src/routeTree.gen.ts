@@ -49,8 +49,11 @@ import { Route as ApiAdminFeedbackIdRouteImport } from './routes/api/admin/feedb
 import { Route as ApiAdminLeaderboardIdRouteImport } from './routes/api/admin/leaderboard.$id'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users.$userId'
 import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
+import { Route as ApiAuthMePasswordRouteImport } from './routes/api/auth/me/password'
 import { Route as ApiAuthMeProgressRouteImport } from './routes/api/auth/me/progress'
 import { Route as ApiAdminCatalogueSectionIdPublishRouteImport } from './routes/api/admin/catalogue.$sectionId.publish'
+import { Route as ApiAdminUsersUserIdResetPasswordRouteImport } from './routes/api/admin/users.$userId.reset-password'
+import { Route as ApiAdminUsersUserIdRoleRouteImport } from './routes/api/admin/users.$userId.role'
 import { Route as ApiAuthMeProgressQuizIdRouteImport } from './routes/api/auth/me/progress.$quizId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -254,6 +257,11 @@ const ApiAuthMeActivityRoute = ApiAuthMeActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => ApiAuthMeRoute,
 } as any)
+const ApiAuthMePasswordRoute = ApiAuthMePasswordRouteImport.update({
+  id: '/password',
+  path: '/password',
+  getParentRoute: () => ApiAuthMeRoute,
+} as any)
 const ApiAuthMeProgressRoute = ApiAuthMeProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
@@ -265,6 +273,17 @@ const ApiAdminCatalogueSectionIdPublishRoute =
     path: '/publish',
     getParentRoute: () => ApiAdminCatalogueSectionIdRoute,
   } as any)
+const ApiAdminUsersUserIdResetPasswordRoute =
+  ApiAdminUsersUserIdResetPasswordRouteImport.update({
+    id: '/reset-password',
+    path: '/reset-password',
+    getParentRoute: () => ApiAdminUsersUserIdRoute,
+  } as any)
+const ApiAdminUsersUserIdRoleRoute = ApiAdminUsersUserIdRoleRouteImport.update({
+  id: '/role',
+  path: '/role',
+  getParentRoute: () => ApiAdminUsersUserIdRoute,
+} as any)
 const ApiAuthMeProgressQuizIdRoute = ApiAuthMeProgressQuizIdRouteImport.update({
   id: '/$quizId',
   path: '/$quizId',
@@ -309,10 +328,13 @@ export interface FileRoutesByFullPath {
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
-  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
+  '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
   '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRoutesByTo {
@@ -353,10 +375,13 @@ export interface FileRoutesByTo {
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
-  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
+  '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
   '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRoutesById {
@@ -399,10 +424,13 @@ export interface FileRoutesById {
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
-  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
+  '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
+  '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
   '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRouteTypes {
@@ -447,8 +475,11 @@ export interface FileRouteTypes {
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
+    | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/admin/users/$userId/reset-password'
+    | '/api/admin/users/$userId/role'
     | '/api/auth/me/progress/$quizId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -491,8 +522,11 @@ export interface FileRouteTypes {
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
+    | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/admin/users/$userId/reset-password'
+    | '/api/admin/users/$userId/role'
     | '/api/auth/me/progress/$quizId'
   id:
     | '__root__'
@@ -536,8 +570,11 @@ export interface FileRouteTypes {
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
+    | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/admin/users/$userId/reset-password'
+    | '/api/admin/users/$userId/role'
     | '/api/auth/me/progress/$quizId'
   fileRoutesById: FileRoutesById
 }
@@ -859,6 +896,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMeActivityRouteImport
       parentRoute: typeof ApiAuthMeRoute
     }
+    '/api/auth/me/password': {
+      id: '/api/auth/me/password'
+      path: '/password'
+      fullPath: '/api/auth/me/password'
+      preLoaderRoute: typeof ApiAuthMePasswordRouteImport
+      parentRoute: typeof ApiAuthMeRoute
+    }
     '/api/auth/me/progress': {
       id: '/api/auth/me/progress'
       path: '/progress'
@@ -872,6 +916,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/catalogue/$sectionId/publish'
       preLoaderRoute: typeof ApiAdminCatalogueSectionIdPublishRouteImport
       parentRoute: typeof ApiAdminCatalogueSectionIdRoute
+    }
+    '/api/admin/users/$userId/reset-password': {
+      id: '/api/admin/users/$userId/reset-password'
+      path: '/reset-password'
+      fullPath: '/api/admin/users/$userId/reset-password'
+      preLoaderRoute: typeof ApiAdminUsersUserIdResetPasswordRouteImport
+      parentRoute: typeof ApiAdminUsersUserIdRoute
+    }
+    '/api/admin/users/$userId/role': {
+      id: '/api/admin/users/$userId/role'
+      path: '/role'
+      fullPath: '/api/admin/users/$userId/role'
+      preLoaderRoute: typeof ApiAdminUsersUserIdRoleRouteImport
+      parentRoute: typeof ApiAdminUsersUserIdRoute
     }
     '/api/auth/me/progress/$quizId': {
       id: '/api/auth/me/progress/$quizId'
@@ -944,12 +1002,25 @@ const ApiAdminFeedbackRouteChildren: ApiAdminFeedbackRouteChildren = {
 const ApiAdminFeedbackRouteWithChildren =
   ApiAdminFeedbackRoute._addFileChildren(ApiAdminFeedbackRouteChildren)
 
+interface ApiAdminUsersUserIdRouteChildren {
+  ApiAdminUsersUserIdResetPasswordRoute: typeof ApiAdminUsersUserIdResetPasswordRoute
+  ApiAdminUsersUserIdRoleRoute: typeof ApiAdminUsersUserIdRoleRoute
+}
+
+const ApiAdminUsersUserIdRouteChildren: ApiAdminUsersUserIdRouteChildren = {
+  ApiAdminUsersUserIdResetPasswordRoute: ApiAdminUsersUserIdResetPasswordRoute,
+  ApiAdminUsersUserIdRoleRoute: ApiAdminUsersUserIdRoleRoute,
+}
+
+const ApiAdminUsersUserIdRouteWithChildren =
+  ApiAdminUsersUserIdRoute._addFileChildren(ApiAdminUsersUserIdRouteChildren)
+
 interface ApiAdminUsersRouteChildren {
-  ApiAdminUsersUserIdRoute: typeof ApiAdminUsersUserIdRoute
+  ApiAdminUsersUserIdRoute: typeof ApiAdminUsersUserIdRouteWithChildren
 }
 
 const ApiAdminUsersRouteChildren: ApiAdminUsersRouteChildren = {
-  ApiAdminUsersUserIdRoute: ApiAdminUsersUserIdRoute,
+  ApiAdminUsersUserIdRoute: ApiAdminUsersUserIdRouteWithChildren,
 }
 
 const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
@@ -969,11 +1040,13 @@ const ApiAuthMeProgressRouteWithChildren =
 
 interface ApiAuthMeRouteChildren {
   ApiAuthMeActivityRoute: typeof ApiAuthMeActivityRoute
+  ApiAuthMePasswordRoute: typeof ApiAuthMePasswordRoute
   ApiAuthMeProgressRoute: typeof ApiAuthMeProgressRouteWithChildren
 }
 
 const ApiAuthMeRouteChildren: ApiAuthMeRouteChildren = {
   ApiAuthMeActivityRoute: ApiAuthMeActivityRoute,
+  ApiAuthMePasswordRoute: ApiAuthMePasswordRoute,
   ApiAuthMeProgressRoute: ApiAuthMeProgressRouteWithChildren,
 }
 

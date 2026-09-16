@@ -1,11 +1,14 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogIn, Mail, Phone, UserPlus } from "lucide-react";
+import { Loader2, LogIn, Mail, MessageCircle, Phone, UserPlus } from "lucide-react";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { toast } from "sonner";
+
+const SUPPORT_EMAIL = "quitech@saptechug.com";
+const SUPPORT_WHATSAPP = "256706564628";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -148,8 +151,13 @@ function AuthPage() {
       } else {
         const { user } = await loginAccount({ identifier: loginIdentifier, password });
         queryClient.setQueryData(["auth", "me"], { user });
-        toast.success("Signed in", { description: "Your account is ready." });
-        void navigate({ to: next, replace: true });
+        if (user.mustChangePassword) {
+          toast.success("You are signed in", { description: "Please choose a new password first." });
+          void navigate({ to: "/wallet", replace: true });
+        } else {
+          toast.success("Signed in", { description: "Your account is ready." });
+          void navigate({ to: next, replace: true });
+        }
       }
     } catch (failure) {
       const message = (failure as Error).message;
@@ -241,7 +249,7 @@ function AuthPage() {
             <>
               <div>
                 <label htmlFor="name" className="block text-sm font-medium text-foreground">
-                  Display name
+                  Display name (optional)
                 </label>
                 <input
                   id="name"
@@ -318,6 +326,37 @@ function AuthPage() {
             )}
             {mode === "signin" ? "Sign in" : "Create account"}
           </button>
+
+          {mode === "signin" && (
+            <div className="rounded-lg border border-border bg-secondary/40 p-4">
+              <p className="text-sm font-semibold text-foreground">Forgot your password?</p>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                Contact the Quitech team and include the email address or phone number on your
+                account. We will help you get back in.
+              </p>
+              <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
+                <a
+                  href={`mailto:${SUPPORT_EMAIL}?subject=Quitech%20password%20help`}
+                  className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
+                >
+                  <Mail className="h-4 w-4 text-primary" />
+                  Email the team
+                </a>
+                <a
+                  href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Hi Quitech team, I forgot my password and need help getting back into my account.")}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
+                >
+                  <MessageCircle className="h-4 w-4" />
+                  WhatsApp us
+                </a>
+              </div>
+              <p className="mt-3 text-xs leading-5 text-muted-foreground">
+                For your security, never send us your password.
+              </p>
+            </div>
+          )}
         </form>
 
         <p className="mt-5 text-center text-sm text-muted-foreground">

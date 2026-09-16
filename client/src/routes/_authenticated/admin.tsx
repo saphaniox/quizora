@@ -48,6 +48,9 @@ import {
   saveAppUpdateSettings,
   saveCatalogueDraft,
   updateFeedbackStatus,
+  updateAdminUser,
+  resetAdminUserPassword,
+  updateAdminUserRole,
   type FeedbackStatus,
   type AdminUser,
 } from "@/lib/api";
@@ -154,6 +157,9 @@ function AdminPage() {
   const [selectedLevel, setSelectedLevel] = useState("all");
   const [confirmingLeaderboardId, setConfirmingLeaderboardId] = useState<string | null>(null);
   const [confirmingUserId, setConfirmingUserId] = useState<string | null>(null);
+  const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editingUserName, setEditingUserName] = useState("");
+  const [temporaryPassword, setTemporaryPassword] = useState<{ userId: string; value: string } | null>(null);
   const [userQuery, setUserQuery] = useState("");
   const [confirmingCertificateCode, setConfirmingCertificateCode] = useState<string | null>(null);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
@@ -257,6 +263,37 @@ function AdminPage() {
         message: error instanceof Error ? error.message : "Could not delete user data.",
       });
     },
+  });
+  const updateAdminUserMutation = useMutation({
+    mutationFn: ({ userId, displayName }: { userId: string; displayName: string }) =>
+      updateAdminUser(userId, displayName),
+    onSuccess: () => {
+      setEditingUserId(null);
+      setEditingUserName("");
+      void usersQuery.refetch();
+      setLeaderboardAction({ tone: "ready", message: "User name updated." });
+    },
+    onError: (error) =>
+      setLeaderboardAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not update user.",
+      }),
+  });
+  const resetAdminPasswordMutation = useMutation({
+    mutationFn: resetAdminUserPassword,
+    onSuccess: (result, userId) => {
+      setTemporaryPassword({ userId, value: result.temporaryPassword });
+      setLeaderboardAction({ tone: "ready", message: "Temporary password generated. Copy it now; it will not be shown again." });
+    },
+    onError: (error) => setLeaderboardAction({ tone: "blocked", message: error instanceof Error ? error.message : "Could not generate a temporary password." }),
+  });
+  const updateAdminRoleMutation = useMutation({
+    mutationFn: ({ userId, role }: { userId: string; role: "user" | "admin" }) => updateAdminUserRole(userId, role),
+    onSuccess: () => {
+      void usersQuery.refetch();
+      setLeaderboardAction({ tone: "ready", message: "Admin access updated." });
+    },
+    onError: (error) => setLeaderboardAction({ tone: "blocked", message: error instanceof Error ? error.message : "Could not update admin access." }),
   });
   const deleteAdminCertificateMutation = useMutation({
     mutationFn: deleteAdminCertificate,
@@ -1309,6 +1346,7 @@ function AdminPage() {
                 <tr>
                   <th className="px-5 py-3 font-medium">User</th>
                   <th className="px-5 py-3 font-medium">Role</th>
+                  <th className="px-5 py-3 font-medium">Presence</th>
                   <th className="px-5 py-3 text-right font-medium">Linked data</th>
                   <th className="px-5 py-3 text-right font-medium">Action</th>
                 </tr>
@@ -1322,18 +1360,91 @@ function AdminPage() {
                   return (
                     <tr key={adminUser.id}>
                       <td className="px-5 py-4">
-                        <p className="font-medium text-card-foreground">{adminUser.displayName}</p>
+                        {editingUserId === adminUser.id ? (
+                          <div className="flex max-w-sm gap-2">
+                            <input
+                              value={editingUserName}
+                              maxLength={80}
+                              onChange={(event) => setEditingUserName(event.target.value)}
+                              className="min-w-0 flex-1 rounded-md border border-input bg-background px-2 py-1.5 text-sm"
+                              aria-label="Edit display name"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => updateAdminUserMutation.mutate({ userId: adminUser.id, displayName: editingUserName })}
+                              disabled={updateAdminUserMutation.isPending || !editingUserName.trim()}
+                              className="rounded-md bg-primary px-2 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-60"
+                            >
+                              Save
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => setEditingUserId(null)}
+                              className="rounded-md border border-input px-2 py-1.5 text-xs font-semibold"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        ) : (
+                          <p className="font-medium text-card-foreground">{adminUser.displayName}</p>
+                        )}
                         <p className="mt-1 text-xs text-muted-foreground">
                           {adminUser.email ?? adminUser.phoneE164 ?? "No contact"}
                         </p>
+                        {temporaryPassword?.userId === adminUser.id && (
+                          <div className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-200">
+                            <p>Temporary password. Share it securely once:</p>
+                            <code className="mt-1 block select-all font-semibold">{temporaryPassword.value}</code>
+                            <button type="button" onClick={() => setTemporaryPassword(null)} className="mt-1 underline">Hide it</button>
+                          </div>
+                        )}
                       </td>
                       <td className="px-5 py-4 text-muted-foreground">{adminUser.role}</td>
+                      <td className="px-5 py-4 text-xs text-muted-foreground">
+                        <span className={adminUser.isOnline ? "font-semibold text-emerald-600 dark:text-emerald-300" : ""}>
+                          {adminUser.isOnline ? "Online" : "Offline"}
+                        </span>
+                        <span className="mt-1 block">
+                          {adminUser.lastSeen
+                            ? `Last seen ${new Date(adminUser.lastSeen).toLocaleString()}`
+                            : "Never signed in"}
+                        </span>
+                      </td>
                       <td className="px-5 py-4 text-right text-xs text-muted-foreground">
                         {adminUser.progressCount} progress / {adminUser.leaderboardCount} scores /{" "}
                         {adminUser.certificateCount} certificates
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex justify-end gap-2">
+                          {editingUserId !== adminUser.id && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingUserId(adminUser.id);
+                                setEditingUserName(adminUser.displayName);
+                              }}
+                              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent"
+                            >
+                              <PencilLine className="h-3.5 w-3.5" />
+                              Edit name
+                            </button>
+                          )}
+                          <button
+                            type="button"
+                            onClick={() => resetAdminPasswordMutation.mutate(adminUser.id)}
+                            disabled={resetAdminPasswordMutation.isPending}
+                            className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-60 dark:text-amber-300"
+                          >
+                            Reset password
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => updateAdminRoleMutation.mutate({ userId: adminUser.id, role: adminUser.role === "admin" ? "user" : "admin" })}
+                            disabled={adminUser.id === account?.id || updateAdminRoleMutation.isPending}
+                            className="rounded-md border border-input px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            {adminUser.role === "admin" ? "Remove admin" : "Make admin"}
+                          </button>
                           {isConfirming ? (
                             <>
                               <button

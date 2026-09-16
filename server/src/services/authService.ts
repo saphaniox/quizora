@@ -18,6 +18,7 @@ export type User = {
   phoneE164: string | null;
   displayName: string;
   role: UserRole;
+  mustChangePassword: boolean;
 };
 
 type UserRow = {
@@ -26,6 +27,7 @@ type UserRow = {
   phone_e164: string | null;
   display_name: string;
   role: string;
+  must_change_password: boolean;
 };
 
 function toUser(row: UserRow): User {
@@ -35,6 +37,7 @@ function toUser(row: UserRow): User {
     phoneE164: row.phone_e164,
     displayName: row.display_name,
     role: row.role === "admin" ? "admin" : "user",
+    mustChangePassword: row.must_change_password,
   };
 }
 
@@ -76,7 +79,7 @@ export async function register(
     ? normalizePhone(contact.phoneE164)
     : null;
   const result = await pool.query<UserRow>(
-    "INSERT INTO users (id, email, phone_e164, password_hash, display_name) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, phone_e164, display_name, role",
+    "INSERT INTO users (id, email, phone_e164, password_hash, display_name) VALUES ($1, $2, $3, $4, $5) RETURNING id, email, phone_e164, display_name, role, must_change_password",
     [id, email, phoneE164, passwordHash, displayName],
   );
   return createSession(toUser(result.rows[0]));
@@ -92,12 +95,45 @@ export async function login(
     : null;
   const phoneE164 = normalizePhone(trimmedIdentifier);
   const result = await pool.query<UserRow & { password_hash: string }>(
-    "SELECT id, email, phone_e164, password_hash, display_name, role FROM users WHERE ($1::text IS NOT NULL AND email = $1) OR ($2::text IS NOT NULL AND phone_e164 = $2)",
+    "SELECT id, email, phone_e164, password_hash, display_name, role, must_change_password FROM users WHERE ($1::text IS NOT NULL AND email = $1) OR ($2::text IS NOT NULL AND phone_e164 = $2)",
     [email, phoneE164],
   );
   const row = result.rows[0];
   if (!row || !(await verifyPassword(password, row.password_hash))) return null;
   return createSession(toUser(row));
+}
+
+export async function setTemporaryPassword(userId: string): Promise<string | null> {
+  const temporaryPassword = randomBytes(9).toString("base64url");
+  const passwordHash = await hashPassword(temporaryPassword);
+  const result = await pool.query(
+    "UPDATE users SET password_hash = $2, must_change_password = TRUE WHERE id = $1",
+    [userId, passwordHash],
+  );
+  return result.rowCount === 1 ? temporaryPassword : null;
+}
+
+export async function changeCurrentPassword(
+  token: string | undefined,
+  currentPassword: string,
+  nextPassword: string,
+): Promise<boolean> {
+  if (!token) return false;
+  const result = await pool.query<{ password_hash: string }>(
+    `SELECT u.password_hash FROM users u
+     JOIN sessions s ON s.user_id = u.id
+     WHERE s.token_hash = $1 AND s.expires_at > NOW()`,
+    [hashToken(token)],
+  );
+  const row = result.rows[0];
+  if (!row || !(await verifyPassword(currentPassword, row.password_hash))) return false;
+  const passwordHash = await hashPassword(nextPassword);
+  await pool.query(
+    `UPDATE users SET password_hash = $2, must_change_password = FALSE
+     WHERE id = (SELECT user_id FROM sessions WHERE token_hash = $1 AND expires_at > NOW())`,
+    [hashToken(token), passwordHash],
+  );
+  return true;
 }
 
 async function createSession(
@@ -115,7 +151,7 @@ async function createSession(
 export async function getUser(token: string | undefined): Promise<User | null> {
   if (!token) return null;
   const result = await pool.query<UserRow>(
-    "SELECT u.id, u.email, u.phone_e164, u.display_name, u.role FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = $1 AND s.expires_at > NOW()",
+    "SELECT u.id, u.email, u.phone_e164, u.display_name, u.role, u.must_change_password FROM sessions s JOIN users u ON u.id = s.user_id WHERE s.token_hash = $1 AND s.expires_at > NOW()",
     [hashToken(token)],
   );
   const row = result.rows[0];
@@ -130,7 +166,7 @@ export async function updateCurrentUser(
   const result = await pool.query<UserRow>(
     `UPDATE users SET display_name = $2
      WHERE id = (SELECT user_id FROM sessions WHERE token_hash = $1 AND expires_at > NOW())
-     RETURNING id, email, phone_e164, display_name, role`,
+     RETURNING id, email, phone_e164, display_name, role, must_change_password`,
     [hashToken(token), displayName.trim()],
   );
   return result.rows[0] ? toUser(result.rows[0]) : null;

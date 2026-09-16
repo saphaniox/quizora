@@ -10,6 +10,8 @@ export interface AdminUser {
   leaderboardCount: number;
   certificateCount: number;
   progressCount: number;
+  isOnline: boolean;
+  lastSeen: string | null;
 }
 
 export interface AdminCertificate {
@@ -29,6 +31,11 @@ export async function listUsers(search = "", limit = 50, offset = 0): Promise<Ad
             u.display_name AS "displayName",
             u.role,
             u.created_at AS "createdAt",
+            EXISTS (
+              SELECT 1 FROM sessions s
+              WHERE s.user_id = u.id AND s.expires_at > NOW()
+            ) AS "isOnline",
+            (SELECT MAX(s.created_at) FROM sessions s WHERE s.user_id = u.id) AS "lastSeen",
             (SELECT COUNT(*) FROM leaderboard l WHERE l.user_id = u.id)::int AS "leaderboardCount",
             (SELECT COUNT(*) FROM certificates c WHERE c.user_id = u.id)::int AS "certificateCount",
             (SELECT COUNT(*) FROM quiz_progress p WHERE p.user_id = u.id)::int AS "progressCount"
@@ -56,6 +63,19 @@ export async function deleteUserData(userId: string): Promise<boolean> {
   } finally {
     client.release();
   }
+}
+
+export async function updateUserDisplayName(userId: string, displayName: string): Promise<boolean> {
+  const result = await pool.query(
+    "UPDATE users SET display_name = $2 WHERE id = $1",
+    [userId, displayName.trim()],
+  );
+  return result.rowCount === 1;
+}
+
+export async function updateUserRole(userId: string, role: "user" | "admin"): Promise<boolean> {
+  const result = await pool.query("UPDATE users SET role = $2 WHERE id = $1", [userId, role]);
+  return result.rowCount === 1;
 }
 
 export async function listCertificates(limit = 100): Promise<AdminCertificate[]> {

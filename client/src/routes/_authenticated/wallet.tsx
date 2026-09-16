@@ -21,6 +21,7 @@ import {
   getAccountProgressList,
   logoutAccount,
   updateCurrentUser,
+  changeCurrentPassword,
   type AccountUser,
 } from "@/lib/api";
 import type { Certificate } from "@/types/quiz";
@@ -59,6 +60,9 @@ function WalletPage() {
   const [displayName, setDisplayName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [exportingData, setExportingData] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [savingPassword, setSavingPassword] = useState(false);
 
   useEffect(() => {
     const localCertificates = loadCertificates();
@@ -137,6 +141,24 @@ function WalletPage() {
       });
     } finally {
       setExportingData(false);
+    }
+  };
+
+  const handlePasswordChange = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (savingPassword || newPassword.length < 8) return;
+    setSavingPassword(true);
+    try {
+      await changeCurrentPassword(currentPassword, newPassword);
+      setCurrentPassword("");
+      setNewPassword("");
+      toast.success("Password changed", { description: "Your account is ready to use." });
+    } catch (failure) {
+      toast.error("Could not change your password", {
+        description: failure instanceof Error ? failure.message : "Check your current password and try again.",
+      });
+    } finally {
+      setSavingPassword(false);
     }
   };
 
@@ -267,6 +289,33 @@ function WalletPage() {
               >
                 {exportingData ? "Getting your data ready..." : "Download a copy of my data"}
               </button>
+              <form onSubmit={(event) => void handlePasswordChange(event)} className="mt-5 max-w-md rounded-lg border border-border bg-secondary/30 p-4">
+                <p className="text-sm font-semibold text-foreground">Change your password</p>
+                {user.mustChangePassword && (
+                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Your administrator gave you a temporary password. Please choose your own before continuing.</p>
+                )}
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={currentPassword}
+                  onChange={(event) => setCurrentPassword(event.target.value)}
+                  placeholder="Current password"
+                  className="mt-3 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={newPassword}
+                  onChange={(event) => setNewPassword(event.target.value)}
+                  placeholder="New password (8+ characters)"
+                  className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
+                />
+                <button type="submit" disabled={savingPassword || newPassword.length < 8} className="mt-3 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">
+                  {savingPassword ? "Changing..." : "Change password"}
+                </button>
+              </form>
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-48">

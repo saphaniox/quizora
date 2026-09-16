@@ -17,6 +17,7 @@ export interface AccountUser {
   phoneE164: string | null;
   displayName: string;
   role: "user" | "admin";
+  mustChangePassword: boolean;
 }
 
 export interface HealthStatus {
@@ -46,6 +47,8 @@ export interface AdminUser {
   leaderboardCount: number;
   certificateCount: number;
   progressCount: number;
+  isOnline: boolean;
+  lastSeen: string | null;
 }
 
 export interface AdminCertificate {
@@ -301,6 +304,13 @@ export async function updateCurrentUser(displayName: string): Promise<{ user: Ac
   });
 }
 
+export async function changeCurrentPassword(currentPassword: string, newPassword: string): Promise<void> {
+  await fetchJson<{ ok: true }>("/auth/me/password", {
+    method: "POST",
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+}
+
 export async function getMyActivity(): Promise<{
   history: LeaderboardEntry[];
   certificates: Certificate[];
@@ -398,6 +408,26 @@ export async function getAdminUsers(search?: string): Promise<{ users: AdminUser
 export async function deleteAdminUser(userId: string): Promise<void> {
   await fetchJson<{ ok: true }>(`/admin/users/${encodeURIComponent(userId)}`, {
     method: "DELETE",
+  });
+}
+
+export async function updateAdminUser(userId: string, displayName: string): Promise<void> {
+  await fetchJson<{ ok: true }>(`/admin/users/${encodeURIComponent(userId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ displayName }),
+  });
+}
+
+export async function resetAdminUserPassword(userId: string): Promise<{ temporaryPassword: string }> {
+  return fetchJson<{ temporaryPassword: string }>(`/admin/users/${encodeURIComponent(userId)}/reset-password`, {
+    method: "POST",
+  });
+}
+
+export async function updateAdminUserRole(userId: string, role: "user" | "admin"): Promise<void> {
+  await fetchJson<{ ok: true }>(`/admin/users/${encodeURIComponent(userId)}/role`, {
+    method: "PATCH",
+    body: JSON.stringify({ role }),
   });
 }
 

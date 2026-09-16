@@ -51,6 +51,7 @@ const routes: FastifyPluginAsync = async (app) => {
   app.post("/auth/login", { preHandler: authRateLimit }, authController.login);
   app.get("/auth/me", authController.me);
   app.patch("/auth/me", authController.updateMe);
+  app.post("/auth/me/password", authController.changePassword);
   app.get("/auth/me/activity", authController.activity);
   app.get("/auth/me/progress", authController.listProgress);
   app.get("/auth/me/progress/:quizId", authController.getProgress);
@@ -66,6 +67,9 @@ const routes: FastifyPluginAsync = async (app) => {
   app.get("/admin/feedback", feedbackController.listFeedback);
   app.patch("/admin/feedback/:id", feedbackController.updateFeedbackStatus);
   app.get("/admin/users", authController.listAdminUsers);
+  app.patch("/admin/users/:userId", authController.updateAdminUser);
+  app.post("/admin/users/:userId/reset-password", authController.resetAdminUserPassword);
+  app.patch("/admin/users/:userId/role", authController.updateAdminUserRole);
   app.delete("/admin/users/:userId", authController.deleteAdminUser);
   app.get("/admin/certificates", authController.listAdminCertificates);
   app.delete("/admin/certificates/:code", authController.deleteAdminCertificate);
