@@ -1,14 +1,11 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogIn, Mail, MessageCircle, Phone, UserPlus } from "lucide-react";
+import { Loader2, LogIn, Phone, UserPlus } from "lucide-react";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { toast } from "sonner";
-
-const SUPPORT_EMAIL = "quitech@saptechug.com";
-const SUPPORT_WHATSAPP = "256706564628";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -78,7 +75,6 @@ function AuthPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [mode, setMode] = useState<"signin" | "signup">(initialAuthMode);
-  const [passwordHelpOpen, setPasswordHelpOpen] = useState(false);
   const [signInMethod, setSignInMethod] = useState<ContactMethod>("email");
   const [contactMethod, setContactMethod] = useState<ContactMethod>("email");
   const [identifier, setIdentifier] = useState("");
@@ -329,45 +325,11 @@ function AuthPage() {
           </button>
 
           {mode === "signin" && (
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setPasswordHelpOpen((open) => !open)}
-                aria-expanded={passwordHelpOpen}
-                className="text-sm font-medium text-primary hover:underline"
-              >
+            <p className="text-center">
+              <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
                 Forgot password?
-              </button>
-              {passwordHelpOpen && (
-                <div className="mt-3 rounded-lg border border-border bg-secondary/40 p-4 text-left">
-                  <p className="text-sm leading-6 text-muted-foreground">
-                    Contact the Quitech team and include the email address or phone number on your
-                    account. We will help you get back in.
-                  </p>
-                  <div className="mt-3 grid gap-2 sm:flex sm:flex-wrap">
-                    <a
-                      href={`mailto:${SUPPORT_EMAIL}?subject=Quitech%20password%20help`}
-                      className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-accent"
-                    >
-                      <Mail className="h-4 w-4 text-primary" />
-                      Email the team
-                    </a>
-                    <a
-                      href={`https://wa.me/${SUPPORT_WHATSAPP}?text=${encodeURIComponent("Hi Quitech team, I forgot my password and need help getting back into my account.")}`}
-                      target="_blank"
-                      rel="noreferrer"
-                      className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700"
-                    >
-                      <MessageCircle className="h-4 w-4" />
-                      WhatsApp us
-                    </a>
-                  </div>
-                  <p className="mt-3 text-xs leading-5 text-muted-foreground">
-                    For your security, never send us your password.
-                  </p>
-                </div>
-              )}
-            </div>
+              </Link>
+            </p>
           )}
         </form>
 

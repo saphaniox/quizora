@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as DeleteDataRouteImport } from './routes/delete-data'
+import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PrivacyRouteImport } from './routes/privacy'
@@ -78,6 +79,11 @@ const DeleteAccountRoute = DeleteAccountRouteImport.update({
 const DeleteDataRoute = DeleteDataRouteImport.update({
   id: '/delete-data',
   path: '/delete-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
+  id: '/forgot-password',
+  path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const HistoryRoute = HistoryRouteImport.update({
@@ -295,6 +301,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
@@ -342,6 +349,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
@@ -391,6 +399,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
+  '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
@@ -440,6 +449,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/delete-account'
     | '/delete-data'
+    | '/forgot-password'
     | '/history'
     | '/leaderboard'
     | '/privacy'
@@ -487,6 +497,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/delete-account'
     | '/delete-data'
+    | '/forgot-password'
     | '/history'
     | '/leaderboard'
     | '/privacy'
@@ -535,6 +546,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/delete-account'
     | '/delete-data'
+    | '/forgot-password'
     | '/history'
     | '/leaderboard'
     | '/privacy'
@@ -584,6 +596,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DeleteAccountRoute: typeof DeleteAccountRoute
   DeleteDataRoute: typeof DeleteDataRoute
+  ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
   LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
@@ -649,6 +662,13 @@ declare module '@tanstack/react-router' {
       path: '/delete-data'
       fullPath: '/delete-data'
       preLoaderRoute: typeof DeleteDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/forgot-password': {
+      id: '/forgot-password'
+      path: '/forgot-password'
+      fullPath: '/forgot-password'
+      preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/history': {
@@ -1060,6 +1080,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DeleteAccountRoute: DeleteAccountRoute,
   DeleteDataRoute: DeleteDataRoute,
+  ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
   LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
