@@ -7,6 +7,7 @@ import * as quizModel from "../models/quizModel.js";
 import * as auth from "../services/authService.js";
 import type { User } from "../services/authService.js";
 import * as adminDataModel from "../models/adminDataModel.js";
+import * as appUpdateModel from "../models/appUpdateModel.js";
 import {
   clearSessionCookie,
   readSessionToken,
@@ -70,6 +71,19 @@ const catalogueDraftSchema = z.object({
   description: z.string().trim().min(10).max(500),
   difficulty: z.enum(["Easy", "Medium", "Hard"]),
   published: z.boolean(),
+});
+
+const appUpdateSettingsSchema = z.object({
+  enabled: z.boolean(),
+  minimumVersion: z.string().trim().min(1).max(32),
+  latestVersion: z.string().trim().min(1).max(32),
+  required: z.boolean(),
+  storeUrl: z.string().trim().max(500).nullable().optional().or(z.literal("")),
+  message: z.string().trim().min(1).max(500),
+});
+
+const profileSchema = z.object({
+  displayName: z.string().trim().min(1).max(80),
 });
 
 async function requireUser(
@@ -152,6 +166,23 @@ export async function me(
   reply: FastifyReply,
 ): Promise<void> {
   const user = await auth.getUser(readSessionToken(request));
+  reply.send({ user });
+}
+
+export async function updateMe(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = profileSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Display name must be between 1 and 80 characters" });
+    return;
+  }
+  const user = await auth.updateCurrentUser(readSessionToken(request), parsed.data.displayName);
+  if (!user) {
+    reply.code(401).send({ error: "Sign in to update your profile" });
+    return;
+  }
   reply.send({ user });
 }
 
@@ -374,6 +405,40 @@ export async function getAdminAuditLog(
   const admin = await requireAdmin(request, reply);
   if (!admin) return;
   reply.send({ auditLog: await quizModel.listAdminAuditLog() });
+}
+
+export async function getAppUpdateSettings(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const settings = await appUpdateModel.getSettings();
+  reply.send({ settings });
+}
+
+export async function saveAppUpdateSettings(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const parsed = appUpdateSettingsSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Invalid app update settings" });
+    return;
+  }
+
+  const settings = await appUpdateModel.upsertSettings({
+    enabled: parsed.data.enabled,
+    minimumVersion: parsed.data.minimumVersion,
+    latestVersion: parsed.data.latestVersion,
+    required: parsed.data.required,
+    storeUrl: parsed.data.storeUrl?.trim() || null,
+    message: parsed.data.message,
+    updatedBy: admin.id,
+  });
+
+  reply.send({ settings });
 }
 
 export async function saveCatalogueDraft(

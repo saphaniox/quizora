@@ -1,9 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, ArrowRight, Award, Flag, Loader2, ShieldCheck } from "lucide-react";
+import { ArrowLeft, ArrowRight, Award, Bookmark, Flag, Loader2, ShieldCheck } from "lucide-react";
 import { CountrySelect } from "@/components/CountrySelect";
 import {
+  createFeedback,
   deleteAccountProgress,
   getAccountProgress,
   getCurrentUser,
@@ -20,6 +21,8 @@ import {
   loadPlayerCountry,
   loadPlayerName,
   saveAttempt,
+  isBookmarked,
+  toggleBookmark,
   savePlayerCountry,
   savePlayerName,
   saveProgress,
@@ -115,6 +118,8 @@ function QuizPage() {
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [reportedQuestions, setReportedQuestions] = useState<string[]>([]);
+  const [bookmarked, setBookmarked] = useState(false);
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const startedAt = useRef<number>(0);
   const lastAccountSaveAt = useRef(0);
@@ -150,6 +155,10 @@ function QuizPage() {
   const questions = useMemo(() => quiz?.questions ?? [], [quiz]);
   const current = questions[index];
   const answeredCount = Object.keys(answers).length;
+
+  useEffect(() => {
+    setBookmarked(isBookmarked(id));
+  }, [id]);
 
   const handleSubmit = useCallback(async () => {
     if (!quiz || submitting) return;
@@ -204,6 +213,23 @@ function QuizPage() {
       setSubmitting(false);
     }
   }, [quiz, submitting, playerName, attemptCountry, answers, questions, account?.id, navigate]);
+
+  const handleReportQuestion = async () => {
+    if (!quiz || !current || reportedQuestions.includes(current.id)) return;
+    try {
+      await createFeedback({
+        type: "bug",
+        message: `Question report\nQuiz: ${quiz.title} (${quiz.id})\nQuestion ID: ${current.id}\nQuestion: ${current.text}\n\nPlease review this question for accuracy, clarity, duplication, or outdated content.`,
+        contact: account?.email ?? account?.phoneE164 ?? undefined,
+      });
+      setReportedQuestions((previous) => [...previous, current.id]);
+      toast.success("Thanks for flagging this question");
+    } catch (failure) {
+      toast.error("Could not send the report", {
+        description: failure instanceof Error ? failure.message : "Try again later.",
+      });
+    }
+  };
 
   // Persist in-progress state locally on every change.
   useEffect(() => {
@@ -338,8 +364,7 @@ function QuizPage() {
                     allowEmpty
                   />
                   <p className="mt-2 text-xs leading-5 text-muted-foreground">
-                    If you choose one, it can appear beside your name on leaderboards and
-                    certificates.
+                    Your chosen country will appear on leaderboards and certificates.
                   </p>
                 </div>
               </div>
@@ -465,6 +490,14 @@ function QuizPage() {
           <p className="mt-2 text-sm text-muted-foreground">
             One question at a time. Flag anything you want to revisit before submitting.
           </p>
+          <button
+            type="button"
+            onClick={() => setBookmarked(toggleBookmark(id))}
+            className="mt-3 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+          >
+            <Bookmark className="h-4 w-4" fill={bookmarked ? "currentColor" : "none"} />
+            {bookmarked ? "Saved to your list" : "Save this topic for later"}
+          </button>
         </div>
         {quiz.timeLimitSeconds > 0 ? (
           <Timer
@@ -501,6 +534,8 @@ function QuizPage() {
               onSelect={(optionIndex) =>
                 setAnswers((prev) => ({ ...prev, [current.id]: optionIndex }))
               }
+              onReport={() => void handleReportQuestion()}
+              reported={current ? reportedQuestions.includes(current.id) : false}
             />
           )}
 

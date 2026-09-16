@@ -18,7 +18,9 @@ import {
   deleteCurrentAccount,
   getCurrentUser,
   getMyActivity,
+  getAccountProgressList,
   logoutAccount,
+  updateCurrentUser,
   type AccountUser,
 } from "@/lib/api";
 import type { Certificate } from "@/types/quiz";
@@ -54,6 +56,9 @@ function WalletPage() {
   const [signingOut, setSigningOut] = useState(false);
   const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [displayName, setDisplayName] = useState("");
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [exportingData, setExportingData] = useState(false);
 
   useEffect(() => {
     const localCertificates = loadCertificates();
@@ -63,6 +68,7 @@ function WalletPage() {
       .then(({ user }) => {
         if (!alive) return;
         setUser(user);
+        setDisplayName(user?.displayName ?? "");
         if (!user) return;
         void getMyActivity()
           .then(({ certificates }) => {
@@ -82,6 +88,57 @@ function WalletPage() {
       alive = false;
     };
   }, []);
+
+  const handleProfileSave = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!displayName.trim() || savingProfile) return;
+    setSavingProfile(true);
+    setDeleteError(null);
+    try {
+      const result = await updateCurrentUser(displayName);
+      setUser(result.user);
+      queryClient.setQueryData(["auth", "me"], { user: result.user });
+      toast.success("Profile updated");
+    } catch (failure) {
+      const message = failure instanceof Error ? failure.message : "Could not update your profile";
+      setDeleteError(message);
+      toast.error("Profile update failed", { description: message });
+    } finally {
+      setSavingProfile(false);
+    }
+  };
+
+  const handleExportData = async () => {
+    if (!user || exportingData) return;
+    setExportingData(true);
+    try {
+      const [{ history, certificates }, { progress }] = await Promise.all([
+        getMyActivity(),
+        getAccountProgressList(),
+      ]);
+      const payload = {
+        exportedAt: new Date().toISOString(),
+        account: user,
+        history,
+        certificates,
+        progress,
+      };
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = "quitech-account-data.json";
+      link.click();
+      URL.revokeObjectURL(url);
+      toast.success("Your account data is ready");
+    } catch (failure) {
+      toast.error("Could not export your data", {
+        description: failure instanceof Error ? failure.message : "Try again later.",
+      });
+    } finally {
+      setExportingData(false);
+    }
+  };
 
   const canDelete =
     Boolean(user) && confirmation.trim().toLowerCase() === "delete my account" && !deleting;
@@ -175,12 +232,41 @@ function WalletPage() {
                 removes your login account and active sessions; submitted certificate and
                 leaderboard records can be reviewed through privacy support.
               </p>
+              <form onSubmit={(event) => void handleProfileSave(event)} className="mt-5 max-w-md">
+                <label htmlFor="wallet-display-name" className="block text-sm font-medium text-foreground">
+                  Display name
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="wallet-display-name"
+                    value={displayName}
+                    maxLength={80}
+                    onChange={(event) => setDisplayName(event.target.value)}
+                    className="min-w-0 flex-1 rounded-md border border-input bg-background px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <button
+                    type="submit"
+                    disabled={savingProfile || !displayName.trim()}
+                    className="rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+                  >
+                    {savingProfile ? "Saving..." : "Save"}
+                  </button>
+                </div>
+              </form>
               <Link
                 to="/delete-data"
                 className="mt-4 inline-flex text-sm font-medium text-primary hover:underline"
               >
                 Request data deletion
               </Link>
+              <button
+                type="button"
+                onClick={() => void handleExportData()}
+                disabled={exportingData}
+                className="mt-3 inline-flex text-left text-sm font-medium text-primary hover:underline disabled:opacity-60"
+              >
+                {exportingData ? "Getting your data ready..." : "Download a copy of my data"}
+              </button>
             </div>
 
             <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-48">

@@ -23,6 +23,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as ApiIndexRouteImport } from './routes/api.index'
+import { Route as ApiFeedbackRouteImport } from './routes/api/feedback'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLeaderboardRouteImport } from './routes/api/leaderboard'
 import { Route as ApiLevelsRouteImport } from './routes/api/levels'
@@ -33,6 +34,7 @@ import { Route as QuizzesIdRouteImport } from './routes/quizzes.$id'
 import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-log'
 import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
 import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
+import { Route as ApiAdminFeedbackRouteImport } from './routes/api/admin/feedback'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
@@ -43,6 +45,7 @@ import { Route as ApiQuizzesIndexRouteImport } from './routes/api/quizzes.index'
 import { Route as ApiQuizzesIdRouteImport } from './routes/api/quizzes.$id'
 import { Route as ApiAdminCatalogueSectionIdRouteImport } from './routes/api/admin/catalogue.$sectionId'
 import { Route as ApiAdminCertificatesCodeRouteImport } from './routes/api/admin/certificates.$code'
+import { Route as ApiAdminFeedbackIdRouteImport } from './routes/api/admin/feedback.$id'
 import { Route as ApiAdminLeaderboardIdRouteImport } from './routes/api/admin/leaderboard.$id'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users.$userId'
 import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
@@ -119,6 +122,11 @@ const ApiIndexRoute = ApiIndexRouteImport.update({
   path: '/api/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiFeedbackRoute = ApiFeedbackRouteImport.update({
+  id: '/api/feedback',
+  path: '/api/feedback',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiHealthRoute = ApiHealthRouteImport.update({
   id: '/api/health',
   path: '/api/health',
@@ -167,6 +175,11 @@ const ApiAdminCatalogueRoute = ApiAdminCatalogueRouteImport.update({
 const ApiAdminCertificatesRoute = ApiAdminCertificatesRouteImport.update({
   id: '/api/admin/certificates',
   path: '/api/admin/certificates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminFeedbackRoute = ApiAdminFeedbackRouteImport.update({
+  id: '/api/admin/feedback',
+  path: '/api/admin/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
@@ -221,6 +234,11 @@ const ApiAdminCertificatesCodeRoute =
     path: '/$code',
     getParentRoute: () => ApiAdminCertificatesRoute,
   } as any)
+const ApiAdminFeedbackIdRoute = ApiAdminFeedbackIdRouteImport.update({
+  id: '/$id',
+  path: '/$id',
+  getParentRoute: () => ApiAdminFeedbackRoute,
+} as any)
 const ApiAdminLeaderboardIdRoute = ApiAdminLeaderboardIdRouteImport.update({
   id: '/api/admin/leaderboard/$id',
   path: '/api/admin/leaderboard/$id',
@@ -266,6 +284,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
   '/api/levels': typeof ApiLevelsRoute
@@ -277,6 +296,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
+  '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -287,6 +307,7 @@ export interface FileRoutesByFullPath {
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
+  '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
@@ -307,6 +328,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
   '/api/levels': typeof ApiLevelsRoute
@@ -318,6 +340,7 @@ export interface FileRoutesByTo {
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
+  '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -328,6 +351,7 @@ export interface FileRoutesByTo {
   '/api/quizzes': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
+  '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
@@ -350,6 +374,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
   '/api/levels': typeof ApiLevelsRoute
@@ -361,6 +386,7 @@ export interface FileRoutesById {
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
+  '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -371,6 +397,7 @@ export interface FileRoutesById {
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
+  '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRoute
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
@@ -393,6 +420,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/wallet'
+    | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
     | '/api/levels'
@@ -404,6 +432,7 @@ export interface FileRouteTypes {
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
+    | '/api/admin/feedback'
     | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -414,6 +443,7 @@ export interface FileRouteTypes {
     | '/api/quizzes/'
     | '/api/admin/catalogue/$sectionId'
     | '/api/admin/certificates/$code'
+    | '/api/admin/feedback/$id'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
@@ -434,6 +464,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/wallet'
+    | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
     | '/api/levels'
@@ -445,6 +476,7 @@ export interface FileRouteTypes {
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
+    | '/api/admin/feedback'
     | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -455,6 +487,7 @@ export interface FileRouteTypes {
     | '/api/quizzes'
     | '/api/admin/catalogue/$sectionId'
     | '/api/admin/certificates/$code'
+    | '/api/admin/feedback/$id'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
@@ -476,6 +509,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/wallet'
+    | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
     | '/api/levels'
@@ -487,6 +521,7 @@ export interface FileRouteTypes {
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
+    | '/api/admin/feedback'
     | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -497,6 +532,7 @@ export interface FileRouteTypes {
     | '/api/quizzes/'
     | '/api/admin/catalogue/$sectionId'
     | '/api/admin/certificates/$code'
+    | '/api/admin/feedback/$id'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
@@ -517,6 +553,7 @@ export interface RootRouteChildren {
   ResultsRoute: typeof ResultsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
+  ApiFeedbackRoute: typeof ApiFeedbackRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiLeaderboardRoute: typeof ApiLeaderboardRoute
   ApiLevelsRoute: typeof ApiLevelsRoute
@@ -528,6 +565,7 @@ export interface RootRouteChildren {
   ApiAdminAuditLogRoute: typeof ApiAdminAuditLogRoute
   ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
   ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRouteWithChildren
+  ApiAdminFeedbackRoute: typeof ApiAdminFeedbackRouteWithChildren
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
@@ -639,6 +677,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/feedback': {
+      id: '/api/feedback'
+      path: '/api/feedback'
+      fullPath: '/api/feedback'
+      preLoaderRoute: typeof ApiFeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/health': {
       id: '/api/health'
       path: '/api/health'
@@ -707,6 +752,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/certificates'
       fullPath: '/api/admin/certificates'
       preLoaderRoute: typeof ApiAdminCertificatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/feedback': {
+      id: '/api/admin/feedback'
+      path: '/api/admin/feedback'
+      fullPath: '/api/admin/feedback'
+      preLoaderRoute: typeof ApiAdminFeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/users': {
@@ -778,6 +830,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/certificates/$code'
       preLoaderRoute: typeof ApiAdminCertificatesCodeRouteImport
       parentRoute: typeof ApiAdminCertificatesRoute
+    }
+    '/api/admin/feedback/$id': {
+      id: '/api/admin/feedback/$id'
+      path: '/$id'
+      fullPath: '/api/admin/feedback/$id'
+      preLoaderRoute: typeof ApiAdminFeedbackIdRouteImport
+      parentRoute: typeof ApiAdminFeedbackRoute
     }
     '/api/admin/leaderboard/$id': {
       id: '/api/admin/leaderboard/$id'
@@ -874,6 +933,17 @@ const ApiAdminCertificatesRouteChildren: ApiAdminCertificatesRouteChildren = {
 const ApiAdminCertificatesRouteWithChildren =
   ApiAdminCertificatesRoute._addFileChildren(ApiAdminCertificatesRouteChildren)
 
+interface ApiAdminFeedbackRouteChildren {
+  ApiAdminFeedbackIdRoute: typeof ApiAdminFeedbackIdRoute
+}
+
+const ApiAdminFeedbackRouteChildren: ApiAdminFeedbackRouteChildren = {
+  ApiAdminFeedbackIdRoute: ApiAdminFeedbackIdRoute,
+}
+
+const ApiAdminFeedbackRouteWithChildren =
+  ApiAdminFeedbackRoute._addFileChildren(ApiAdminFeedbackRouteChildren)
+
 interface ApiAdminUsersRouteChildren {
   ApiAdminUsersUserIdRoute: typeof ApiAdminUsersUserIdRoute
 }
@@ -923,6 +993,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResultsRoute: ResultsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
+  ApiFeedbackRoute: ApiFeedbackRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiLeaderboardRoute: ApiLeaderboardRoute,
   ApiLevelsRoute: ApiLevelsRoute,
@@ -934,6 +1005,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminAuditLogRoute: ApiAdminAuditLogRoute,
   ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
   ApiAdminCertificatesRoute: ApiAdminCertificatesRouteWithChildren,
+  ApiAdminFeedbackRoute: ApiAdminFeedbackRouteWithChildren,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,

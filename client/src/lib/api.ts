@@ -57,6 +57,31 @@ export interface AdminCertificate {
   issuedAt: string;
 }
 
+export interface AppUpdateSettings {
+  enabled: boolean;
+  minimumVersion: string;
+  latestVersion: string;
+  required: boolean;
+  storeUrl: string | null;
+  message: string;
+  updatedBy: string | null;
+  updatedAt: string;
+}
+
+export type FeedbackType = "feature" | "topic" | "bug" | "general";
+export type FeedbackStatus = "new" | "reviewing" | "planned" | "resolved" | "dismissed";
+
+export interface FeedbackItem {
+  id: string;
+  userId: string | null;
+  type: FeedbackType;
+  message: string;
+  contact: string | null;
+  status: FeedbackStatus;
+  createdAt: string;
+  updatedAt: string;
+}
+
 const CONTENT_PATHS = [
   "/health",
   "/levels",
@@ -97,10 +122,11 @@ function isContentPath(path: string): boolean {
 function apiBases(): readonly string[] {
   if (typeof window !== "undefined") {
     const nativeRuntime =
-      window.location.protocol === "capacitor:" ||
-      window.location.hostname === "localhost" ||
-      window.location.hostname === "127.0.0.1";
+      window.location?.protocol === "capacitor:" ||
+      window.location?.hostname === "localhost" ||
+      window.location?.hostname === "127.0.0.1";
     if (nativeRuntime) return [NATIVE_API_FALLBACK, API_BASE];
+    return ["/api"];
   }
   return [API_BASE, NATIVE_API_FALLBACK];
 }
@@ -124,10 +150,10 @@ async function fetchJson<T>(path: string, options?: RequestInit): Promise<T> {
   const token = sessionToken();
   const hasBody = options?.body !== undefined && options.body !== null;
   const requestInit: RequestInit = {
-    headers: {
+    headers: new Headers({
       ...(hasBody ? { "Content-Type": "application/json" } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+    }),
     credentials: "include",
     signal: timeoutController.signal,
     ...options,
@@ -206,12 +232,13 @@ export async function submitAnswers(payload: {
   });
 }
 
-export async function getLeaderboard(filters?: { quizId?: string; levelId?: string }): Promise<{
+export async function getLeaderboard(filters?: { quizId?: string; levelId?: string; countryCode?: string }): Promise<{
   leaderboard: LeaderboardEntry[];
 }> {
   const params = new URLSearchParams();
   if (filters?.quizId) params.set("quizId", filters.quizId);
   if (filters?.levelId) params.set("levelId", filters.levelId);
+  if (filters?.countryCode) params.set("countryCode", filters.countryCode);
   const query = params.toString();
   return fetchJson<{ leaderboard: LeaderboardEntry[] }>(`/leaderboard${query ? `?${query}` : ""}`);
 }
@@ -224,8 +251,54 @@ export async function getHealth(): Promise<HealthStatus> {
   return fetchJson<HealthStatus>("/health");
 }
 
+export async function getAppUpdateSettings(): Promise<{ settings: AppUpdateSettings }> {
+  return fetchJson<{ settings: AppUpdateSettings }>("/app-update");
+}
+
+export async function createFeedback(payload: {
+  type: FeedbackType;
+  message: string;
+  contact?: string;
+}): Promise<{ feedback: FeedbackItem }> {
+  return fetchJson<{ feedback: FeedbackItem }>("/feedback", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function getAdminFeedback(status?: FeedbackStatus): Promise<{ feedback: FeedbackItem[] }> {
+  const query = status ? `?status=${encodeURIComponent(status)}` : "";
+  return fetchJson<{ feedback: FeedbackItem[] }>(`/admin/feedback${query}`);
+}
+
+export async function updateFeedbackStatus(
+  id: string,
+  status: FeedbackStatus,
+): Promise<{ feedback: FeedbackItem }> {
+  return fetchJson<{ feedback: FeedbackItem }>(`/admin/feedback/${encodeURIComponent(id)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function saveAppUpdateSettings(
+  settings: Omit<AppUpdateSettings, "updatedBy" | "updatedAt">,
+): Promise<{ settings: AppUpdateSettings }> {
+  return fetchJson<{ settings: AppUpdateSettings }>("/app-update", {
+    method: "PUT",
+    body: JSON.stringify(settings),
+  });
+}
+
 export async function getCurrentUser(): Promise<{ user: AccountUser | null }> {
   return fetchJson<{ user: AccountUser | null }>("/auth/me");
+}
+
+export async function updateCurrentUser(displayName: string): Promise<{ user: AccountUser }> {
+  return fetchJson<{ user: AccountUser }>("/auth/me", {
+    method: "PATCH",
+    body: JSON.stringify({ displayName }),
+  });
 }
 
 export async function getMyActivity(): Promise<{
@@ -246,7 +319,7 @@ export async function getAccountProgress(
 }
 
 export async function getAccountProgressList(): Promise<{ progress: AccountProgress[] }> {
-  return fetchJson<{ progress: AccountProgress[] }>('/auth/me/progress');
+  return fetchJson<{ progress: AccountProgress[] }>("/auth/me/progress");
 }
 
 export async function saveAccountProgress(
@@ -294,19 +367,13 @@ export async function loginAccount(payload: {
 }
 
 export async function logoutAccount(): Promise<void> {
-  try {
-    await fetchJson<{ ok: true }>("/auth/logout", { method: "POST" });
-  } finally {
-    saveSessionToken(null);
-  }
+  await fetchJson<{ ok: true }>("/auth/logout", { method: "POST" });
+  saveSessionToken(null);
 }
 
 export async function deleteCurrentAccount(): Promise<void> {
-  try {
-    await fetchJson<{ ok: true }>("/auth/me", { method: "DELETE" });
-  } finally {
-    saveSessionToken(null);
-  }
+  await fetchJson<{ ok: true }>("/auth/me", { method: "DELETE" });
+  saveSessionToken(null);
 }
 
 export async function deleteLeaderboardEntry(id: string): Promise<void> {

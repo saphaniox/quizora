@@ -11,6 +11,10 @@ export const Route = createFileRoute("/api/auth/me")({
         const { proxyApiRequest } = await import("@/lib/api-proxy.server");
         return proxyApiRequest(request, "/auth/me");
       },
+      PATCH: async ({ request }) => {
+        const { proxyApiRequest } = await import("@/lib/api-proxy.server");
+        return proxyApiRequest(request, "/auth/me");
+      },
     },
   },
 });

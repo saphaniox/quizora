@@ -7,13 +7,25 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Toaster } from "@/components/ui/sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { APP_VERSION, compareVersions, isUpdateRequired } from "@/lib/app-version";
+import { getAppUpdateSettings } from "@/lib/api";
 
 const SITE_URL = "app://quitech";
 
@@ -140,6 +152,86 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
+  const [updateDialog, setUpdateDialog] = useState<{
+    required: boolean;
+    message: string;
+    storeUrl: string | null;
+    currentVersion: string;
+    latestVersion: string;
+  } | null>(null);
+
+  useEffect(() => {
+    let active = true;
+
+    async function checkForAppUpdate() {
+      try {
+        const { settings } = await getAppUpdateSettings();
+        if (!active || !settings.enabled) return;
+
+        const currentVersion = APP_VERSION;
+        const minimumVersion = settings.minimumVersion || currentVersion;
+        const latestVersion = settings.latestVersion || currentVersion;
+
+        const shouldPrompt = isUpdateRequired(currentVersion, minimumVersion, latestVersion);
+        if (!shouldPrompt) return;
+
+        const required = settings.required && compareVersions(currentVersion, latestVersion) < 0;
+
+        setUpdateDialog({
+          required,
+          message:
+            settings.message || "A new app update is available. Please update to continue using Quitech.",
+          storeUrl: settings.storeUrl,
+          currentVersion,
+          latestVersion,
+        });
+        setUpdateDialogOpen(true);
+      } catch {
+        // Ignore app-update checks when the API is unavailable or the user is signed out.
+      }
+    }
+
+    void checkForAppUpdate();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const handleUpdate = () => {
+    if (updateDialog?.storeUrl) {
+      window.open(updateDialog.storeUrl, "_blank", "noopener,noreferrer");
+      return;
+    }
+    window.location.reload();
+  };
+
+  const requiredUpdateActive = Boolean(updateDialog?.required && updateDialogOpen);
+
+  if (requiredUpdateActive) {
+    return (
+      <QueryClientProvider client={queryClient}>
+        <div className="flex min-h-screen items-center justify-center bg-background px-4">
+          <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 text-center shadow-lg">
+            <h1 className="text-2xl font-semibold text-foreground">Update required</h1>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              {updateDialog?.message || "A newer version of Quitech is required before continuing."}
+            </p>
+            <p className="mt-4 text-xs text-muted-foreground">
+              Current: {updateDialog?.currentVersion ?? APP_VERSION} · Latest: {updateDialog?.latestVersion ?? APP_VERSION}
+            </p>
+            <button
+              type="button"
+              onClick={handleUpdate}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Update now
+            </button>
+          </div>
+        </div>
+      </QueryClientProvider>
+    );
+  }
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -150,6 +242,39 @@ function RootComponent() {
           <Outlet />
         </main>
         <Footer />
+
+        <AlertDialog
+          open={updateDialogOpen}
+          onOpenChange={(open) => {
+            if (updateDialog?.required) return;
+            setUpdateDialogOpen(open);
+            if (!open && updateDialog && !updateDialog.required) {
+              setUpdateDialog(null);
+            }
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Update available</AlertDialogTitle>
+              <AlertDialogDescription>
+                {updateDialog?.message || "A new version of the app is ready."}
+                {updateDialog && (
+                  <span className="mt-2 block text-xs text-muted-foreground">
+                    Current: {updateDialog.currentVersion} · Latest: {updateDialog.latestVersion}
+                  </span>
+                )}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              {!updateDialog?.required && (
+                <AlertDialogCancel onClick={() => setUpdateDialog(null)}>Later</AlertDialogCancel>
+              )}
+              <AlertDialogAction onClick={handleUpdate}>
+                {updateDialog?.required ? "Update now" : "Update"}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </QueryClientProvider>
   );

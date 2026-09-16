@@ -8,6 +8,7 @@ const VISITOR_KEY = "quitech-visitor-id";
 const PROGRESS_PREFIX = "quitech-progress-";
 const API_CACHE_PREFIX = "quitech-api-cache-";
 const CERTS_KEY = "quitech-certificates";
+const BOOKMARKS_KEY = "quitech-bookmarked-quizzes";
 
 export interface PlayerCountry {
   iso: string;
@@ -204,6 +205,23 @@ export function loadAllProgress(): SavedProgress[] {
 
 export function clearProgress(quizId: string): void {
   if (browser()) localStorage.removeItem(`${PROGRESS_PREFIX}${quizId}`);
+}
+
+export function loadBookmarkedQuizIds(): string[] {
+  return read<string[]>(BOOKMARKS_KEY, []);
+}
+
+export function isBookmarked(quizId: string): boolean {
+  return loadBookmarkedQuizIds().includes(quizId);
+}
+
+export function toggleBookmark(quizId: string): boolean {
+  const bookmarks = loadBookmarkedQuizIds();
+  const next = bookmarks.includes(quizId)
+    ? bookmarks.filter((id) => id !== quizId)
+    : [quizId, ...bookmarks].slice(0, 100);
+  write(BOOKMARKS_KEY, next);
+  return next.includes(quizId);
 }
 
 /* ---------- certificates issued on this device ---------- */

@@ -2,9 +2,11 @@ import type { FastifyPluginAsync, FastifyReply, FastifyRequest } from "fastify";
 import * as quizController from "../controllers/quizController.js";
 import * as resultController from "../controllers/resultController.js";
 import * as authController from "../controllers/authController.js";
+import * as feedbackController from "../controllers/feedbackController.js";
 
 const routes: FastifyPluginAsync = async (app) => {
   const submissionTimes = new Map<string, number[]>();
+  const authAttemptTimes = new Map<string, number[]>();
   const submissionRateLimit = async (
     request: FastifyRequest,
     reply: FastifyReply,
@@ -24,6 +26,17 @@ const routes: FastifyPluginAsync = async (app) => {
       return;
     }
   };
+  const authRateLimit = async (request: FastifyRequest, reply: FastifyReply) => {
+    const key = request.ip;
+    const now = Date.now();
+    const recent = (authAttemptTimes.get(key) ?? []).filter((time) => now - time < 15 * 60_000);
+    recent.push(now);
+    authAttemptTimes.set(key, recent);
+    if (recent.length > 10) {
+      await reply.header("retry-after", "900").code(429).send({ error: "Too many account attempts. Try again later." });
+      return;
+    }
+  };
   app.get("/levels", quizController.getLevels);
   app.get("/quizzes", quizController.getQuizzes);
   app.get("/quizzes/:id", quizController.getQuizById);
@@ -34,9 +47,10 @@ const routes: FastifyPluginAsync = async (app) => {
   );
   app.get("/leaderboard", resultController.getLeaderboard);
   app.get("/certificates/:code", resultController.getCertificate);
-  app.post("/auth/register", authController.register);
-  app.post("/auth/login", authController.login);
+  app.post("/auth/register", { preHandler: authRateLimit }, authController.register);
+  app.post("/auth/login", { preHandler: authRateLimit }, authController.login);
   app.get("/auth/me", authController.me);
+  app.patch("/auth/me", authController.updateMe);
   app.get("/auth/me/activity", authController.activity);
   app.get("/auth/me/progress", authController.listProgress);
   app.get("/auth/me/progress/:quizId", authController.getProgress);
@@ -44,8 +58,13 @@ const routes: FastifyPluginAsync = async (app) => {
   app.delete("/auth/me/progress/:quizId", authController.deleteProgress);
   app.delete("/auth/me", authController.deleteAccount);
   app.post("/auth/logout", authController.logout);
+  app.post("/feedback", feedbackController.createFeedback);
+  app.get("/app-update", authController.getAppUpdateSettings);
+  app.put("/app-update", authController.saveAppUpdateSettings);
   app.get("/admin/catalogue", authController.getAdminCatalogue);
   app.get("/admin/audit-log", authController.getAdminAuditLog);
+  app.get("/admin/feedback", feedbackController.listFeedback);
+  app.patch("/admin/feedback/:id", feedbackController.updateFeedbackStatus);
   app.get("/admin/users", authController.listAdminUsers);
   app.delete("/admin/users/:userId", authController.deleteAdminUser);
   app.get("/admin/certificates", authController.listAdminCertificates);

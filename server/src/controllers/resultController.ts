@@ -84,11 +84,12 @@ export async function getLeaderboard(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const query = request.query as { quizId?: string; levelId?: string };
+  const query = request.query as { quizId?: string; levelId?: string; countryCode?: string };
   return reply.send({
     leaderboard: await leaderboardModel.list({
       quizId: query.quizId,
       levelId: query.levelId,
+      countryCode: query.countryCode?.trim().toUpperCase(),
       limit: 100,
     }),
   });

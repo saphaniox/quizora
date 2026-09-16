@@ -34,6 +34,7 @@ import {
   deleteLeaderboardEntry,
   deleteAdminUser,
   deleteAdminCertificate,
+  getAdminFeedback,
   getAdminAuditLog,
   getAdminCatalogue,
   getCurrentUser,
@@ -42,8 +43,12 @@ import {
   getAdminCertificates,
   getLeaderboard,
   getLevels,
+  getAppUpdateSettings,
   publishCatalogueSection,
+  saveAppUpdateSettings,
   saveCatalogueDraft,
+  updateFeedbackStatus,
+  type FeedbackStatus,
   type AdminUser,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
@@ -157,10 +162,23 @@ function AdminPage() {
     tone: StatusTone;
     message: string;
   } | null>(null);
+  const [appUpdateDraft, setAppUpdateDraft] = useState<{
+    enabled: boolean;
+    minimumVersion: string;
+    latestVersion: string;
+    required: boolean;
+    storeUrl: string;
+    message: string;
+  } | null>(null);
+  const [appUpdateAction, setAppUpdateAction] = useState<{
+    tone: StatusTone;
+    message: string;
+  } | null>(null);
   const [leaderboardAction, setLeaderboardAction] = useState<{
     tone: StatusTone;
     message: string;
   } | null>(null);
+  const [feedbackFilter, setFeedbackFilter] = useState<FeedbackStatus | "all">("all");
 
   const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
   const account = accountQuery.data?.user ?? null;
@@ -199,6 +217,16 @@ function AdminPage() {
   const healthQuery = useQuery({
     queryKey: ["admin", "health"],
     queryFn: () => getHealth(),
+    enabled: isAdmin,
+  });
+  const appUpdateQuery = useQuery({
+    queryKey: ["admin", "app-update"],
+    queryFn: () => getAppUpdateSettings(),
+    enabled: isAdmin,
+  });
+  const feedbackQuery = useQuery({
+    queryKey: ["admin", "feedback", feedbackFilter],
+    queryFn: () => getAdminFeedback(feedbackFilter === "all" ? undefined : feedbackFilter),
     enabled: isAdmin,
   });
   const deleteLeaderboardMutation = useMutation({
@@ -260,6 +288,30 @@ function AdminPage() {
       });
     },
   });
+  const saveAppUpdateMutation = useMutation({
+    mutationFn: saveAppUpdateSettings,
+    onSuccess: ({ settings }) => {
+      setAppUpdateDraft({
+        enabled: settings.enabled,
+        minimumVersion: settings.minimumVersion,
+        latestVersion: settings.latestVersion,
+        required: settings.required,
+        storeUrl: settings.storeUrl ?? "",
+        message: settings.message,
+      });
+      setAppUpdateAction({
+        tone: "ready",
+        message: "App update policy saved. Users will see the reminder until the app version matches the latest setting.",
+      });
+      void appUpdateQuery.refetch();
+    },
+    onError: (error) => {
+      setAppUpdateAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not save the app update policy.",
+      });
+    },
+  });
   const publishCatalogueMutation = useMutation({
     mutationFn: async ({ sectionId, draft }: { sectionId: string; draft: CatalogueDraftForm }) => {
       await saveCatalogueDraft(sectionId, draft);
@@ -278,6 +330,10 @@ function AdminPage() {
       });
     },
   });
+  const feedbackStatusMutation = useMutation({
+    mutationFn: ({ id, status }: { id: string; status: FeedbackStatus }) => updateFeedbackStatus(id, status),
+    onSuccess: () => void feedbackQuery.refetch(),
+  });
 
   const loadedLevels = levelsQuery.data?.levels;
   const levels = useMemo(() => loadedLevels ?? [], [loadedLevels]);
@@ -287,6 +343,19 @@ function AdminPage() {
   const auditLog = useMemo(() => loadedAuditLog ?? [], [loadedAuditLog]);
   const fallbackSections = useMemo(() => flattenSections(levels), [levels]);
   const sectionSource = sections.length ? sections : fallbackSections;
+  useEffect(() => {
+    if (!appUpdateQuery.data) return;
+    const settings = appUpdateQuery.data.settings;
+    setAppUpdateDraft({
+      enabled: settings.enabled,
+      minimumVersion: settings.minimumVersion,
+      latestVersion: settings.latestVersion,
+      required: settings.required,
+      storeUrl: settings.storeUrl ?? "",
+      message: settings.message,
+    });
+  }, [appUpdateQuery.data]);
+
   const loadedLeaderboard = leaderboardQuery.data?.leaderboard;
   const leaderboard = useMemo(() => loadedLeaderboard ?? [], [loadedLeaderboard]);
   const visibleSections = useMemo(() => {
@@ -409,7 +478,9 @@ function AdminPage() {
         leaderboardQuery.isLoading ||
         usersQuery.isLoading ||
         certificatesQuery.isLoading ||
-        healthQuery.isLoading));
+        healthQuery.isLoading ||
+        appUpdateQuery.isLoading ||
+        feedbackQuery.isLoading));
   const hasLoadError =
     levelsQuery.isError ||
     catalogueQuery.isError ||
@@ -417,7 +488,8 @@ function AdminPage() {
     leaderboardQuery.isError ||
     usersQuery.isError ||
     certificatesQuery.isError ||
-    healthQuery.isError;
+    healthQuery.isError ||
+    appUpdateQuery.isError;
   const apiHealthy = healthQuery.data?.status === "ok";
   const accountContact =
     account?.email ?? account?.phoneE164 ?? account?.displayName ?? "Signed-in admin";
@@ -603,6 +675,135 @@ function AdminPage() {
         </div>
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+          <section className="rounded-lg border border-border bg-card">
+            <div className="border-b border-border p-5">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <h2 className="text-base font-semibold text-card-foreground">App update controls</h2>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    When enabled, the app reminder opens on every launch until the installed version matches the configured minimum/latest version.
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="p-5">
+              {appUpdateDraft && (
+                <div className="space-y-4">
+                  <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Enable reminder</p>
+                      <p className="text-xs text-muted-foreground">Display update prompts on every open while the app is behind the target version.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={appUpdateDraft.enabled}
+                      onChange={(event) =>
+                        setAppUpdateDraft({ ...appUpdateDraft, enabled: event.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-input"
+                    />
+                  </label>
+
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="block text-sm font-medium text-foreground">
+                      Minimum allowed version
+                      <input
+                        value={appUpdateDraft.minimumVersion}
+                        onChange={(event) =>
+                          setAppUpdateDraft({ ...appUpdateDraft, minimumVersion: event.target.value })
+                        }
+                        className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </label>
+                    <label className="block text-sm font-medium text-foreground">
+                      Latest app version
+                      <input
+                        value={appUpdateDraft.latestVersion}
+                        onChange={(event) =>
+                          setAppUpdateDraft({ ...appUpdateDraft, latestVersion: event.target.value })
+                        }
+                        className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      />
+                    </label>
+                  </div>
+
+                  <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+                    <div>
+                      <p className="text-sm font-medium text-foreground">Block use until update</p>
+                      <p className="text-xs text-muted-foreground">If on, the dialog is required and can only be dismissed by updating the app.</p>
+                    </div>
+                    <input
+                      type="checkbox"
+                      checked={appUpdateDraft.required}
+                      onChange={(event) =>
+                        setAppUpdateDraft({ ...appUpdateDraft, required: event.target.checked })
+                      }
+                      className="h-4 w-4 rounded border-input"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium text-foreground">
+                    Store link or update URL
+                    <input
+                      value={appUpdateDraft.storeUrl}
+                      onChange={(event) =>
+                        setAppUpdateDraft({ ...appUpdateDraft, storeUrl: event.target.value })
+                      }
+                      placeholder="https://apps.apple.com/... or Google Play URL"
+                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+
+                  <label className="block text-sm font-medium text-foreground">
+                    Reminder message
+                    <textarea
+                      value={appUpdateDraft.message}
+                      onChange={(event) =>
+                        setAppUpdateDraft({ ...appUpdateDraft, message: event.target.value })
+                      }
+                      rows={3}
+                      className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </label>
+
+                  {appUpdateAction && (
+                    <div
+                      className={cn(
+                        "rounded-md border px-3 py-2 text-sm",
+                        appUpdateAction.tone === "ready"
+                          ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                          : "border-destructive/25 bg-destructive/10 text-destructive",
+                      )}
+                    >
+                      {appUpdateAction.message}
+                    </div>
+                  )}
+
+                  <div className="flex justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!appUpdateDraft) return;
+                        void saveAppUpdateMutation.mutateAsync({
+                          enabled: appUpdateDraft.enabled,
+                          minimumVersion: appUpdateDraft.minimumVersion,
+                          latestVersion: appUpdateDraft.latestVersion,
+                          required: appUpdateDraft.required,
+                          storeUrl: appUpdateDraft.storeUrl || null,
+                          message: appUpdateDraft.message,
+                        });
+                      }}
+                      disabled={saveAppUpdateMutation.isPending}
+                      className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                    >
+                      {saveAppUpdateMutation.isPending ? "Saving..." : "Save update policy"}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </section>
+
           <section className="rounded-lg border border-border bg-card">
             <div className="border-b border-border p-5">
               <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
@@ -1306,6 +1507,81 @@ function AdminPage() {
               <p className="mt-1 text-sm text-muted-foreground">
                 Scores will appear here after learners submit quizzes.
               </p>
+            </div>
+          )}
+        </section>
+
+        <section className="mt-6 rounded-lg border border-border bg-card">
+          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <div className="flex items-center gap-2">
+                <Send className="h-5 w-5 text-primary" />
+                <h2 className="text-base font-semibold text-card-foreground">User feedback</h2>
+              </div>
+              <p className="mt-1 text-sm text-muted-foreground">
+                See what learners want changed, added, or fixed.
+              </p>
+            </div>
+            <select
+              value={feedbackFilter}
+              onChange={(event) => setFeedbackFilter(event.target.value as FeedbackStatus | "all")}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              aria-label="Filter feedback"
+            >
+              <option value="all">All feedback</option>
+              <option value="new">New</option>
+              <option value="reviewing">Reviewing</option>
+              <option value="planned">Planned</option>
+              <option value="resolved">Resolved</option>
+              <option value="dismissed">Dismissed</option>
+            </select>
+          </div>
+          <div className="divide-y divide-border">
+            {(feedbackQuery.data?.feedback ?? []).map((item) => (
+              <article key={item.id} className="p-5">
+                <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                  <div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="rounded-md border border-border bg-muted/40 px-2 py-1 text-xs font-semibold uppercase text-muted-foreground">
+                        {item.type}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(item.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-3 whitespace-pre-wrap text-sm leading-6 text-card-foreground">
+                      {item.message}
+                    </p>
+                    {item.contact && (
+                      <p className="mt-2 text-xs text-muted-foreground">Reply to: {item.contact}</p>
+                    )}
+                  </div>
+                  <select
+                    value={item.status}
+                    disabled={feedbackStatusMutation.isPending}
+                    onChange={(event) =>
+                      feedbackStatusMutation.mutate({
+                        id: item.id,
+                        status: event.target.value as FeedbackStatus,
+                      })
+                    }
+                    className="rounded-md border border-input bg-background px-3 py-2 text-xs font-medium text-foreground"
+                    aria-label={`Status for feedback ${item.id}`}
+                  >
+                    <option value="new">New</option>
+                    <option value="reviewing">Reviewing</option>
+                    <option value="planned">Planned</option>
+                    <option value="resolved">Resolved</option>
+                    <option value="dismissed">Dismissed</option>
+                  </select>
+                </div>
+              </article>
+            ))}
+          </div>
+          {(feedbackQuery.data?.feedback ?? []).length === 0 && (
+            <div className="p-10 text-center">
+              <p className="font-medium text-foreground">Nothing to review here</p>
+              <p className="mt-1 text-sm text-muted-foreground">New learner messages will show up here.</p>
             </div>
           )}
         </section>

@@ -4,6 +4,7 @@ import { History as HistoryIcon, Play, Trash2 } from "lucide-react";
 import {
   clearHistory,
   loadAllProgress,
+  loadBookmarkedQuizIds,
   loadCertificates,
   loadHistory,
   type HistoryItem,
@@ -40,6 +41,7 @@ function HistoryPage() {
   const [progress, setProgress] = useState<SavedProgress[]>([]);
   const [quizTitles, setQuizTitles] = useState<Record<string, string>>({});
   const [accountSynced, setAccountSynced] = useState(false);
+  const [bookmarkedQuizIds, setBookmarkedQuizIds] = useState<string[]>([]);
 
   useEffect(() => {
     let active = true;
@@ -49,6 +51,7 @@ function HistoryPage() {
     setItems(localHistory);
     setCertificates(localCertificates);
     setProgress(localProgress);
+    setBookmarkedQuizIds(loadBookmarkedQuizIds());
 
     void getQuizzes()
       .then(({ quizzes }) => {
@@ -90,6 +93,13 @@ function HistoryPage() {
   const average = attempts
     ? Math.round(items.reduce((sum, item) => sum + item.percentage, 0) / attempts)
     : 0;
+  const activeDays = new Set(items.map((item) => item.completedAt.slice(0, 10)));
+  let streak = 0;
+  const cursor = new Date();
+  while (activeDays.has(cursor.toISOString().slice(0, 10))) {
+    streak += 1;
+    cursor.setUTCDate(cursor.getUTCDate() - 1);
+  }
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
@@ -103,11 +113,12 @@ function HistoryPage() {
           : "Saved privately on this device - no account needed."}
       </p>
 
-      <dl className="mt-6 grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
+      <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
         {[
           { label: "Attempts", value: attempts },
           { label: "Best score", value: `${best}%` },
           { label: "Average", value: `${average}%` },
+          { label: "Days in a row", value: streak },
         ].map((stat) => (
           <div key={stat.label} className="rounded-lg border border-border bg-card p-4 shadow-sm">
             <dt className="text-xs uppercase tracking-wide text-muted-foreground">{stat.label}</dt>
@@ -115,6 +126,20 @@ function HistoryPage() {
           </div>
         ))}
       </dl>
+
+      {bookmarkedQuizIds.length > 0 && (
+        <section className="mt-8 rounded-lg border border-amber-500/30 bg-amber-500/5 p-5">
+          <h2 className="text-base font-semibold text-foreground">Topics to come back to</h2>
+          <p className="mt-1 text-sm text-muted-foreground">Your saved quizzes are waiting here.</p>
+          <div className="mt-3 flex flex-wrap gap-2">
+            {bookmarkedQuizIds.map((quizId) => (
+              <Link key={quizId} to="/quizzes/$id" params={{ id: quizId }} className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:border-primary/50">
+                {quizTitles[quizId] ?? quizId}
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {certificates.length > 0 && (
         <>
@@ -125,7 +150,7 @@ function HistoryPage() {
                 key={certificate.code}
                 className="flex flex-col gap-2 rounded-lg border border-border bg-card px-4 py-3 text-sm sm:flex-row sm:items-center sm:justify-between"
               >
-                <span className="break-words text-foreground">
+                <span className="wrap-break-word text-foreground">
                   {certificate.quizTitle} - {certificate.percentage}%
                 </span>
                 {certificate.countryName && (
@@ -171,7 +196,7 @@ function HistoryPage() {
                 className="flex flex-col gap-3 rounded-lg border border-primary/30 bg-primary/5 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
               >
                 <div className="min-w-0">
-                  <p className="break-words text-sm font-medium text-foreground">
+                  <p className="wrap-break-word text-sm font-medium text-foreground">
                     {quizTitles[item.quizId] ?? "Unfinished quiz"}
                   </p>
                   <p className="text-xs text-muted-foreground">
@@ -212,7 +237,7 @@ function HistoryPage() {
               className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <p className="break-words text-sm font-medium text-foreground">{item.quizTitle}</p>
+                <p className="wrap-break-word text-sm font-medium text-foreground">{item.quizTitle}</p>
                 <p className="text-xs text-muted-foreground">
                   {item.levelName} - {new Date(item.completedAt).toLocaleString()}
                 </p>

@@ -4,6 +4,7 @@ import { pool } from "../db.js";
 interface LeaderboardFilters {
   levelId?: string;
   quizId?: string;
+  countryCode?: string;
   limit?: number;
 }
 
@@ -208,6 +209,7 @@ export async function list(options: LeaderboardFilters = {}): Promise<Leaderboar
        FROM leaderboard
        WHERE ($1::text IS NULL OR quiz_id = $1)
          AND ($2::text IS NULL OR level_id = $2)
+         AND ($3::text IS NULL OR country_code = $3)
      ),
      best_entries AS (
        SELECT DISTINCT ON (quiz_id, participant_key) *
@@ -217,8 +219,8 @@ export async function list(options: LeaderboardFilters = {}): Promise<Leaderboar
      SELECT ${publicColumns}
      FROM best_entries
      ORDER BY percentage DESC, time_spent_seconds ASC, completed_at ASC
-     LIMIT $3`,
-    [options.quizId ?? null, options.levelId ?? null, options.limit ?? 100],
+    LIMIT $4`,
+      [options.quizId ?? null, options.levelId ?? null, options.countryCode ?? null, options.limit ?? 100],
   );
   return result.rows;
 }
@@ -251,6 +253,7 @@ export async function count(options: LeaderboardFilters = {}): Promise<number> {
        FROM leaderboard
        WHERE ($1::text IS NULL OR quiz_id = $1)
          AND ($2::text IS NULL OR level_id = $2)
+         AND ($3::text IS NULL OR country_code = $3)
      ),
      best_entries AS (
        SELECT DISTINCT ON (quiz_id, participant_key) id
@@ -258,7 +261,7 @@ export async function count(options: LeaderboardFilters = {}): Promise<number> {
        ORDER BY quiz_id, participant_key, percentage DESC, time_spent_seconds ASC, completed_at ASC
      )
      SELECT COUNT(*)::text AS count FROM best_entries`,
-    [options.quizId ?? null, options.levelId ?? null],
+    [options.quizId ?? null, options.levelId ?? null, options.countryCode ?? null],
   );
   return Number(result.rows[0]?.count ?? 0);
 }

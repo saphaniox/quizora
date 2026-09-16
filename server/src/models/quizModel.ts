@@ -173,7 +173,7 @@ function buildQuizzes(): Quiz[] {
         levelName: level.name,
         sectionId: section.id,
         difficulty: section.difficulty,
-        timeLimitSeconds: questions.length * 30,
+        timeLimitSeconds: questions.length * 120,
         questions,
       });
     }
@@ -381,7 +381,7 @@ export function toPublicQuiz(
     levelName: quiz.levelName,
     sectionId: quiz.sectionId,
     difficulty: quiz.difficulty,
-    timeLimitSeconds: questions.length * 30,
+    timeLimitSeconds: count === total ? questions.length * 120 : questions.length * (quiz.difficulty === "Hard" ? 120 : 60),
     totalQuestionsInSection: total,
     certificateEligible: count === total,
     passMark: PASS_MARK,

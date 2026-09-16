@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CheckCircle2, XCircle, ArrowRight } from "lucide-react";
+import { CheckCircle2, XCircle, ArrowRight, Flag } from "lucide-react";
 import type { QuizQuestion } from "@/types/quiz";
 import { cn } from "@/lib/utils";
 
@@ -13,6 +13,8 @@ interface QuestionCardProps {
   isCorrect?: boolean | undefined;
   correctOptionIndex?: number | undefined;
   explanation?: string | undefined;
+  onReport?: (() => void) | undefined;
+  reported?: boolean | undefined;
 }
 
 export function QuestionCard({
@@ -25,6 +27,8 @@ export function QuestionCard({
   isCorrect,
   correctOptionIndex,
   explanation,
+  onReport,
+  reported = false,
 }: QuestionCardProps) {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
 
@@ -44,7 +48,7 @@ export function QuestionCard({
           style={{ width: `${(questionNumber / totalQuestions) * 100}%` }}
         />
       </div>
-      <h2 className="mt-5 break-words text-lg font-semibold leading-snug text-card-foreground sm:mt-6 sm:text-xl lg:text-2xl">
+      <h2 className="mt-5 wrap-break-word text-lg font-semibold leading-snug text-card-foreground sm:mt-6 sm:text-xl lg:text-2xl">
         {question.text}
       </h2>
       <div className="mt-6 grid gap-3 sm:mt-8">
@@ -82,7 +86,7 @@ export function QuestionCard({
                   "border-border bg-background hover:border-primary/50 hover:bg-accent",
               )}
             >
-              <span className="min-w-0 break-words font-medium">{option}</span>
+              <span className="min-w-0 wrap-break-word font-medium">{option}</span>
               {isCorrectOption && <CheckCircle2 className="h-5 w-5 shrink-0 text-emerald-600" />}
               {isWrongSelection && <XCircle className="h-5 w-5 shrink-0 text-rose-600" />}
               {!showFeedback && isSelected && (
@@ -97,6 +101,17 @@ export function QuestionCard({
           <span className="font-semibold text-foreground">Explanation: </span>
           {explanation}
         </div>
+      )}
+      {onReport && (
+        <button
+          type="button"
+          onClick={onReport}
+          disabled={reported}
+          className="mt-4 inline-flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-foreground disabled:cursor-default disabled:opacity-70"
+        >
+          <Flag className="h-3.5 w-3.5" />
+          {reported ? "Thanks, we received your report" : "Something wrong with this question?"}
+        </button>
       )}
     </div>
   );

@@ -122,6 +122,20 @@ export async function getUser(token: string | undefined): Promise<User | null> {
   return row ? toUser(row) : null;
 }
 
+export async function updateCurrentUser(
+  token: string | undefined,
+  displayName: string,
+): Promise<User | null> {
+  if (!token) return null;
+  const result = await pool.query<UserRow>(
+    `UPDATE users SET display_name = $2
+     WHERE id = (SELECT user_id FROM sessions WHERE token_hash = $1 AND expires_at > NOW())
+     RETURNING id, email, phone_e164, display_name, role`,
+    [hashToken(token), displayName.trim()],
+  );
+  return result.rows[0] ? toUser(result.rows[0]) : null;
+}
+
 export async function logout(token: string | undefined): Promise<void> {
   if (token)
     await pool.query("DELETE FROM sessions WHERE token_hash = $1", [
