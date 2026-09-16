@@ -96,9 +96,9 @@ function HomePage() {
           src="/hero-study.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 -z-20 h-full w-full object-cover object-[72%_center] sm:object-center"
+          className="absolute inset-x-0 top-0 -z-20 h-96 w-full object-cover object-[72%_center] sm:inset-0 sm:h-full sm:object-center"
         />
-        <div className="absolute inset-0 -z-10 bg-linear-to-b from-background/25 via-background/70 to-background/95 sm:bg-linear-to-r sm:from-background sm:via-background/90 sm:to-background/35 sm:dark:from-background sm:dark:via-background/95 sm:dark:to-background/70" />
+        <div className="absolute inset-x-0 top-0 -z-10 h-96 bg-linear-to-b from-background/25 via-background/70 to-background sm:inset-0 sm:h-full sm:bg-linear-to-r sm:from-background sm:via-background/90 sm:to-background/35 sm:dark:from-background sm:dark:via-background/95 sm:dark:to-background/70" />
 
         <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-20 lg:px-8">
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
@@ -125,7 +125,7 @@ function HomePage() {
                 className="inline-flex items-center justify-center gap-2 rounded-md bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-colors hover:bg-primary/90"
               >
                 <UserPlus className="h-4 w-4" />
-                Create free account
+                Create free account (optional)
               </Link>
               <Link
                 to="/auth"
