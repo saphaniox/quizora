@@ -5,6 +5,7 @@ import { Award, BadgeCheck, Download, Loader2, Printer, Share2 } from "lucide-re
 import { getCertificate } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
 import type { Certificate } from "@/types/quiz";
+import { toast } from "sonner";
 
 const APP_URL = "app://quitech";
 
@@ -83,6 +84,11 @@ function CertificatePage() {
     try {
       const { downloadCertificatePdf } = await import("@/lib/certificate-pdf");
       await downloadCertificatePdf(certificate, certificateUrl);
+      toast.success("Certificate downloaded");
+    } catch (error) {
+      toast.error("Could not download the certificate", {
+        description: error instanceof Error ? error.message : "Please try again.",
+      });
     } finally {
       setDownloading(false);
     }
@@ -100,10 +106,12 @@ function CertificatePage() {
 
       await navigator.clipboard.writeText(text);
       setShareStatus("Certificate link copied");
+      toast.success("Certificate link copied");
       window.setTimeout(() => setShareStatus(""), 2500);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setShareStatus("Share was not completed");
+      toast.error("Share was not completed");
       window.setTimeout(() => setShareStatus(""), 2500);
     }
   };

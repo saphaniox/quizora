@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogIn, Phone, UserPlus } from "lucide-react";
+import { Loader2, LogIn, Mail, Phone, UserPlus } from "lucide-react";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";

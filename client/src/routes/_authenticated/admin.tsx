@@ -369,7 +369,11 @@ function AdminPage() {
   });
   const feedbackStatusMutation = useMutation({
     mutationFn: ({ id, status }: { id: string; status: FeedbackStatus }) => updateFeedbackStatus(id, status),
-    onSuccess: () => void feedbackQuery.refetch(),
+    onSuccess: () => {
+      void feedbackQuery.refetch();
+      setLeaderboardAction({ tone: "ready", message: "Feedback status updated." });
+    },
+    onError: (error) => setLeaderboardAction({ tone: "blocked", message: error instanceof Error ? error.message : "Could not update feedback status." }),
   });
 
   const loadedLevels = levelsQuery.data?.levels;
@@ -1435,7 +1439,7 @@ function AdminPage() {
                             disabled={resetAdminPasswordMutation.isPending}
                             className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-60 dark:text-amber-300"
                           >
-                            Reset password
+                            {resetAdminPasswordMutation.isPending ? "Generating..." : "Reset password"}
                           </button>
                           <button
                             type="button"
@@ -1443,7 +1447,11 @@ function AdminPage() {
                             disabled={adminUser.id === account?.id || updateAdminRoleMutation.isPending}
                             className="rounded-md border border-input px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                           >
-                            {adminUser.role === "admin" ? "Remove admin" : "Make admin"}
+                            {updateAdminRoleMutation.isPending
+                              ? "Updating..."
+                              : adminUser.role === "admin"
+                                ? "Remove admin"
+                                : "Make admin"}
                           </button>
                           {isConfirming ? (
                             <>
