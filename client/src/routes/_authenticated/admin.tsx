@@ -1,5 +1,5 @@
-import { Fragment, useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { Fragment, useEffect, useMemo, useState } from "react";
+import { createFileRoute, redirect } from "@tanstack/react-router";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import {
   Activity,
@@ -41,6 +41,7 @@ import {
   getHealth,
   getAdminUsers,
   getAdminCertificates,
+  getAdminSystemMetrics,
   getLeaderboard,
   getLevels,
   getAppUpdateSettings,
@@ -53,6 +54,7 @@ import {
   updateAdminUserRole,
   type FeedbackStatus,
   type AdminUser,
+  type AdminSystemMetrics,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type {
@@ -65,6 +67,11 @@ import type {
 } from "@/types/quiz";
 
 export const Route = createFileRoute("/_authenticated/admin")({
+  beforeLoad: ({ context }) => {
+    if (context.user.role !== "admin") {
+      throw redirect({ to: "/" });
+    }
+  },
   head: () => ({
     meta: [
       { title: "Admin dashboard - Quitech" },
@@ -104,6 +111,26 @@ const difficultyOrder: Difficulty[] = ["Easy", "Medium", "Hard"];
 
 function formatNumber(value: number): string {
   return value.toLocaleString();
+}
+function formatBytes(value: number): string {
+  if (value < 1024) return `${value} B`;
+  const units = ["KB", "MB", "GB", "TB"];
+  let amount = value;
+  let unitIndex = -1;
+  while (amount >= 1024 && unitIndex < units.length - 1) {
+    amount /= 1024;
+    unitIndex += 1;
+  }
+  return `${amount.toFixed(amount >= 10 ? 0 : 1)} ${units[unitIndex]}`;
+}
+
+function formatUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86400);
+  const hours = Math.floor((seconds % 86400) / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (days) return `${days}d ${hours}h`;
+  if (hours) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
 }
 
 function percent(value: number, total: number): number {
@@ -224,6 +251,12 @@ function AdminPage() {
     queryKey: ["admin", "health"],
     queryFn: () => getHealth(),
     enabled: isAdmin,
+  });
+  const systemMetricsQuery = useQuery({
+    queryKey: ["admin", "system-metrics"],
+    queryFn: () => getAdminSystemMetrics(),
+    enabled: isAdmin,
+    refetchInterval: 30_000,
   });
   const appUpdateQuery = useQuery({
     queryKey: ["admin", "app-update"],
@@ -474,6 +507,7 @@ function AdminPage() {
     levelsQuery.dataUpdatedAt,
     leaderboardQuery.dataUpdatedAt,
     healthQuery.dataUpdatedAt,
+    systemMetricsQuery.dataUpdatedAt,
   );
   const refreshedLabel = refreshedAt ? new Date(refreshedAt).toLocaleString() : "Waiting for data";
 
@@ -520,6 +554,7 @@ function AdminPage() {
         usersQuery.isLoading ||
         certificatesQuery.isLoading ||
         healthQuery.isLoading ||
+        systemMetricsQuery.isLoading ||
         appUpdateQuery.isLoading ||
         feedbackQuery.isLoading));
   const hasLoadError =
@@ -530,8 +565,10 @@ function AdminPage() {
     usersQuery.isError ||
     certificatesQuery.isError ||
     healthQuery.isError ||
+    systemMetricsQuery.isError ||
     appUpdateQuery.isError;
   const apiHealthy = healthQuery.data?.status === "ok";
+  const systemMetrics: AdminSystemMetrics | null = systemMetricsQuery.data ?? null;
   const accountContact =
     account?.email ?? account?.phoneE164 ?? account?.displayName ?? "Signed-in admin";
   const systemStatus = [
@@ -654,6 +691,7 @@ function AdminPage() {
                 void auditQuery.refetch();
                 void leaderboardQuery.refetch();
                 void usersQuery.refetch();
+                void systemMetricsQuery.refetch();
               }}
               className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
             >
@@ -687,6 +725,54 @@ function AdminPage() {
             <StatusCard key={status.label} {...status} />
           ))}
         </div>
+
+        <section className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <h2 className="text-base font-semibold text-card-foreground">System telemetry</h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Runtime and database measurements from the API server. Refreshes every 30 seconds.
+              </p>
+            </div>
+            {systemMetrics && (
+              <p className="text-xs text-muted-foreground">
+                Collected {new Date(systemMetrics.collectedAt).toLocaleTimeString()}
+              </p>
+            )}
+          </div>
+          {systemMetrics ? (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+              <MetricCard
+                icon={Gauge}
+                label="Process CPU"
+                value={`${systemMetrics.host.processCpuPercent.toFixed(1)}%`}
+                detail={`${systemMetrics.host.cpuCores} CPU cores${systemMetrics.host.loadAverage1m === null ? "" : `, load ${systemMetrics.host.loadAverage1m.toFixed(2)}`}`}
+              />
+              <MetricCard
+                icon={Activity}
+                label="Database speed"
+                value={`${systemMetrics.database.latencyMs.toFixed(0)} ms`}
+                detail={`${systemMetrics.database.poolIdle}/${systemMetrics.database.poolTotal} connections idle`}
+              />
+              <MetricCard
+                icon={Database}
+                label="Database storage"
+                value={formatBytes(systemMetrics.database.sizeBytes)}
+                detail={`${systemMetrics.database.poolWaiting} connection requests waiting`}
+              />
+              <MetricCard
+                icon={Server}
+                label="Memory / uptime"
+                value={formatBytes(systemMetrics.host.processRssBytes)}
+                detail={`${formatUptime(systemMetrics.host.uptimeSeconds)} uptime, ${formatBytes(systemMetrics.host.memoryFreeBytes)} host memory free`}
+              />
+            </div>
+          ) : (
+            <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+              System telemetry is unavailable. Check the API and database connection.
+            </p>
+          )}
+        </section>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard

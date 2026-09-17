@@ -36,6 +36,7 @@ import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-l
 import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
 import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
 import { Route as ApiAdminFeedbackRouteImport } from './routes/api/admin/feedback'
+import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
@@ -191,6 +192,11 @@ const ApiAdminFeedbackRoute = ApiAdminFeedbackRouteImport.update({
   path: '/api/admin/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminSystemRoute = ApiAdminSystemRouteImport.update({
+  id: '/api/admin/system',
+  path: '/api/admin/system',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   id: '/api/admin/users',
   path: '/api/admin/users',
@@ -323,6 +329,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -371,6 +378,7 @@ export interface FileRoutesByTo {
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -421,6 +429,7 @@ export interface FileRoutesById {
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
@@ -471,6 +480,7 @@ export interface FileRouteTypes {
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
     | '/api/admin/feedback'
+    | '/api/admin/system'
     | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -519,6 +529,7 @@ export interface FileRouteTypes {
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
     | '/api/admin/feedback'
+    | '/api/admin/system'
     | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -568,6 +579,7 @@ export interface FileRouteTypes {
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
     | '/api/admin/feedback'
+    | '/api/admin/system'
     | '/api/admin/users'
     | '/api/auth/login'
     | '/api/auth/logout'
@@ -616,6 +628,7 @@ export interface RootRouteChildren {
   ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
   ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRouteWithChildren
   ApiAdminFeedbackRoute: typeof ApiAdminFeedbackRouteWithChildren
+  ApiAdminSystemRoute: typeof ApiAdminSystemRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
@@ -816,6 +829,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/feedback'
       fullPath: '/api/admin/feedback'
       preLoaderRoute: typeof ApiAdminFeedbackRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/system': {
+      id: '/api/admin/system'
+      path: '/api/admin/system'
+      fullPath: '/api/admin/system'
+      preLoaderRoute: typeof ApiAdminSystemRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/users': {
@@ -1100,6 +1120,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
   ApiAdminCertificatesRoute: ApiAdminCertificatesRouteWithChildren,
   ApiAdminFeedbackRoute: ApiAdminFeedbackRouteWithChildren,
+  ApiAdminSystemRoute: ApiAdminSystemRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,

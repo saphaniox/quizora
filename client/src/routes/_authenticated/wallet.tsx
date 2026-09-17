@@ -150,6 +150,11 @@ function WalletPage() {
     setSavingPassword(true);
     try {
       await changeCurrentPassword(currentPassword, newPassword);
+      if (user) {
+        const updatedUser = { ...user, mustChangePassword: false };
+        setUser(updatedUser);
+        queryClient.setQueryData(["auth", "me"], { user: updatedUser });
+      }
       setCurrentPassword("");
       setNewPassword("");
       toast.success("Password changed", { description: "Your account is ready to use." });

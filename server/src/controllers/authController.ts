@@ -1,3 +1,5 @@
+import os from "node:os";
+import { performance } from "node:perf_hooks";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
 import * as certificateModel from "../models/certificateModel.js";
@@ -13,6 +15,7 @@ import {
   readSessionToken,
   setSessionCookie,
 } from "../sessionCookie.js";
+import { pool } from "../db.js";
 
 const optionalEmail = z.preprocess(
   (value) =>
@@ -123,6 +126,22 @@ async function requireAdmin(
   return user;
 }
 
+function roundMetric(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+async function processCpuPercent(): Promise<number> {
+  const startedAt = performance.now();
+  const startedUsage = process.cpuUsage();
+  await new Promise((resolve) => setTimeout(resolve, 100));
+  const elapsedMilliseconds = performance.now() - startedAt;
+  const usage = process.cpuUsage(startedUsage);
+  const cpuMilliseconds = (usage.user + usage.system) / 1000;
+  return roundMetric(
+    (cpuMilliseconds / (elapsedMilliseconds * Math.max(os.cpus().length, 1))) * 100,
+  );
+}
+
 export async function register(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -178,6 +197,48 @@ export async function me(
 ): Promise<void> {
   const user = await auth.getUser(readSessionToken(request));
   reply.send({ user });
+}
+
+export async function getAdminSystemMetrics(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const databaseStartedAt = performance.now();
+  const [databaseResult, cpuPercent] = await Promise.all([
+    pool.query<{ bytes: string }>(
+      "SELECT pg_database_size(current_database())::text AS bytes",
+    ),
+    processCpuPercent(),
+  ]);
+  const databaseLatencyMs = roundMetric(performance.now() - databaseStartedAt);
+  const databaseBytes = Number(databaseResult.rows[0]?.bytes ?? 0);
+  const memory = process.memoryUsage();
+
+  reply.header("cache-control", "no-store").send({
+    collectedAt: new Date().toISOString(),
+    host: {
+      platform: process.platform,
+      nodeVersion: process.version,
+      uptimeSeconds: Math.round(process.uptime()),
+      cpuCores: os.cpus().length,
+      processCpuPercent: cpuPercent,
+      loadAverage1m: process.platform === "win32" ? null : roundMetric(os.loadavg()[0] ?? 0),
+      memoryTotalBytes: os.totalmem(),
+      memoryFreeBytes: os.freemem(),
+      processRssBytes: memory.rss,
+      processHeapUsedBytes: memory.heapUsed,
+    },
+    database: {
+      latencyMs: databaseLatencyMs,
+      sizeBytes: databaseBytes,
+      poolTotal: pool.totalCount,
+      poolIdle: pool.idleCount,
+      poolWaiting: pool.waitingCount,
+    },
+  });
 }
 
 export async function updateMe(

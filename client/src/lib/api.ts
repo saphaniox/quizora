@@ -24,6 +24,28 @@ export interface HealthStatus {
   status: string;
   service: string;
 }
+export interface AdminSystemMetrics {
+  collectedAt: string;
+  host: {
+    platform: string;
+    nodeVersion: string;
+    uptimeSeconds: number;
+    cpuCores: number;
+    processCpuPercent: number;
+    loadAverage1m: number | null;
+    memoryTotalBytes: number;
+    memoryFreeBytes: number;
+    processRssBytes: number;
+    processHeapUsedBytes: number;
+  };
+  database: {
+    latencyMs: number;
+    sizeBytes: number;
+    poolTotal: number;
+    poolIdle: number;
+    poolWaiting: number;
+  };
+}
 
 export interface AccountProgress extends SavedProgress {
   version: number;
@@ -252,6 +274,9 @@ export async function getCertificate(code: string): Promise<{ certificate: Certi
 
 export async function getHealth(): Promise<HealthStatus> {
   return fetchJson<HealthStatus>("/health");
+}
+export async function getAdminSystemMetrics(): Promise<AdminSystemMetrics> {
+  return fetchJson<AdminSystemMetrics>("/admin/system");
 }
 
 export async function getAppUpdateSettings(): Promise<{ settings: AppUpdateSettings }> {

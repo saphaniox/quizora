@@ -18,6 +18,7 @@ const endpoints = [
   "/api/admin/catalogue/:sectionId",
   "/api/admin/catalogue/:sectionId/publish",
   "/api/admin/audit-log",
+  "/api/admin/system",
   "/api/admin/leaderboard/:id",
 ] as const;
 

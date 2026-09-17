@@ -10,7 +10,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "android:sync": "npm run build && node scripts/prepare-capacitor.mjs && cap sync android",
-    "android:apk": "npm run android:sync && node scripts/android-build.mjs assembleDebug",
+    "android:apk": "npm run android:sync && node scripts/android-build.mjs assembleRelease",
     "android:aab": "npm run android:sync && node scripts/android-build.mjs bundleRelease",
     "lint": "eslint .",
     "format": "prettier --write ."
