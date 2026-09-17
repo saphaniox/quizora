@@ -3,9 +3,10 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Trophy } from "lucide-react";
 import { getLeaderboard, getLevels } from "@/lib/api";
+import { CountrySelect } from "@/components/CountrySelect";
 import { LeaderboardTable } from "@/components/LeaderboardTable";
 import { cn } from "@/lib/utils";
-import { COUNTRIES } from "@/lib/countries";
+import type { CountryDialCode } from "@/lib/countries";
 
 export const Route = createFileRoute("/leaderboard")({
   head: () => ({
@@ -29,12 +30,16 @@ export const Route = createFileRoute("/leaderboard")({
 
 function LeaderboardPage() {
   const [levelId, setLevelId] = useState<string>("");
-  const [countryCode, setCountryCode] = useState<string>("");
+  const [country, setCountry] = useState<CountryDialCode | null>(null);
 
   const { data: levelsData } = useQuery({ queryKey: ["levels"], queryFn: () => getLevels() });
   const { data, isLoading } = useQuery({
-    queryKey: ["leaderboard", "all", levelId || "any", countryCode || "any"],
-    queryFn: () => getLeaderboard({ levelId: levelId || undefined, countryCode: countryCode || undefined }),
+    queryKey: ["leaderboard", "all", levelId || "any", country?.iso || "any"],
+    queryFn: () =>
+      getLeaderboard({
+        levelId: levelId || undefined,
+        countryCode: country?.iso,
+      }),
   });
 
   const entries = useMemo(() => data?.leaderboard ?? [], [data]);
@@ -47,8 +52,8 @@ function LeaderboardPage() {
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Leaderboard</h1>
       </div>
       <p className="mt-2 text-sm text-muted-foreground">
-        Everyone's best score is shown first. Ties go to the fastest completion time. Choose a
-        level or country to narrow the list.
+        Everyone's best score is shown first. Ties go to the fastest completion time. Choose a level
+        or country to narrow the list.
       </p>
 
       <div className="mt-6 flex gap-2 overflow-x-auto pb-1 sm:flex-wrap sm:overflow-visible sm:pb-0">
@@ -66,7 +71,7 @@ function LeaderboardPage() {
         </button>
         {levels.map((level) => (
           <button
-              type="button"
+            type="button"
             key={level.id}
             onClick={() => setLevelId(level.id)}
             className={cn(
@@ -81,22 +86,14 @@ function LeaderboardPage() {
         ))}
       </div>
       <div className="mt-4 max-w-xs">
-        <label htmlFor="leaderboard-country" className="block text-sm font-medium text-foreground">
-          Show scores from
-        </label>
-        <select
+        <CountrySelect
           id="leaderboard-country"
-          value={countryCode}
-          onChange={(event) => setCountryCode(event.target.value)}
-          className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm text-foreground"
-        >
-          <option value="">All countries</option>
-          {COUNTRIES.map((country) => (
-            <option key={country.iso} value={country.iso}>
-              {country.name}
-            </option>
-          ))}
-        </select>
+          label="Show scores from"
+          value={country}
+          onChange={setCountry}
+          placeholder="All countries"
+          allowEmpty
+        />
       </div>
 
       <div className="mt-8">

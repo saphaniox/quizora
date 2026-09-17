@@ -37,6 +37,8 @@ export interface AdminSystemMetrics {
     memoryFreeBytes: number;
     processRssBytes: number;
     processHeapUsedBytes: number;
+    diskTotalBytes: number | null;
+    diskFreeBytes: number | null;
   };
   database: {
     latencyMs: number;
@@ -45,6 +47,30 @@ export interface AdminSystemMetrics {
     poolIdle: number;
     poolWaiting: number;
   };
+  api: {
+    requestCount: number;
+    errorCount: number;
+    averageLatencyMs: number;
+  };
+}
+
+export interface AdminAnalytics {
+  users: {
+    total: number;
+    newToday: number;
+    newLast7Days: number;
+    newLast30Days: number;
+    activeNow: number;
+  };
+  activity: {
+    totalAttempts: number;
+    attemptsLast7Days: number;
+    certificatesIssued: number;
+    averageScore: number;
+    averageTimeSeconds: number;
+  };
+  countries: Array<{ countryCode: string; countryName: string; attempts: number }>;
+  topQuizzes: Array<{ quizId: string; quizTitle: string; attempts: number; averageScore: number }>;
 }
 
 export interface AccountProgress extends SavedProgress {
@@ -278,6 +304,13 @@ export async function getHealth(): Promise<HealthStatus> {
 export async function getAdminSystemMetrics(): Promise<AdminSystemMetrics> {
   return fetchJson<AdminSystemMetrics>("/admin/system");
 }
+export async function getAdminAnalytics(filters?: { from?: string; to?: string }): Promise<AdminAnalytics> {
+  const params = new URLSearchParams();
+  if (filters?.from) params.set("from", filters.from);
+  if (filters?.to) params.set("to", filters.to);
+  const query = params.toString();
+  return fetchJson<AdminAnalytics>(`/admin/analytics${query ? `?${query}` : ""}`);
+}
 
 export async function getAppUpdateSettings(): Promise<{ settings: AppUpdateSettings }> {
   return fetchJson<{ settings: AppUpdateSettings }>("/app-update");
@@ -425,9 +458,15 @@ export async function getAdminAuditLog(): Promise<{ auditLog: AdminAuditEntry[] 
   return fetchJson<{ auditLog: AdminAuditEntry[] }>("/admin/audit-log");
 }
 
-export async function getAdminUsers(search?: string): Promise<{ users: AdminUser[] }> {
-  const query = search?.trim() ? `?search=${encodeURIComponent(search.trim())}` : "";
-  return fetchJson<{ users: AdminUser[] }>(`/admin/users${query}`);
+export async function getAdminUsers(
+  search?: string,
+  offset = 0,
+): Promise<{ users: AdminUser[]; total: number }> {
+  const params = new URLSearchParams();
+  if (search?.trim()) params.set("search", search.trim());
+  params.set("limit", "50");
+  params.set("offset", String(offset));
+  return fetchJson<{ users: AdminUser[]; total: number }>(`/admin/users?${params.toString()}`);
 }
 
 export async function deleteAdminUser(userId: string): Promise<void> {

@@ -3,9 +3,18 @@ import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import routes from "./routes/index.js";
 import { closeDatabase, checkDatabase } from "./db.js";
+import { recordRequest, startRequestTimer } from "./runtimeMetrics.js";
 
 export async function createApp() {
   const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 100_000 });
+  const requestStartTimes = new WeakMap<object, bigint>();
+  app.addHook("onRequest", async (request) => {
+    requestStartTimes.set(request, startRequestTimer());
+  });
+  app.addHook("onResponse", async (request, reply) => {
+    const startedAt = requestStartTimes.get(request);
+    if (startedAt) recordRequest(startedAt, reply.statusCode);
+  });
   const defaultProductionOrigins = [
     "https://quitech.com",
     "https://www.quitech.com",

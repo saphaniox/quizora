@@ -14,11 +14,13 @@ const endpoints = [
   "/api/auth/me",
   "/api/auth/me/activity",
   "/api/auth/me/progress/:quizId",
+  "/api/app-update",
   "/api/admin/catalogue",
   "/api/admin/catalogue/:sectionId",
   "/api/admin/catalogue/:sectionId/publish",
   "/api/admin/audit-log",
   "/api/admin/system",
+  "/api/admin/analytics",
   "/api/admin/leaderboard/:id",
 ] as const;
 

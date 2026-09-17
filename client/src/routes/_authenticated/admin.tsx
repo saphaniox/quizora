@@ -7,7 +7,9 @@ import {
   BarChart3,
   BookOpen,
   CheckCircle2,
+  Clock,
   Database,
+  Download,
   Eye,
   EyeOff,
   FileQuestion,
@@ -42,6 +44,7 @@ import {
   getAdminUsers,
   getAdminCertificates,
   getAdminSystemMetrics,
+    getAdminAnalytics,
   getLeaderboard,
   getLevels,
   getAppUpdateSettings,
@@ -55,6 +58,7 @@ import {
   type FeedbackStatus,
   type AdminUser,
   type AdminSystemMetrics,
+  type AdminAnalytics,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type {
@@ -111,6 +115,16 @@ const difficultyOrder: Difficulty[] = ["Easy", "Medium", "Hard"];
 
 function formatNumber(value: number): string {
   return value.toLocaleString();
+}
+
+function downloadJson(filename: string, value: unknown): void {
+  const link = document.createElement("a");
+  link.href = URL.createObjectURL(
+    new Blob([JSON.stringify(value, null, 2)], { type: "application/json" }),
+  );
+  link.download = filename;
+  link.click();
+  URL.revokeObjectURL(link.href);
 }
 function formatBytes(value: number): string {
   if (value < 1024) return `${value} B`;
@@ -188,6 +202,7 @@ function AdminPage() {
   const [editingUserName, setEditingUserName] = useState("");
   const [temporaryPassword, setTemporaryPassword] = useState<{ userId: string; value: string } | null>(null);
   const [userQuery, setUserQuery] = useState("");
+  const [userOffset, setUserOffset] = useState(0);
   const [confirmingCertificateCode, setConfirmingCertificateCode] = useState<string | null>(null);
   const [editingSectionId, setEditingSectionId] = useState<string | null>(null);
   const [catalogueDraft, setCatalogueDraft] = useState<CatalogueDraftForm | null>(null);
@@ -212,6 +227,8 @@ function AdminPage() {
     message: string;
   } | null>(null);
   const [feedbackFilter, setFeedbackFilter] = useState<FeedbackStatus | "all">("all");
+  const [analyticsFrom, setAnalyticsFrom] = useState("");
+  const [analyticsTo, setAnalyticsTo] = useState("");
 
   const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
   const account = accountQuery.data?.user ?? null;
@@ -238,8 +255,8 @@ function AdminPage() {
     enabled: isAdmin,
   });
   const usersQuery = useQuery({
-    queryKey: ["admin", "users", userQuery],
-    queryFn: () => getAdminUsers(userQuery),
+    queryKey: ["admin", "users", userQuery, userOffset],
+    queryFn: () => getAdminUsers(userQuery, userOffset),
     enabled: isAdmin,
   });
   const certificatesQuery = useQuery({
@@ -257,6 +274,12 @@ function AdminPage() {
     queryFn: () => getAdminSystemMetrics(),
     enabled: isAdmin,
     refetchInterval: 30_000,
+  });
+  const analyticsQuery = useQuery({
+    queryKey: ["admin", "analytics", analyticsFrom, analyticsTo],
+    queryFn: () => getAdminAnalytics({ from: analyticsFrom || undefined, to: analyticsTo || undefined }),
+    enabled: isAdmin,
+    refetchInterval: 60_000,
   });
   const appUpdateQuery = useQuery({
     queryKey: ["admin", "app-update"],
@@ -508,6 +531,7 @@ function AdminPage() {
     leaderboardQuery.dataUpdatedAt,
     healthQuery.dataUpdatedAt,
     systemMetricsQuery.dataUpdatedAt,
+    analyticsQuery.dataUpdatedAt,
   );
   const refreshedLabel = refreshedAt ? new Date(refreshedAt).toLocaleString() : "Waiting for data";
 
@@ -555,6 +579,7 @@ function AdminPage() {
         certificatesQuery.isLoading ||
         healthQuery.isLoading ||
         systemMetricsQuery.isLoading ||
+        analyticsQuery.isLoading ||
         appUpdateQuery.isLoading ||
         feedbackQuery.isLoading));
   const hasLoadError =
@@ -566,7 +591,21 @@ function AdminPage() {
     certificatesQuery.isError ||
     healthQuery.isError ||
     systemMetricsQuery.isError ||
+    analyticsQuery.isError ||
     appUpdateQuery.isError;
+  const failedDataSources = [
+    levelsQuery.isError ? "levels" : null,
+    catalogueQuery.isError ? "catalogue" : null,
+    auditQuery.isError ? "audit log" : null,
+    leaderboardQuery.isError ? "leaderboard" : null,
+    usersQuery.isError ? "users" : null,
+    certificatesQuery.isError ? "certificates" : null,
+    healthQuery.isError ? "API health" : null,
+    systemMetricsQuery.isError ? "system telemetry" : null,
+    analyticsQuery.isError ? "analytics" : null,
+    appUpdateQuery.isError ? "app update settings" : null,
+    feedbackQuery.isError ? "feedback" : null,
+  ].filter((source): source is string => source !== null);
   const apiHealthy = healthQuery.data?.status === "ok";
   const systemMetrics: AdminSystemMetrics | null = systemMetricsQuery.data ?? null;
   const accountContact =
@@ -691,12 +730,34 @@ function AdminPage() {
                 void auditQuery.refetch();
                 void leaderboardQuery.refetch();
                 void usersQuery.refetch();
+                void certificatesQuery.refetch();
+                void appUpdateQuery.refetch();
                 void systemMetricsQuery.refetch();
+                void analyticsQuery.refetch();
+                void feedbackQuery.refetch();
               }}
               className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
             >
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
               Refresh
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                downloadJson(`quitech-admin-export-${new Date().toISOString().slice(0, 10)}.json`, {
+                  exportedAt: new Date().toISOString(),
+                  analytics: analyticsQuery.data ?? null,
+                  users: usersQuery.data?.users ?? [],
+                  certificates: certificatesQuery.data?.certificates ?? [],
+                  leaderboard,
+                  feedback: feedbackQuery.data?.feedback ?? [],
+                  auditLog,
+                });
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground hover:bg-accent sm:py-2"
+            >
+              <Download className="h-4 w-4" />
+              Export CSV
             </button>
           </div>
         </div>
@@ -712,8 +773,8 @@ function AdminPage() {
                   We couldn't load part of the dashboard.
                 </p>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Please try refreshing. If the problem continues, check that the API and database
-                  are online.
+                  Failed sections: {failedDataSources.join(", ")}. Try refreshing. If the problem
+                  continues, check that the API and database are online.
                 </p>
               </div>
             </div>
@@ -766,6 +827,18 @@ function AdminPage() {
                 value={formatBytes(systemMetrics.host.processRssBytes)}
                 detail={`${formatUptime(systemMetrics.host.uptimeSeconds)} uptime, ${formatBytes(systemMetrics.host.memoryFreeBytes)} host memory free`}
               />
+              <MetricCard
+                icon={Database}
+                label="Disk space"
+                value={systemMetrics.host.diskFreeBytes === null ? "Unavailable" : formatBytes(systemMetrics.host.diskFreeBytes)}
+                detail={systemMetrics.host.diskTotalBytes === null ? "Host disk metrics unavailable" : `${formatBytes(systemMetrics.host.diskTotalBytes)} total capacity`}
+              />
+              <MetricCard
+                icon={Activity}
+                label="API performance"
+                value={`${systemMetrics.api.averageLatencyMs.toFixed(0)} ms`}
+                detail={`${formatNumber(systemMetrics.api.requestCount)} requests, ${formatNumber(systemMetrics.api.errorCount)} server errors`}
+              />
             </div>
           ) : (
             <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
@@ -801,6 +874,113 @@ function AdminPage() {
           />
         </div>
 
+        {analyticsQuery.data && (
+          <section className="mt-6 rounded-lg border border-border bg-card p-5 shadow-sm">
+            <div className="flex items-center gap-2">
+              <BarChart3 className="h-5 w-5 text-primary" />
+              <h2 className="text-base font-semibold text-card-foreground">Platform analytics</h2>
+            </div>
+            <div className="mt-3 flex flex-wrap items-end gap-2">
+              <label className="text-xs font-medium text-muted-foreground">
+                From
+                <input
+                  type="date"
+                  value={analyticsFrom}
+                  onChange={(event) => setAnalyticsFrom(event.target.value)}
+                  className="mt-1 block rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                />
+              </label>
+              <label className="text-xs font-medium text-muted-foreground">
+                To
+                <input
+                  type="date"
+                  value={analyticsTo}
+                  onChange={(event) => setAnalyticsTo(event.target.value)}
+                  className="mt-1 block rounded-md border border-input bg-background px-2 py-1.5 text-sm text-foreground"
+                />
+              </label>
+              {(analyticsFrom || analyticsTo) && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAnalyticsFrom("");
+                    setAnalyticsTo("");
+                  }}
+                  className="rounded-md border border-input px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent"
+                >
+                  Clear dates
+                </button>
+              )}
+            </div>
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+              <MetricCard
+                icon={UsersRound}
+                label="Registered users"
+                value={formatNumber(analyticsQuery.data.users.total)}
+                detail={`${formatNumber(analyticsQuery.data.users.activeNow)} active sessions now`}
+              />
+              <MetricCard
+                icon={UserRoundCheck}
+                label="New users"
+                value={formatNumber(analyticsQuery.data.users.newLast30Days)}
+                detail={`${formatNumber(analyticsQuery.data.users.newToday)} today, ${formatNumber(analyticsQuery.data.users.newLast7Days)} this week`}
+              />
+              <MetricCard
+                icon={Activity}
+                label="Quiz attempts"
+                value={formatNumber(analyticsQuery.data.activity.totalAttempts)}
+                detail={`${formatNumber(analyticsQuery.data.activity.attemptsLast7Days)} in the last 7 days`}
+              />
+              <MetricCard
+                icon={Trophy}
+                label="Certificates"
+                value={formatNumber(analyticsQuery.data.activity.certificatesIssued)}
+                detail={`${analyticsQuery.data.activity.averageScore}% average score`}
+              />
+              <MetricCard
+                icon={Clock}
+                label="Average completion"
+                value={formatUptime(analyticsQuery.data.activity.averageTimeSeconds)}
+                detail="Average time per recorded attempt"
+              />
+            </div>
+            <div className="mt-5 grid gap-5 lg:grid-cols-2">
+              <div>
+                <h3 className="text-sm font-semibold text-card-foreground">Top countries</h3>
+                <div className="mt-3 space-y-2">
+                  {analyticsQuery.data.countries.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No country data yet.</p>
+                  ) : (
+                    analyticsQuery.data.countries.map((country) => (
+                      <div key={country.countryCode} className="flex justify-between gap-3 text-sm">
+                        <span className="text-muted-foreground">{country.countryName}</span>
+                        <span className="font-medium text-foreground">{formatNumber(country.attempts)}</span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+              <div>
+                <h3 className="text-sm font-semibold text-card-foreground">Most attempted quizzes</h3>
+                <div className="mt-3 space-y-2">
+                  {analyticsQuery.data.topQuizzes.length === 0 ? (
+                    <p className="text-sm text-muted-foreground">No quiz attempts yet.</p>
+                  ) : (
+                    analyticsQuery.data.topQuizzes.map((quiz) => (
+                      <div key={quiz.quizId} className="flex justify-between gap-3 text-sm">
+                        <span className="line-clamp-1 text-muted-foreground">{quiz.quizTitle}</span>
+                        <span className="shrink-0 font-medium text-foreground">
+                          {formatNumber(quiz.attempts)} / {quiz.averageScore}%
+                        </span>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            </div>
+          </section>
+        )}
+
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <section className="rounded-lg border border-border bg-card">
             <div className="border-b border-border p-5">
@@ -814,7 +994,18 @@ function AdminPage() {
               </div>
             </div>
             <div className="p-5">
-              {appUpdateDraft && (
+              {appUpdateQuery.isLoading && (
+                <p className="rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
+                  Loading app update settings...
+                </p>
+              )}
+              {appUpdateQuery.isError && (
+                <p className="rounded-md border border-destructive/25 bg-destructive/10 p-4 text-sm text-destructive">
+                  App update settings could not be loaded. Check that the app-update API route and
+                  database migration are deployed.
+                </p>
+              )}
+              {appUpdateDraft && !appUpdateQuery.isError && (
                 <div className="space-y-4">
                   <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
                     <div>
@@ -1424,11 +1615,35 @@ function AdminPage() {
               <input
                 type="search"
                 value={userQuery}
-                onChange={(event) => setUserQuery(event.target.value)}
+                onChange={(event) => {
+                  setUserQuery(event.target.value);
+                  setUserOffset(0);
+                }}
                 placeholder="Search users"
                 className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </label>
+            <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground sm:self-end">
+                <button
+                  type="button"
+                  onClick={() => setUserOffset((offset) => Math.max(0, offset - 50))}
+                  disabled={userOffset === 0 || usersQuery.isFetching}
+                  className="rounded-md border border-input px-2 py-1 disabled:opacity-50"
+                >
+                  Previous
+                </button>
+                <span>
+                  {userOffset + 1}-{Math.min(userOffset + 50, usersQuery.data?.total ?? 0)} of {usersQuery.data?.total ?? 0}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setUserOffset((offset) => offset + 50)}
+                  disabled={userOffset + 50 >= (usersQuery.data?.total ?? 0) || usersQuery.isFetching}
+                  className="rounded-md border border-input px-2 py-1 disabled:opacity-50"
+                >
+                  Next
+                </button>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-200 text-left text-sm">

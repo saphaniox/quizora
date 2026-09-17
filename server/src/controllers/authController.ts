@@ -1,4 +1,5 @@
 import os from "node:os";
+import { statfs } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
@@ -10,6 +11,9 @@ import * as auth from "../services/authService.js";
 import type { User } from "../services/authService.js";
 import * as adminDataModel from "../models/adminDataModel.js";
 import * as appUpdateModel from "../models/appUpdateModel.js";
+import * as adminAnalyticsModel from "../models/adminAnalyticsModel.js";
+import * as adminAuditModel from "../models/adminAuditModel.js";
+import { getRuntimeMetrics } from "../runtimeMetrics.js";
 import {
   clearSessionCookie,
   readSessionToken,
@@ -142,6 +146,18 @@ async function processCpuPercent(): Promise<number> {
   );
 }
 
+async function diskMetrics(): Promise<{ totalBytes: number; freeBytes: number } | null> {
+  try {
+    const stats = await statfs(process.cwd());
+    return {
+      totalBytes: Number(stats.blocks) * Number(stats.bsize),
+      freeBytes: Number(stats.bavail) * Number(stats.bsize),
+    };
+  } catch {
+    return null;
+  }
+}
+
 export async function register(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -207,11 +223,12 @@ export async function getAdminSystemMetrics(
   if (!admin) return;
 
   const databaseStartedAt = performance.now();
-  const [databaseResult, cpuPercent] = await Promise.all([
+  const [databaseResult, cpuPercent, disk] = await Promise.all([
     pool.query<{ bytes: string }>(
       "SELECT pg_database_size(current_database())::text AS bytes",
     ),
     processCpuPercent(),
+    diskMetrics(),
   ]);
   const databaseLatencyMs = roundMetric(performance.now() - databaseStartedAt);
   const databaseBytes = Number(databaseResult.rows[0]?.bytes ?? 0);
@@ -230,6 +247,8 @@ export async function getAdminSystemMetrics(
       memoryFreeBytes: os.freemem(),
       processRssBytes: memory.rss,
       processHeapUsedBytes: memory.heapUsed,
+      diskTotalBytes: disk?.totalBytes ?? null,
+      diskFreeBytes: disk?.freeBytes ?? null,
     },
     database: {
       latencyMs: databaseLatencyMs,
@@ -238,7 +257,20 @@ export async function getAdminSystemMetrics(
       poolIdle: pool.idleCount,
       poolWaiting: pool.waitingCount,
     },
+    api: getRuntimeMetrics(),
   });
+}
+
+export async function getAdminAnalytics(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const query = request.query as { from?: string; to?: string };
+  reply.header("cache-control", "no-store").send(
+    await adminAnalyticsModel.getAnalytics({ from: query.from, to: query.to }),
+  );
 }
 
 export async function updateMe(
@@ -413,6 +445,7 @@ export async function deleteLeaderboardEntry(
     reply.code(404).send({ error: "Leaderboard record not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "leaderboard.deleted", "leaderboard", id);
 
   reply.send({ ok: true });
 }
@@ -427,9 +460,7 @@ export async function listAdminUsers(
   const query = request.query as { search?: string; limit?: string; offset?: string };
   const limit = Math.min(Math.max(Number(query.limit) || 50, 1), 100);
   const offset = Math.max(Number(query.offset) || 0, 0);
-  reply.send({
-    users: await adminDataModel.listUsers(query.search ?? "", limit, offset),
-  });
+  reply.send(await adminDataModel.listUsers(query.search ?? "", limit, offset));
 }
 
 export async function deleteAdminUser(
@@ -455,6 +486,7 @@ export async function deleteAdminUser(
     reply.code(404).send({ error: "User not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "user.deleted", "user", userId);
   reply.header("cache-control", "no-store").send({ ok: true });
 }
 
@@ -474,6 +506,9 @@ export async function updateAdminUser(
     reply.code(404).send({ error: "User not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "user.display_name_updated", "user", userId, {
+    displayName: parsed.data.displayName,
+  });
   reply.send({ ok: true });
 }
 
@@ -493,6 +528,7 @@ export async function resetAdminUserPassword(
     reply.code(404).send({ error: "User not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "user.password_reset", "user", userId);
   reply.send({ temporaryPassword });
 }
 
@@ -516,6 +552,9 @@ export async function updateAdminUserRole(
     reply.code(404).send({ error: "User not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "user.role_updated", "user", userId, {
+    role: parsed.data.role,
+  });
   reply.send({ ok: true });
 }
 
@@ -544,6 +583,7 @@ export async function deleteAdminCertificate(
     reply.code(404).send({ error: "Certificate not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "certificate.revoked", "certificate", code.toUpperCase());
   reply.header("cache-control", "no-store").send({ ok: true });
 }
 
@@ -594,6 +634,12 @@ export async function saveAppUpdateSettings(
     storeUrl: parsed.data.storeUrl?.trim() || null,
     message: parsed.data.message,
     updatedBy: admin.id,
+  });
+  await adminAuditModel.record(admin.id, "app_update.settings_saved", "app_update", "settings", {
+    enabled: settings.enabled,
+    minimumVersion: settings.minimumVersion,
+    latestVersion: settings.latestVersion,
+    required: settings.required,
   });
 
   reply.send({ settings });

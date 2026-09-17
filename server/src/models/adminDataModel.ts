@@ -23,8 +23,13 @@ export interface AdminCertificate {
   issuedAt: string;
 }
 
-export async function listUsers(search = "", limit = 50, offset = 0): Promise<AdminUser[]> {
-  const result = await pool.query<AdminUser>(
+export async function listUsers(
+  search = "",
+  limit = 50,
+  offset = 0,
+): Promise<{ users: AdminUser[]; total: number }> {
+  const [result, countResult] = await Promise.all([
+    pool.query<AdminUser>(
     `SELECT u.id,
             u.email,
             u.phone_e164 AS "phoneE164",
@@ -43,9 +48,15 @@ export async function listUsers(search = "", limit = 50, offset = 0): Promise<Ad
      WHERE ($1::text = '' OR u.display_name ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%' OR u.phone_e164 ILIKE '%' || $1 || '%')
      ORDER BY u.created_at DESC
      LIMIT $2 OFFSET $3`,
-    [search.trim(), limit, offset],
-  );
-  return result.rows;
+      [search.trim(), limit, offset],
+    ),
+    pool.query<{ count: string }>(
+      `SELECT COUNT(*)::text AS count FROM users u
+       WHERE ($1::text = '' OR u.display_name ILIKE '%' || $1 || '%' OR u.email ILIKE '%' || $1 || '%' OR u.phone_e164 ILIKE '%' || $1 || '%')`,
+      [search.trim()],
+    ),
+  ]);
+  return { users: result.rows, total: Number(countResult.rows[0]?.count ?? 0) };
 }
 
 export async function deleteUserData(userId: string): Promise<boolean> {

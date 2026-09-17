@@ -24,6 +24,7 @@ import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as ApiIndexRouteImport } from './routes/api.index'
+import { Route as ApiAppUpdateRouteImport } from './routes/api/app-update'
 import { Route as ApiFeedbackRouteImport } from './routes/api/feedback'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLeaderboardRouteImport } from './routes/api/leaderboard'
@@ -32,6 +33,7 @@ import { Route as ApiSubmitRouteImport } from './routes/api/submit'
 import { Route as CertificateIndexRouteImport } from './routes/certificate.index'
 import { Route as CertificateCodeRouteImport } from './routes/certificate.$code'
 import { Route as QuizzesIdRouteImport } from './routes/quizzes.$id'
+import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-log'
 import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
 import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
@@ -132,6 +134,11 @@ const ApiIndexRoute = ApiIndexRouteImport.update({
   path: '/api/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAppUpdateRoute = ApiAppUpdateRouteImport.update({
+  id: '/api/app-update',
+  path: '/api/app-update',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiFeedbackRoute = ApiFeedbackRouteImport.update({
   id: '/api/feedback',
   path: '/api/feedback',
@@ -170,6 +177,11 @@ const CertificateCodeRoute = CertificateCodeRouteImport.update({
 const QuizzesIdRoute = QuizzesIdRouteImport.update({
   id: '/quizzes/$id',
   path: '/quizzes/$id',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminAnalyticsRoute = ApiAdminAnalyticsRouteImport.update({
+  id: '/api/admin/analytics',
+  path: '/api/admin/analytics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminAuditLogRoute = ApiAdminAuditLogRouteImport.update({
@@ -316,6 +328,7 @@ export interface FileRoutesByFullPath {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/api/app-update': typeof ApiAppUpdateRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
@@ -325,6 +338,7 @@ export interface FileRoutesByFullPath {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
@@ -365,6 +379,7 @@ export interface FileRoutesByTo {
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
+  '/api/app-update': typeof ApiAppUpdateRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
@@ -374,6 +389,7 @@ export interface FileRoutesByTo {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api': typeof ApiIndexRoute
   '/certificate': typeof CertificateIndexRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
@@ -416,6 +432,7 @@ export interface FileRoutesById {
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
+  '/api/app-update': typeof ApiAppUpdateRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
@@ -425,6 +442,7 @@ export interface FileRoutesById {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
+  '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
@@ -467,6 +485,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/wallet'
+    | '/api/app-update'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
@@ -476,6 +495,7 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
+    | '/api/admin/analytics'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
@@ -516,6 +536,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/admin'
     | '/wallet'
+    | '/api/app-update'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
@@ -525,6 +546,7 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api'
     | '/certificate'
+    | '/api/admin/analytics'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
@@ -566,6 +588,7 @@ export interface FileRouteTypes {
     | '/terms'
     | '/_authenticated/admin'
     | '/_authenticated/wallet'
+    | '/api/app-update'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
@@ -575,6 +598,7 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
+    | '/api/admin/analytics'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
@@ -615,6 +639,7 @@ export interface RootRouteChildren {
   ResultsRoute: typeof ResultsRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
+  ApiAppUpdateRoute: typeof ApiAppUpdateRoute
   ApiFeedbackRoute: typeof ApiFeedbackRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiLeaderboardRoute: typeof ApiLeaderboardRoute
@@ -624,6 +649,7 @@ export interface RootRouteChildren {
   QuizzesIdRoute: typeof QuizzesIdRoute
   ApiIndexRoute: typeof ApiIndexRoute
   CertificateIndexRoute: typeof CertificateIndexRoute
+  ApiAdminAnalyticsRoute: typeof ApiAdminAnalyticsRoute
   ApiAdminAuditLogRoute: typeof ApiAdminAuditLogRoute
   ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
   ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRouteWithChildren
@@ -747,6 +773,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiIndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/app-update': {
+      id: '/api/app-update'
+      path: '/api/app-update'
+      fullPath: '/api/app-update'
+      preLoaderRoute: typeof ApiAppUpdateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/feedback': {
       id: '/api/feedback'
       path: '/api/feedback'
@@ -801,6 +834,13 @@ declare module '@tanstack/react-router' {
       path: '/quizzes/$id'
       fullPath: '/quizzes/$id'
       preLoaderRoute: typeof QuizzesIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/analytics': {
+      id: '/api/admin/analytics'
+      path: '/api/admin/analytics'
+      fullPath: '/api/admin/analytics'
+      preLoaderRoute: typeof ApiAdminAnalyticsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/audit-log': {
@@ -1107,6 +1147,7 @@ const rootRouteChildren: RootRouteChildren = {
   ResultsRoute: ResultsRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
+  ApiAppUpdateRoute: ApiAppUpdateRoute,
   ApiFeedbackRoute: ApiFeedbackRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiLeaderboardRoute: ApiLeaderboardRoute,
@@ -1116,6 +1157,7 @@ const rootRouteChildren: RootRouteChildren = {
   QuizzesIdRoute: QuizzesIdRoute,
   ApiIndexRoute: ApiIndexRoute,
   CertificateIndexRoute: CertificateIndexRoute,
+  ApiAdminAnalyticsRoute: ApiAdminAnalyticsRoute,
   ApiAdminAuditLogRoute: ApiAdminAuditLogRoute,
   ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
   ApiAdminCertificatesRoute: ApiAdminCertificatesRouteWithChildren,

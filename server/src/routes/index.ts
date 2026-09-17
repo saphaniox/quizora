@@ -51,6 +51,7 @@ const routes: FastifyPluginAsync = async (app) => {
   app.post("/auth/login", { preHandler: authRateLimit }, authController.login);
   app.get("/auth/me", authController.me);
   app.get("/admin/system", authController.getAdminSystemMetrics);
+  app.get("/admin/analytics", authController.getAdminAnalytics);
   app.patch("/auth/me", authController.updateMe);
   app.post("/auth/me/password", authController.changePassword);
   app.get("/auth/me/activity", authController.activity);

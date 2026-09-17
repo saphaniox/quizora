@@ -3,6 +3,7 @@ import { z } from "zod";
 import * as auth from "../services/authService.js";
 import { readSessionToken } from "../sessionCookie.js";
 import * as feedbackModel from "../models/feedbackModel.js";
+import * as adminAuditModel from "../models/adminAuditModel.js";
 
 const feedbackRequests = new Map<string, number[]>();
 const FEEDBACK_WINDOW_MS = 60_000;
@@ -66,7 +67,8 @@ export async function listFeedback(request: FastifyRequest, reply: FastifyReply)
 }
 
 export async function updateFeedbackStatus(request: FastifyRequest, reply: FastifyReply): Promise<void> {
-  if (!(await requireAdmin(request, reply))) return;
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
   const parsed = statusSchema.safeParse(request.body);
   const id = (request.params as { id?: string }).id?.trim();
   if (!id || !parsed.success) {
@@ -78,5 +80,8 @@ export async function updateFeedbackStatus(request: FastifyRequest, reply: Fasti
     reply.code(404).send({ error: "Feedback not found" });
     return;
   }
+  await adminAuditModel.record(admin.id, "feedback.status_updated", "feedback", id, {
+    status: parsed.data.status,
+  });
   reply.send({ feedback });
 }
