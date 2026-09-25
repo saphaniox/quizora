@@ -1,13 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import {
-  Download,
-  HeartHandshake,
-  LifeBuoy,
-  MessageCircle,
-  Music2,
-  Radio,
-  ShieldCheck,
-} from "lucide-react";
+import { Download, HeartHandshake, LifeBuoy, Music2, ShieldCheck } from "lucide-react";
+import { FaWhatsapp } from "react-icons/fa6";
 import { androidAppUrl } from "@/lib/share-links";
 
 const links = [
@@ -75,7 +68,7 @@ export function Footer() {
             rel="noreferrer"
             className="inline-flex items-center justify-center gap-2 rounded-md bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition-colors hover:bg-emerald-700 lg:justify-start"
           >
-            <MessageCircle className="h-4 w-4" />
+            <FaWhatsapp className="h-4 w-4" aria-hidden="true" />
             WhatsApp Support
           </a>
           <a
@@ -95,7 +88,7 @@ export function Footer() {
             className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent lg:justify-start"
             aria-label="Follow the SAPTech Uganda WhatsApp channel"
           >
-            <Radio className="h-4 w-4" />
+            <FaWhatsapp className="h-4 w-4" aria-hidden="true" />
             Follow our WhatsApp channel
           </a>
         </nav>
