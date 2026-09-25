@@ -9,6 +9,7 @@ const PROGRESS_PREFIX = "quitech-progress-";
 const API_CACHE_PREFIX = "quitech-api-cache-";
 const CERTS_KEY = "quitech-certificates";
 const BOOKMARKS_KEY = "quitech-bookmarked-quizzes";
+const PENDING_SUBMISSIONS_KEY = "quitech-pending-submissions";
 
 export interface PlayerCountry {
   iso: string;
@@ -30,6 +31,8 @@ export interface StoredAttempt {
   levelName: string;
   countryCode?: string | null;
   countryName?: string | null;
+  visitorId?: string | null;
+  leaderboardVisible?: boolean;
   timeLimitSeconds: number;
   playerName: string;
   answers: Record<string, number>;
@@ -37,6 +40,22 @@ export interface StoredAttempt {
   result: AnswerResult;
   questions: StoredQuestion[];
   completedAt: string;
+}
+
+export interface PendingSubmission {
+  id: string;
+  payload: {
+    quizId: string;
+    playerName: string;
+    visitorId?: string | null;
+    countryCode?: string | null;
+    countryName?: string | null;
+    showOnLeaderboard?: boolean;
+    questionIds?: string[];
+    answers: Record<string, number>;
+    timeSpentSeconds: number;
+  };
+  attempt: Omit<StoredAttempt, "result">;
 }
 
 export interface HistoryItem {
@@ -48,6 +67,7 @@ export interface HistoryItem {
   percentage: number;
   countryCode?: string | null;
   countryName?: string | null;
+  visitorId?: string | null;
   timeSpentSeconds: number;
   completedAt: string;
   certificateCode?: string;
@@ -82,10 +102,7 @@ export function saveApiCache(path: string, value: unknown): void {
 }
 
 export function loadApiCache<T>(path: string): T | null {
-  const cached = read<{ value?: T } | null>(
-    `${API_CACHE_PREFIX}${encodeURIComponent(path)}`,
-    null,
-  );
+  const cached = read<{ value?: T } | null>(`${API_CACHE_PREFIX}${encodeURIComponent(path)}`, null);
   return cached?.value ?? null;
 }
 
@@ -103,8 +120,10 @@ export function saveAttempt(attempt: StoredAttempt): void {
     ...(attempt.countryCode && attempt.countryName
       ? { countryCode: attempt.countryCode, countryName: attempt.countryName }
       : {}),
+    visitorId: attempt.visitorId ?? null,
     timeSpentSeconds: attempt.timeSpentSeconds,
     completedAt: attempt.completedAt,
+    leaderboardVisible: attempt.result.leaderboardVisible !== false,
     ...(attempt.result.certificate ? { certificateCode: attempt.result.certificate.code } : {}),
   });
   if (attempt.result.certificate) saveCertificate(attempt.result.certificate);
@@ -131,6 +150,41 @@ export function loadHistory(): HistoryItem[] {
 
 export function clearHistory(): void {
   if (browser()) localStorage.removeItem(HISTORY_KEY);
+}
+
+export function clearAllLocalData(): void {
+  if (!browser()) return;
+  localStorage.removeItem(ATTEMPT_KEY);
+  localStorage.removeItem(HISTORY_KEY);
+  localStorage.removeItem(PROFILE_KEY);
+  localStorage.removeItem(COUNTRY_KEY);
+  localStorage.removeItem(VISITOR_KEY);
+  localStorage.removeItem(CERTS_KEY);
+  localStorage.removeItem(BOOKMARKS_KEY);
+  localStorage.removeItem(PENDING_SUBMISSIONS_KEY);
+  for (let index = localStorage.length - 1; index >= 0; index -= 1) {
+    const key = localStorage.key(index);
+    if (key?.startsWith(PROGRESS_PREFIX) || key?.startsWith(API_CACHE_PREFIX)) {
+      localStorage.removeItem(key);
+    }
+  }
+}
+
+export function queuePendingSubmission(submission: PendingSubmission): void {
+  const pending = read<PendingSubmission[]>(PENDING_SUBMISSIONS_KEY, []);
+  write(
+    PENDING_SUBMISSIONS_KEY,
+    [...pending.filter((item) => item.id !== submission.id), submission].slice(-10),
+  );
+}
+
+export function loadPendingSubmissions(): PendingSubmission[] {
+  return read<PendingSubmission[]>(PENDING_SUBMISSIONS_KEY, []);
+}
+
+export function removePendingSubmission(id: string): void {
+  const pending = loadPendingSubmissions().filter((item) => item.id !== id);
+  write(PENDING_SUBMISSIONS_KEY, pending);
 }
 
 /* ---------- player profile ---------- */

@@ -20,6 +20,7 @@ import {
   loadProgress,
   loadPlayerCountry,
   loadPlayerName,
+  queuePendingSubmission,
   saveAttempt,
   isBookmarked,
   toggleBookmark,
@@ -28,6 +29,8 @@ import {
   saveProgress,
   type PlayerCountry,
   type SavedProgress,
+  type PendingSubmission,
+  type StoredAttempt,
 } from "@/lib/attempt-store";
 import { findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
@@ -44,8 +47,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/quizzes/$id")({
-  ssr: false,
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
       { title: "Take a quiz - Quitech" },
       {
@@ -58,8 +60,11 @@ export const Route = createFileRoute("/quizzes/$id")({
         content: "Timed multiple-choice quiz with instant scoring and explanations.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: `https://quitech.online/quizzes/${params.id}` },
+      { property: "og:image", content: "https://quitech.online/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: `https://quitech.online/quizzes/${params.id}` }],
   }),
   component: QuizPage,
 });
@@ -100,6 +105,10 @@ function progressSaveKey(progress: SavedProgress): string {
     progress.flagged.join(","),
     answerKey,
   ].join("|");
+}
+
+function isRetryableSubmissionFailure(failure: unknown): boolean {
+  return failure instanceof TypeError || /fetch|network|offline/i.test(String(failure));
 }
 
 function QuizPage() {
@@ -165,17 +174,40 @@ function QuizPage() {
     setSubmitting(true);
     setSubmitError(null);
     const timeSpentSeconds = Math.max(1, Math.round((Date.now() - startedAt.current) / 1000));
+    const submissionPayload = {
+      quizId: quiz.id,
+      playerName,
+      visitorId: getVisitorId(),
+      countryCode: attemptCountry?.iso ?? null,
+      countryName: attemptCountry?.name ?? null,
+      questionIds: questions.map((question) => question.id),
+      answers,
+      timeSpentSeconds,
+    };
+    const pendingAttempt: Omit<StoredAttempt, "result"> = {
+      visitorId: submissionPayload.visitorId,
+      visitorId: submissionPayload.visitorId,
+      quizId: quiz.id,
+      quizTitle: quiz.title,
+      quizDescription: quiz.description,
+      quizCategory: quiz.category,
+      quizDifficulty: quiz.difficulty,
+      levelName: quiz.levelName,
+      countryCode: attemptCountry?.iso ?? null,
+      countryName: attemptCountry?.name ?? null,
+      timeLimitSeconds: quiz.timeLimitSeconds,
+      playerName: playerName.trim() || "Anonymous",
+      answers,
+      timeSpentSeconds,
+      questions: questions.map((question) => ({
+        id: question.id,
+        text: question.text,
+        options: question.options,
+      })),
+      completedAt: new Date().toISOString(),
+    };
     try {
-      const { result } = await submitAnswers({
-        quizId: quiz.id,
-        playerName,
-        visitorId: getVisitorId(),
-        countryCode: attemptCountry?.iso ?? null,
-        countryName: attemptCountry?.name ?? null,
-        questionIds: questions.map((question) => question.id),
-        answers,
-        timeSpentSeconds,
-      });
+      const { result } = await submitAnswers(submissionPayload);
       const savedPlayerName = result.playerName || playerName.trim() || "Anonymous";
       saveAttempt({
         quizId: quiz.id,
@@ -206,6 +238,17 @@ function QuizPage() {
 
       void navigate({ to: "/results" });
     } catch (submitFailure) {
+      if (isRetryableSubmissionFailure(submitFailure)) {
+        const pending: PendingSubmission = {
+          id: `${quiz.id}-${pendingAttempt.completedAt}`,
+          payload: submissionPayload,
+          attempt: pendingAttempt,
+        };
+        queuePendingSubmission(pending);
+        toast.success("Your result is saved on this device", {
+          description: "We will send it when the connection is back.",
+        });
+      }
       const message =
         submitFailure instanceof Error ? submitFailure.message : "Could not submit quiz";
       setSubmitError(message);
@@ -226,6 +269,37 @@ function QuizPage() {
       toast.success("Thanks for flagging this question");
     } catch (failure) {
       toast.error("Could not send the report", {
+        description: failure instanceof Error ? failure.message : "Try again later.",
+      });
+    }
+  };
+
+  const saveCurrentProgress = useCallback(async () => {
+    if (!quiz) return;
+    const snapshot: SavedProgress = {
+      quizId: quiz.id,
+      mode,
+      seed,
+      answers,
+      flagged,
+      currentIndex: index,
+      elapsedSeconds: elapsed,
+      savedAt: new Date().toISOString(),
+    };
+    saveProgress(snapshot);
+    if (account?.id) await saveAccountProgress(snapshot);
+  }, [quiz, mode, seed, answers, flagged, index, elapsed, account?.id]);
+
+  const handleSaveAndLeave = async () => {
+    try {
+      await saveCurrentProgress();
+      toast.success("Progress saved successfully", {
+        description: "You can continue this quiz from My progress anytime.",
+      });
+      if (window.history.length > 1) window.history.back();
+      else void navigate({ to: "/" });
+    } catch (failure) {
+      toast.error("Could not save your progress", {
         description: failure instanceof Error ? failure.message : "Try again later.",
       });
     }
@@ -660,12 +734,7 @@ function QuizPage() {
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep practicing</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                if (window.history.length > 1) window.history.back();
-                else void navigate({ to: "/" });
-              }}
-            >
+            <AlertDialogAction onClick={() => void handleSaveAndLeave()}>
               Save and leave
             </AlertDialogAction>
           </AlertDialogFooter>

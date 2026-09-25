@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
-import { loadCertificates } from "@/lib/attempt-store";
+import { clearAllLocalData, loadCertificates } from "@/lib/attempt-store";
 import {
   deleteCurrentAccount,
   getCurrentUser,
@@ -26,6 +26,9 @@ import {
 } from "@/lib/api";
 import type { Certificate } from "@/types/quiz";
 import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
+import { Directory, Filesystem } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
@@ -63,6 +66,15 @@ function WalletPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+
+  const toBase64 = (value: string): string => {
+    const bytes = new TextEncoder().encode(value);
+    let binary = "";
+    for (let index = 0; index < bytes.length; index += 0x8000) {
+      binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+    }
+    return btoa(binary);
+  };
 
   useEffect(() => {
     const localCertificates = loadCertificates();
@@ -127,13 +139,30 @@ function WalletPage() {
         certificates,
         progress,
       };
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement("a");
-      link.href = url;
-      link.download = "quitech-account-data.json";
-      link.click();
-      URL.revokeObjectURL(url);
+      const json = JSON.stringify(payload, null, 2);
+      const filename = "quitech-account-data.json";
+      if (Capacitor.isNativePlatform()) {
+        const { uri } = await Filesystem.writeFile({
+          path: filename,
+          data: toBase64(json),
+          directory: Directory.Documents,
+          recursive: true,
+        });
+        await Share.share({
+          title: "Your Quitech account data",
+          text: "Here is your Quitech account data.",
+          url: uri,
+          dialogTitle: "Save or share your account data",
+        });
+      } else {
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.download = filename;
+        link.click();
+        URL.revokeObjectURL(url);
+      }
       toast.success("Your account data is ready");
     } catch (failure) {
       toast.error("Could not export your data", {
@@ -160,7 +189,8 @@ function WalletPage() {
       toast.success("Password changed", { description: "Your account is ready to use." });
     } catch (failure) {
       toast.error("Could not change your password", {
-        description: failure instanceof Error ? failure.message : "Check your current password and try again.",
+        description:
+          failure instanceof Error ? failure.message : "Check your current password and try again.",
       });
     } finally {
       setSavingPassword(false);
@@ -179,6 +209,7 @@ function WalletPage() {
     setDeleteMessage(null);
     try {
       await deleteCurrentAccount();
+      clearAllLocalData();
       setUser(null);
       queryClient.setQueryData(["auth", "me"], { user: null });
       setDeleteOpen(false);
@@ -260,7 +291,10 @@ function WalletPage() {
                 leaderboard records can be reviewed through privacy support.
               </p>
               <form onSubmit={(event) => void handleProfileSave(event)} className="mt-5 max-w-md">
-                <label htmlFor="wallet-display-name" className="block text-sm font-medium text-foreground">
+                <label
+                  htmlFor="wallet-display-name"
+                  className="block text-sm font-medium text-foreground"
+                >
                   Display name
                 </label>
                 <div className="mt-2 flex gap-2">
@@ -294,10 +328,16 @@ function WalletPage() {
               >
                 {exportingData ? "Getting your data ready..." : "Download a copy of my data"}
               </button>
-              <form onSubmit={(event) => void handlePasswordChange(event)} className="mt-5 max-w-md rounded-lg border border-border bg-secondary/30 p-4">
+              <form
+                onSubmit={(event) => void handlePasswordChange(event)}
+                className="mt-5 max-w-md rounded-lg border border-border bg-secondary/30 p-4"
+              >
                 <p className="text-sm font-semibold text-foreground">Change your password</p>
                 {user.mustChangePassword && (
-                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">Your administrator gave you a temporary password. Please choose your own before continuing.</p>
+                  <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
+                    Your administrator gave you a temporary password. Please choose your own before
+                    continuing.
+                  </p>
                 )}
                 <input
                   type="password"
@@ -317,40 +357,95 @@ function WalletPage() {
                   placeholder="New password (8+ characters)"
                   className="mt-2 w-full rounded-md border border-input bg-background px-3 py-2 text-sm"
                 />
-                <button type="submit" disabled={savingPassword || newPassword.length < 8} className="mt-3 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60">
+                <button
+                  type="submit"
+                  disabled={savingPassword || newPassword.length < 8}
+                  className="mt-3 rounded-md bg-primary px-3 py-2 text-sm font-medium text-primary-foreground disabled:opacity-60"
+                >
                   {savingPassword ? "Changing..." : "Change password"}
                 </button>
               </form>
             </div>
+          </div>
+        </section>
+      )}
 
-            <div className="flex w-full flex-col gap-2 sm:w-auto sm:min-w-48">
-              <button
-                type="button"
-                onClick={() => void handleSignOut()}
-                disabled={signingOut}
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
-              >
-                {signingOut ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <LogOut className="h-4 w-4" />
-                )}
-                Sign out
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setDeleteOpen((open) => !open);
-                  setDeleteError(null);
-                  setDeleteMessage(null);
-                  setConfirmation("");
-                }}
-                className="inline-flex items-center justify-center gap-2 rounded-md border border-destructive/30 bg-background px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
-              >
-                <Trash2 className="h-4 w-4" />
-                Delete account
-              </button>
-            </div>
+      {loadingUser && (
+        <div className="mt-8 flex items-center gap-2 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
+          <Loader2 className="h-4 w-4 animate-spin" />
+          Loading account details...
+        </div>
+      )}
+
+      {certificates.length === 0 ? (
+        <div className="mt-10 rounded-lg border border-dashed border-border p-8 text-center sm:p-10">
+          <Award className="mx-auto h-8 w-8 text-muted-foreground" />
+          <p className="mt-3 font-medium text-foreground">No certificates yet</p>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Complete a full section and score 80% or higher to earn your first one.
+          </p>
+          <Link
+            to="/"
+            className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+          >
+            Browse sections
+          </Link>
+        </div>
+      ) : (
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {certificates.map((certificate) => (
+            <Link
+              key={certificate.code}
+              to="/certificate/$code"
+              params={{ code: certificate.code }}
+              className="min-w-0 rounded-lg border border-border bg-card p-5 shadow-sm hover:border-primary/40"
+            >
+              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
+                {certificate.levelName}
+              </p>
+              <h2 className="mt-1 wrap-break-word font-semibold text-card-foreground">
+                {certificate.quizTitle}
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {certificate.category} - {certificate.percentage}% score
+              </p>
+              <p className="mt-4 break-all font-mono text-xs text-muted-foreground">
+                {certificate.code}
+              </p>
+            </Link>
+          ))}
+        </div>
+      )}
+
+      {user && (
+        <section className="mt-10 border-t border-border pt-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+            <button
+              type="button"
+              onClick={() => void handleSignOut()}
+              disabled={signingOut}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-4 py-2.5 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+            >
+              {signingOut ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <LogOut className="h-4 w-4" />
+              )}
+              Sign out
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                setDeleteOpen((open) => !open);
+                setDeleteError(null);
+                setDeleteMessage(null);
+                setConfirmation("");
+              }}
+              className="inline-flex items-center justify-center gap-2 rounded-md border border-destructive/30 bg-background px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete account
+            </button>
           </div>
 
           {deleteOpen && (
@@ -421,53 +516,6 @@ function WalletPage() {
             </p>
           )}
         </section>
-      )}
-
-      {loadingUser && (
-        <div className="mt-8 flex items-center gap-2 rounded-lg border border-border bg-card p-5 text-sm text-muted-foreground">
-          <Loader2 className="h-4 w-4 animate-spin" />
-          Loading account details...
-        </div>
-      )}
-
-      {certificates.length === 0 ? (
-        <div className="mt-10 rounded-lg border border-dashed border-border p-8 text-center sm:p-10">
-          <Award className="mx-auto h-8 w-8 text-muted-foreground" />
-          <p className="mt-3 font-medium text-foreground">No certificates yet</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Complete a full section and score 80% or higher to earn your first one.
-          </p>
-          <Link
-            to="/"
-            className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
-          >
-            Browse sections
-          </Link>
-        </div>
-      ) : (
-        <div className="mt-8 grid gap-4 sm:grid-cols-2">
-          {certificates.map((certificate) => (
-            <Link
-              key={certificate.code}
-              to="/certificate/$code"
-              params={{ code: certificate.code }}
-              className="min-w-0 rounded-lg border border-border bg-card p-5 shadow-sm hover:border-primary/40"
-            >
-              <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                {certificate.levelName}
-              </p>
-              <h2 className="mt-1 wrap-break-word font-semibold text-card-foreground">
-                {certificate.quizTitle}
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {certificate.category} - {certificate.percentage}% score
-              </p>
-              <p className="mt-4 break-all font-mono text-xs text-muted-foreground">
-                {certificate.code}
-              </p>
-            </Link>
-          ))}
-        </div>
       )}
     </div>
   );

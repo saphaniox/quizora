@@ -60,10 +60,19 @@ export function recordBestEntry(entry: LeaderboardEntry): BestEntryResult {
     levelName: entry.levelName,
     countryCode: entry.countryCode ?? null,
     countryName: entry.countryName ?? null,
+    leaderboardVisible: entry.leaderboardVisible ?? true,
   };
   entries[existingIndex] = displayUpdated;
   sortEntries();
   return { entry: displayUpdated, improved: false };
+}
+
+export function hideParticipantEntries(entry: LeaderboardEntry): void {
+  for (let index = entries.length - 1; index >= 0; index -= 1) {
+    const candidate = entries[index]!;
+    if (candidate.quizId !== entry.quizId) continue;
+    if (entry.visitorId && candidate.visitorId === entry.visitorId) entries.splice(index, 1);
+  }
 }
 
 export function addEntry(entry: LeaderboardEntry): LeaderboardEntry {

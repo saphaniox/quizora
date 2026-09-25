@@ -40,8 +40,11 @@ export const Route = createFileRoute("/")({
           "Timed quizzes, instant feedback, leaderboards, and verifiable certificates from the Quitech app.",
       },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: "https://quitech.online/" },
+      { property: "og:image", content: "https://quitech.online/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: "https://quitech.online/" }],
   }),
   component: HomePage,
 });

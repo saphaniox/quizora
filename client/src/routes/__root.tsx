@@ -25,9 +25,13 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { APP_VERSION, compareVersions, isUpdateRequired } from "@/lib/app-version";
-import { getAppUpdateSettings } from "@/lib/api";
+import { getAppUpdateSettings, submitAnswers } from "@/lib/api";
+import { loadPendingSubmissions, removePendingSubmission, saveAttempt } from "@/lib/attempt-store";
+import { toast } from "sonner";
+import { Capacitor } from "@capacitor/core";
+import { Browser } from "@capacitor/browser";
 
-const SITE_URL = "app://quitech";
+const SITE_URL = "https://quitech.online";
 
 function NotFoundComponent() {
   return (
@@ -103,6 +107,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { name: "application-name", content: "Quitech: Learn, Challenge & Progress" },
       { name: "author", content: "Quitech" },
+      { name: "robots", content: "index, follow, max-image-preview:large" },
+      { name: "referrer", content: "strict-origin-when-cross-origin" },
       { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
       { property: "og:description", content: "Learn, challenge & progress." },
       { property: "og:type", content: "website" },
@@ -110,6 +116,8 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:image", content: `${SITE_URL}/logo.png` },
       { property: "og:image:alt", content: "Quitech logo" },
       { property: "og:image:type", content: "image/png" },
+      { property: "og:image:width", content: "512" },
+      { property: "og:image:height", content: "512" },
       { property: "og:site_name", content: "Quitech" },
       { name: "twitter:card", content: "summary_large_image" },
       { name: "twitter:site", content: "@Quitech" },
@@ -128,6 +136,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "icon", href: "/logo.png", type: "image/png" },
       { rel: "apple-touch-icon", href: "/logo.png" },
       { rel: "mask-icon", href: "/logo.png" },
+      { rel: "manifest", href: "/site.webmanifest" },
     ],
   }),
   shellComponent: RootShell,
@@ -163,6 +172,31 @@ function RootComponent() {
 
   useEffect(() => {
     let active = true;
+    async function retryPendingSubmissions() {
+      let recovered = 0;
+      for (const pending of loadPendingSubmissions()) {
+        if (!active) return;
+        try {
+          const { result } = await submitAnswers(pending.payload);
+          saveAttempt({ ...pending.attempt, result });
+          removePendingSubmission(pending.id);
+          recovered += 1;
+        } catch {
+          break;
+        }
+      }
+      if (recovered > 0) {
+        toast.success(`${recovered} saved result${recovered === 1 ? "" : "s"} synced`);
+      }
+    }
+    void retryPendingSubmissions();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    let active = true;
 
     async function checkForAppUpdate() {
       try {
@@ -181,7 +215,8 @@ function RootComponent() {
         setUpdateDialog({
           required,
           message:
-            settings.message || "A new app update is available. Please update to continue using Quitech.",
+            settings.message ||
+            "A new app update is available. Please update to continue using Quitech.",
           storeUrl: settings.storeUrl,
           currentVersion,
           latestVersion,
@@ -200,7 +235,11 @@ function RootComponent() {
 
   const handleUpdate = () => {
     if (updateDialog?.storeUrl) {
-      window.open(updateDialog.storeUrl, "_blank", "noopener,noreferrer");
+      if (Capacitor.isNativePlatform()) {
+        void Browser.open({ url: updateDialog.storeUrl });
+      } else {
+        window.open(updateDialog.storeUrl, "_blank", "noopener,noreferrer");
+      }
       return;
     }
     window.location.reload();
@@ -218,7 +257,8 @@ function RootComponent() {
               {updateDialog?.message || "A newer version of Quitech is required before continuing."}
             </p>
             <p className="mt-4 text-xs text-muted-foreground">
-              Current: {updateDialog?.currentVersion ?? APP_VERSION} · Latest: {updateDialog?.latestVersion ?? APP_VERSION}
+              Current: {updateDialog?.currentVersion ?? APP_VERSION} · Latest:{" "}
+              {updateDialog?.latestVersion ?? APP_VERSION}
             </p>
             <button
               type="button"

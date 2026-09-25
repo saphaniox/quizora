@@ -62,13 +62,16 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
     visitorId,
     countryCode,
     countryName,
+    leaderboardVisible: payload.showOnLeaderboard !== false,
     score,
     maxScore,
     percentage,
     timeSpentSeconds: payload.timeSpentSeconds,
     completedAt: new Date().toISOString(),
   };
-  const leaderboardResult = leaderboardModel.recordBestEntry(entry);
+  const leaderboardVisible = payload.showOnLeaderboard !== false;
+  const leaderboardResult = leaderboardVisible ? leaderboardModel.recordBestEntry(entry) : null;
+  if (!leaderboardVisible) leaderboardModel.hideParticipantEntries(entry);
 
   const fullSection = graded.length === quiz.questions.length;
   const passed = percentage >= PASS_MARK;
@@ -109,10 +112,13 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
     correctAnswers,
     correctOptionIndices,
     explanations,
-    leaderboardRank: leaderboardModel.rankOf(leaderboardResult.entry.id, { quizId: quiz.id }),
-    totalEntries: leaderboardModel.count({ quizId: quiz.id }),
-    leaderboardImproved: leaderboardResult.improved,
-    leaderboardBestPercentage: leaderboardResult.entry.percentage,
+    leaderboardRank: leaderboardResult
+      ? leaderboardModel.rankOf(leaderboardResult.entry.id, { quizId: quiz.id })
+      : 0,
+    totalEntries: leaderboardResult ? leaderboardModel.count({ quizId: quiz.id }) : 0,
+    leaderboardImproved: leaderboardResult?.improved,
+    leaderboardBestPercentage: leaderboardResult?.entry.percentage,
+    leaderboardVisible,
     certificate,
     certificateMessage,
   };

@@ -1,13 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { Award, BadgeCheck, Download, Loader2, Printer, Share2 } from "lucide-react";
+import QRCode from "qrcode";
 import { getCertificate } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
+import { appLinksText, webAppUrl } from "@/lib/share-links";
 import type { Certificate } from "@/types/quiz";
 import { toast } from "sonner";
-
-const APP_URL = "app://quitech";
 
 /** Look the code up through the client-hosted API. */
 async function verify(code: string): Promise<{ certificate: Certificate }> {
@@ -15,8 +15,7 @@ async function verify(code: string): Promise<{ certificate: Certificate }> {
 }
 
 export const Route = createFileRoute("/certificate/$code")({
-  ssr: false,
-  head: () => ({
+  head: ({ params }) => ({
     meta: [
       { title: "Certificate of achievement - Quitech" },
       {
@@ -26,8 +25,11 @@ export const Route = createFileRoute("/certificate/$code")({
       { property: "og:title", content: "Certificate of achievement - Quitech" },
       { property: "og:description", content: "A verified Quitech certificate of achievement." },
       { property: "og:type", content: "website" },
+      { property: "og:url", content: `https://quitech.online/certificate/${params.code}` },
+      { property: "og:image", content: "https://quitech.online/logo.png" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    links: [{ rel: "canonical", href: `https://quitech.online/certificate/${params.code}` }],
   }),
   component: CertificatePage,
 });
@@ -36,11 +38,33 @@ function CertificatePage() {
   const { code } = Route.useParams();
   const [downloading, setDownloading] = useState(false);
   const [shareStatus, setShareStatus] = useState("");
+  const [qrCode, setQrCode] = useState<string | null>(null);
   const { data, isLoading, isError } = useQuery({
     queryKey: ["certificate", code],
     queryFn: () => verify(code),
     retry: false,
   });
+
+  const certificateUrl = data ? webAppUrl(`/certificate/${data.certificate.code}`) : null;
+
+  useEffect(() => {
+    if (!certificateUrl) {
+      setQrCode(null);
+      return;
+    }
+
+    let active = true;
+    void QRCode.toDataURL(certificateUrl, {
+      errorCorrectionLevel: "M",
+      margin: 1,
+      width: 180,
+    }).then((dataUrl) => {
+      if (active) setQrCode(dataUrl);
+    });
+    return () => {
+      active = false;
+    };
+  }, [certificateUrl]);
 
   if (isLoading) {
     return (
@@ -74,16 +98,13 @@ function CertificatePage() {
     month: "long",
     day: "numeric",
   }).format(new Date(certificate.issuedAt));
-  const certificateUrl =
-    typeof window === "undefined"
-      ? `/certificate/${certificate.code}`
-      : `${window.location.origin}/certificate/${certificate.code}`;
+  const verificationUrl = certificateUrl;
 
   const handleDownload = async () => {
     setDownloading(true);
     try {
       const { downloadCertificatePdf } = await import("@/lib/certificate-pdf");
-      await downloadCertificatePdf(certificate, certificateUrl);
+      await downloadCertificatePdf(certificate, verificationUrl);
       toast.success("Certificate downloaded");
     } catch (error) {
       toast.error("Could not download the certificate", {
@@ -96,11 +117,11 @@ function CertificatePage() {
 
   const handleShare = async () => {
     const title = `${certificate.playerName}'s Quitech certificate`;
-    const text = `${certificate.playerName} earned ${certificate.percentage}% in ${certificate.quizTitle} on Quitech.\n\nView the certificate: ${certificateUrl}\nTry Quitech yourself at ${APP_URL}`;
+    const text = `${certificate.playerName} earned ${certificate.percentage}% in ${certificate.quizTitle} on Quitech.\n\nView the certificate: ${verificationUrl}\n\n${appLinksText()}`;
 
     try {
       if (navigator.share) {
-        await navigator.share({ title, text, url: certificateUrl });
+        await navigator.share({ title, text, url: verificationUrl });
         return;
       }
 
@@ -219,13 +240,15 @@ function CertificatePage() {
               <p className="mt-2 text-sm font-semibold text-slate-900">Quitech Verification</p>
               <p className="text-xs text-slate-500">Digitally issued and publicly verifiable</p>
             </div>
-            <div className="sm:text-right">
-              <p className="text-xs font-medium uppercase text-slate-500">Verify Online</p>
-              <p className="mt-1 break-all text-sm font-semibold text-slate-900">
-                {certificateUrl}
+          </div>
+          {qrCode && (
+            <div className="mx-auto mt-8 flex w-fit flex-col items-center gap-2 rounded-md border border-slate-200 bg-white p-3 text-center">
+              <img src={qrCode} alt="Scan to verify this certificate" className="h-32 w-32" />
+              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+                Scan to verify
               </p>
             </div>
-          </div>
+          )}
         </div>
       </div>
 

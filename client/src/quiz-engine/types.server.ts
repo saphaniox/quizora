@@ -77,6 +77,7 @@ export interface LeaderboardEntry {
   quizTitle: string;
   levelName: string;
   visitorId?: string | null;
+  leaderboardVisible?: boolean;
   countryCode?: string | null;
   countryName?: string | null;
   score: number;
@@ -109,6 +110,7 @@ export interface AnswerPayload {
   visitorId?: string | null;
   countryCode?: string | null;
   countryName?: string | null;
+  showOnLeaderboard?: boolean;
   timeSpentSeconds: number;
 }
 
@@ -128,6 +130,7 @@ export interface AnswerResult {
   totalEntries: number;
   leaderboardImproved?: boolean;
   leaderboardBestPercentage?: number;
+  leaderboardVisible?: boolean;
   certificate: Certificate | null;
   certificateMessage: string;
 }

@@ -85,6 +85,7 @@ export interface Certificate {
   category: string;
   countryCode?: string | null;
   countryName?: string | null;
+  leaderboardVisible?: boolean;
   score: number;
   maxScore: number;
   percentage: number;
@@ -107,6 +108,7 @@ export interface AnswerResult {
   totalEntries: number;
   leaderboardImproved?: boolean;
   leaderboardBestPercentage?: number;
+  leaderboardVisible?: boolean;
   certificate?: Certificate | null;
   certificateMessage?: string;
 }

@@ -55,6 +55,7 @@ const routes: FastifyPluginAsync = async (app) => {
   app.patch("/auth/me", authController.updateMe);
   app.post("/auth/me/password", authController.changePassword);
   app.get("/auth/me/activity", authController.activity);
+  app.patch("/auth/me/leaderboard/:quizId", authController.setLeaderboardVisibility);
   app.get("/auth/me/progress", authController.listProgress);
   app.get("/auth/me/progress/:quizId", authController.getProgress);
   app.put("/auth/me/progress/:quizId", authController.saveProgress);

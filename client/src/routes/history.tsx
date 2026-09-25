@@ -10,9 +10,26 @@ import {
   type HistoryItem,
   type SavedProgress,
 } from "@/lib/attempt-store";
-import { getAccountProgressList, getMyActivity, getQuizzes } from "@/lib/api";
+import {
+  deleteAccountProgress,
+  getAccountProgressList,
+  getMyActivity,
+  getQuizzes,
+  setLeaderboardVisibility,
+} from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
 import type { Certificate, LeaderboardEntry } from "@/types/quiz";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 export const Route = createFileRoute("/history")({
   ssr: false,
@@ -42,6 +59,7 @@ function HistoryPage() {
   const [quizTitles, setQuizTitles] = useState<Record<string, string>>({});
   const [accountSynced, setAccountSynced] = useState(false);
   const [bookmarkedQuizIds, setBookmarkedQuizIds] = useState<string[]>([]);
+  const [progressToDrop, setProgressToDrop] = useState<string | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -79,7 +97,9 @@ function HistoryPage() {
           const local = merged.get(item.quizId);
           if (!local || item.savedAt > local.savedAt) merged.set(item.quizId, item);
         }
-        setProgress([...merged.values()].sort((left, right) => right.savedAt.localeCompare(left.savedAt)));
+        setProgress(
+          [...merged.values()].sort((left, right) => right.savedAt.localeCompare(left.savedAt)),
+        );
       })
       .catch(() => undefined);
 
@@ -100,6 +120,41 @@ function HistoryPage() {
     streak += 1;
     cursor.setUTCDate(cursor.getUTCDate() - 1);
   }
+
+  const dropProgress = async () => {
+    if (!progressToDrop) return;
+    const quizId = progressToDrop;
+    try {
+      if (accountSynced) await deleteAccountProgress(quizId);
+      clearProgress(quizId);
+      setProgress((current) => current.filter((item) => item.quizId !== quizId));
+      setProgressToDrop(null);
+      toast.success("Progress dropped");
+    } catch (failure) {
+      toast.error("Could not drop progress", {
+        description: failure instanceof Error ? failure.message : "Try again later.",
+      });
+    }
+  };
+
+  const updateLeaderboardVisibility = async (quizId: string, visible: boolean) => {
+    try {
+      const item = items.find((candidate) => candidate.quizId === quizId);
+      await setLeaderboardVisibility(quizId, visible, item?.visitorId);
+      setItems((current) =>
+        current.map((item) =>
+          item.quizId === quizId ? { ...item, leaderboardVisible: visible } : item,
+        ),
+      );
+      toast.success(
+        visible ? "Section shown on the leaderboard" : "Section hidden from the leaderboard",
+      );
+    } catch (failure) {
+      toast.error("Could not update leaderboard visibility", {
+        description: failure instanceof Error ? failure.message : "Try again later.",
+      });
+    }
+  };
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8 sm:px-6 sm:py-12 lg:px-8">
@@ -133,7 +188,12 @@ function HistoryPage() {
           <p className="mt-1 text-sm text-muted-foreground">Your saved quizzes are waiting here.</p>
           <div className="mt-3 flex flex-wrap gap-2">
             {bookmarkedQuizIds.map((quizId) => (
-              <Link key={quizId} to="/quizzes/$id" params={{ id: quizId }} className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:border-primary/50">
+              <Link
+                key={quizId}
+                to="/quizzes/$id"
+                params={{ id: quizId }}
+                className="rounded-md border border-border bg-background px-3 py-2 text-sm font-medium text-foreground hover:border-primary/50"
+              >
                 {quizTitles[quizId] ?? quizId}
               </Link>
             ))}
@@ -189,6 +249,7 @@ function HistoryPage() {
 
       {progress.length > 0 && (
         <section className="mt-4">
+          <h2 className="mb-3 text-lg font-semibold text-foreground">Saved progress</h2>
           <ul className="space-y-2">
             {progress.map((item) => (
               <li
@@ -200,7 +261,8 @@ function HistoryPage() {
                     {quizTitles[item.quizId] ?? "Unfinished quiz"}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {Object.keys(item.answers).length} answers saved - last opened {new Date(item.savedAt).toLocaleString()}
+                    {Object.keys(item.answers).length} answers saved - last opened{" "}
+                    {new Date(item.savedAt).toLocaleString()}
                   </p>
                 </div>
                 <Link
@@ -210,13 +272,20 @@ function HistoryPage() {
                 >
                   <Play className="h-4 w-4" /> Resume
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => setProgressToDrop(item.quizId)}
+                  className="inline-flex items-center justify-center gap-1.5 rounded-md border border-destructive/30 px-3 py-2 text-sm font-medium text-destructive hover:bg-destructive/10"
+                >
+                  <Trash2 className="h-4 w-4" /> Drop
+                </button>
               </li>
             ))}
           </ul>
         </section>
       )}
 
-      {attempts === 0 ? (
+      {attempts === 0 && progress.length === 0 ? (
         <div className="mt-4 rounded-lg border border-dashed border-border p-8 text-center sm:p-12">
           <p className="font-medium text-foreground">Nothing here yet</p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -237,7 +306,9 @@ function HistoryPage() {
               className="flex flex-col gap-3 rounded-lg border border-border bg-card px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
-                <p className="wrap-break-word text-sm font-medium text-foreground">{item.quizTitle}</p>
+                <p className="wrap-break-word text-sm font-medium text-foreground">
+                  {item.quizTitle}
+                </p>
                 <p className="text-xs text-muted-foreground">
                   {item.levelName} - {new Date(item.completedAt).toLocaleString()}
                 </p>
@@ -250,10 +321,41 @@ function HistoryPage() {
               <span className="tabular-nums text-sm font-semibold text-foreground">
                 {item.percentage}%
               </span>
+              {(accountSynced || item.visitorId) && (
+                <label className="inline-flex items-center gap-2 text-xs text-muted-foreground sm:ml-auto">
+                  <input
+                    type="checkbox"
+                    checked={item.leaderboardVisible !== false}
+                    onChange={(event) =>
+                      void updateLeaderboardVisibility(item.quizId, event.target.checked)
+                    }
+                    className="h-4 w-4 accent-primary"
+                  />
+                  Show on leaderboard
+                </label>
+              )}
             </li>
           ))}
         </ul>
       )}
+
+      <AlertDialog
+        open={progressToDrop !== null}
+        onOpenChange={(open) => !open && setProgressToDrop(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Drop saved progress?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This removes the saved quiz from My progress and cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Keep progress</AlertDialogCancel>
+            <AlertDialogAction onClick={() => void dropProgress()}>Drop progress</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
@@ -266,6 +368,8 @@ function historyFromEntry(entry: LeaderboardEntry): HistoryItem {
     score: entry.score,
     maxScore: entry.maxScore,
     percentage: entry.percentage,
+    leaderboardVisible: entry.leaderboardVisible !== false,
+    visitorId: entry.visitorId ?? null,
     ...(entry.countryCode && entry.countryName
       ? { countryCode: entry.countryCode, countryName: entry.countryName }
       : {}),

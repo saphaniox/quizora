@@ -1,5 +1,9 @@
 import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 import type { Certificate } from "@/types/quiz";
+import { Capacitor } from "@capacitor/core";
+import { Directory, Filesystem } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 
 type PdfColor = readonly [number, number, number];
 
@@ -145,6 +149,11 @@ export async function downloadCertificatePdf(
     day: "numeric",
   }).format(new Date(certificate.issuedAt));
   const [logo, watermark] = await Promise.all([logoDataUrl(128), logoDataUrl(512, 0.07)]);
+  const qrCode = await QRCode.toDataURL(verifyUrl, {
+    errorCorrectionLevel: "M",
+    margin: 1,
+    width: 160,
+  });
 
   doc.setFillColor(251, 252, 248);
   doc.rect(0, 0, width, height, "F");
@@ -258,7 +267,11 @@ export async function downloadCertificatePdf(
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.text("Quitech Verification", 82, height - 100);
   doc.text("Digitally issued and publicly verifiable", 82, height - 84);
-  doc.text(`Verify at ${verifyUrl}`, 82, height - 62);
+
+  doc.addImage(qrCode, "PNG", width - 170, height - 168, 86, 86);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.text("SCAN TO VERIFY", width - 127, height - 70, { align: "center" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(12);
@@ -269,5 +282,24 @@ export async function downloadCertificatePdf(
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.text("Credential ID", width - 82, height - 84, { align: "right" });
 
-  doc.save(`Quitech-certificate-${certificate.code}.pdf`);
+  const filename = `Quitech-certificate-${certificate.code}.pdf`;
+  if (!Capacitor.isNativePlatform()) {
+    doc.save(filename);
+    return;
+  }
+
+  const dataUri = doc.output("datauristring");
+  const base64 = dataUri.slice(dataUri.indexOf(",") + 1);
+  const { uri } = await Filesystem.writeFile({
+    path: filename,
+    data: base64,
+    directory: Directory.Documents,
+    recursive: true,
+  });
+  await Share.share({
+    title: "Your Quitech certificate",
+    text: "Here is your Quitech certificate.",
+    url: uri,
+    dialogTitle: "Save or share your certificate",
+  });
 }

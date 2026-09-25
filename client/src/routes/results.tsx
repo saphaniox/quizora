@@ -7,8 +7,7 @@ import { QuestionCard } from "@/components/QuestionCard";
 import { getLeaderboard } from "@/lib/api";
 import { loadAttempt, type StoredAttempt } from "@/lib/attempt-store";
 import { countryFlag } from "@/lib/countries";
-
-const APP_URL = "app://quitech";
+import { appLinksText, webAppUrl } from "@/lib/share-links";
 
 export const Route = createFileRoute("/results")({
   ssr: false,
@@ -63,12 +62,14 @@ function ResultsPage() {
   const certificate = result.certificate;
   const leaderboardBestPercentage = result.leaderboardBestPercentage ?? result.percentage;
   const leaderboardImproved = result.leaderboardImproved !== false;
+  const shareUrl = webAppUrl(`/quizzes/${attempt.quizId}`);
+  const certificateUrl = certificate ? webAppUrl(`/certificate/${certificate.code}`) : shareUrl;
 
   const share = async () => {
-    const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quitech!\n\nTry it yourself at ${APP_URL}`;
+    const text = `I scored ${result.percentage}% on ${attempt.quizTitle} (${attempt.levelName}) on Quitech!\n\n${certificate ? `View the certificate: ${certificateUrl}` : `Try it yourself: ${shareUrl}`}\n\n${appLinksText()}`;
     try {
       if (navigator.share)
-        await navigator.share({ title: "My Quitech result", text, url: APP_URL });
+        await navigator.share({ title: "My Quitech result", text, url: certificateUrl });
       else {
         await navigator.clipboard.writeText(text);
         setCopied(true);
@@ -96,9 +97,11 @@ function ResultsPage() {
               {attempt.timeSpentSeconds % 60}s.
             </p>
             <p className="mt-1 text-sm text-muted-foreground">
-              {leaderboardImproved
-                ? `Leaderboard best: rank #${result.leaderboardRank} of ${result.totalEntries} learners on this section.`
-                : `Your leaderboard best remains ${leaderboardBestPercentage}% at rank #${result.leaderboardRank} of ${result.totalEntries} learners.`}
+              {result.leaderboardVisible === false
+                ? "This result is private and was not added to the leaderboard."
+                : leaderboardImproved
+                  ? `Leaderboard best: rank #${result.leaderboardRank} of ${result.totalEntries} learners on this section.`
+                  : `Your leaderboard best remains ${leaderboardBestPercentage}% at rank #${result.leaderboardRank} of ${result.totalEntries} learners.`}
             </p>
             {attempt.countryName && (
               <p className="mt-1 text-sm text-muted-foreground">
@@ -132,7 +135,9 @@ function ResultsPage() {
           </Link>
         </div>
         <p className="mt-3 text-sm text-muted-foreground">
-          Only your highest score is used on the leaderboard; fastest time breaks ties.
+          {result.leaderboardVisible !== false
+            ? "Only your highest score is used on the leaderboard; fastest time breaks ties."
+            : "You can choose to share future quiz results on the leaderboard when you start a section."}
         </p>
       </div>
 

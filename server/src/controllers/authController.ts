@@ -287,6 +287,7 @@ export async function updateMe(
     reply.code(401).send({ error: "Sign in to update your profile" });
     return;
   }
+  await leaderboardModel.updateDisplayNameForUser(user.id, user.displayName);
   reply.send({ user });
 }
 
@@ -330,6 +331,30 @@ export async function activity(
     certificateModel.listByUser(user.id),
   ]);
   reply.send({ history, certificates });
+}
+
+export async function setLeaderboardVisibility(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await auth.getUser(readSessionToken(request));
+  const params = request.params as { quizId?: string };
+  const quizId = params.quizId?.trim();
+  const body = request.body as { visible?: unknown; visitorId?: unknown };
+  const visitorId = typeof body?.visitorId === "string" ? body.visitorId.trim() : "";
+  if (!quizId || typeof body?.visible !== "boolean") {
+    reply.code(400).send({ error: "Quiz id and visibility are required" });
+    return;
+  }
+  if (user) {
+    await leaderboardModel.setVisibilityForUser(user.id, quizId, body.visible);
+  } else if (/^[A-Za-z0-9:_-]{12,100}$/.test(visitorId)) {
+    await leaderboardModel.setVisibilityForVisitor(quizId, visitorId, body.visible);
+  } else {
+    reply.code(401).send({ error: "Sign in or provide a valid visitor id" });
+    return;
+  }
+  reply.send({ visible: body.visible });
 }
 
 export async function getProgress(

@@ -273,6 +273,7 @@ export async function submitAnswers(payload: {
   visitorId?: string | null;
   countryCode?: string | null;
   countryName?: string | null;
+  showOnLeaderboard?: boolean;
   questionIds?: string[];
   answers: Record<string, number>;
   timeSpentSeconds: number;
@@ -283,7 +284,11 @@ export async function submitAnswers(payload: {
   });
 }
 
-export async function getLeaderboard(filters?: { quizId?: string; levelId?: string; countryCode?: string }): Promise<{
+export async function getLeaderboard(filters?: {
+  quizId?: string;
+  levelId?: string;
+  countryCode?: string;
+}): Promise<{
   leaderboard: LeaderboardEntry[];
 }> {
   const params = new URLSearchParams();
@@ -304,7 +309,10 @@ export async function getHealth(): Promise<HealthStatus> {
 export async function getAdminSystemMetrics(): Promise<AdminSystemMetrics> {
   return fetchJson<AdminSystemMetrics>("/admin/system");
 }
-export async function getAdminAnalytics(filters?: { from?: string; to?: string }): Promise<AdminAnalytics> {
+export async function getAdminAnalytics(filters?: {
+  from?: string;
+  to?: string;
+}): Promise<AdminAnalytics> {
   const params = new URLSearchParams();
   if (filters?.from) params.set("from", filters.from);
   if (filters?.to) params.set("to", filters.to);
@@ -327,7 +335,9 @@ export async function createFeedback(payload: {
   });
 }
 
-export async function getAdminFeedback(status?: FeedbackStatus): Promise<{ feedback: FeedbackItem[] }> {
+export async function getAdminFeedback(
+  status?: FeedbackStatus,
+): Promise<{ feedback: FeedbackItem[] }> {
   const query = status ? `?status=${encodeURIComponent(status)}` : "";
   return fetchJson<{ feedback: FeedbackItem[] }>(`/admin/feedback${query}`);
 }
@@ -362,7 +372,10 @@ export async function updateCurrentUser(displayName: string): Promise<{ user: Ac
   });
 }
 
-export async function changeCurrentPassword(currentPassword: string, newPassword: string): Promise<void> {
+export async function changeCurrentPassword(
+  currentPassword: string,
+  newPassword: string,
+): Promise<void> {
   await fetchJson<{ ok: true }>("/auth/me/password", {
     method: "POST",
     body: JSON.stringify({ currentPassword, newPassword }),
@@ -376,6 +389,17 @@ export async function getMyActivity(): Promise<{
   return fetchJson<{ history: LeaderboardEntry[]; certificates: Certificate[] }>(
     "/auth/me/activity",
   );
+}
+
+export async function setLeaderboardVisibility(
+  quizId: string,
+  visible: boolean,
+  visitorId?: string | null,
+): Promise<{ visible: boolean }> {
+  return fetchJson<{ visible: boolean }>(`/auth/me/leaderboard/${encodeURIComponent(quizId)}`, {
+    method: "PATCH",
+    body: JSON.stringify({ visible, visitorId }),
+  });
 }
 
 export async function getAccountProgress(
@@ -482,10 +506,15 @@ export async function updateAdminUser(userId: string, displayName: string): Prom
   });
 }
 
-export async function resetAdminUserPassword(userId: string): Promise<{ temporaryPassword: string }> {
-  return fetchJson<{ temporaryPassword: string }>(`/admin/users/${encodeURIComponent(userId)}/reset-password`, {
-    method: "POST",
-  });
+export async function resetAdminUserPassword(
+  userId: string,
+): Promise<{ temporaryPassword: string }> {
+  return fetchJson<{ temporaryPassword: string }>(
+    `/admin/users/${encodeURIComponent(userId)}/reset-password`,
+    {
+      method: "POST",
+    },
+  );
 }
 
 export async function updateAdminUserRole(userId: string, role: "user" | "admin"): Promise<void> {

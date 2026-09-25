@@ -22,6 +22,7 @@ const publicColumns = `
   level_name AS "levelName",
   country_code AS "countryCode",
   country_name AS "countryName",
+  leaderboard_visible AS "leaderboardVisible",
   score,
   max_score AS "maxScore",
   percentage,
@@ -54,8 +55,8 @@ function isBetterEntry(next: LeaderboardEntry, current: LeaderboardEntry): boole
 
 async function insertEntry(entry: LeaderboardEntry): Promise<void> {
   await pool.query(
-    `INSERT INTO leaderboard (id, player_name, quiz_id, level_id, quiz_title, level_name, user_id, visitor_id, country_code, country_name, score, max_score, percentage, time_spent_seconds, completed_at)
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)`,
+    `INSERT INTO leaderboard (id, player_name, quiz_id, level_id, quiz_title, level_name, user_id, visitor_id, country_code, country_name, leaderboard_visible, score, max_score, percentage, time_spent_seconds, completed_at)
+     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)`,
     [
       entry.id,
       entry.playerName,
@@ -67,6 +68,7 @@ async function insertEntry(entry: LeaderboardEntry): Promise<void> {
       entry.visitorId ?? null,
       entry.countryCode ?? null,
       entry.countryName ?? null,
+      entry.leaderboardVisible ?? true,
       entry.score,
       entry.maxScore,
       entry.percentage,
@@ -107,16 +109,17 @@ async function findBestForParticipant(entry: LeaderboardEntry): Promise<Leaderbo
 async function updateScoreEntry(entry: LeaderboardEntry): Promise<void> {
   await pool.query(
     `UPDATE leaderboard
-     SET player_name = $2,
+    SET player_name = $2,
          quiz_title = $3,
          level_name = $4,
          country_code = $5,
          country_name = $6,
-         score = $7,
-         max_score = $8,
-         percentage = $9,
-         time_spent_seconds = $10,
-         completed_at = $11
+         leaderboard_visible = $7,
+         score = $8,
+         max_score = $9,
+         percentage = $10,
+         time_spent_seconds = $11,
+         completed_at = $12
      WHERE id = $1`,
     [
       entry.id,
@@ -125,6 +128,7 @@ async function updateScoreEntry(entry: LeaderboardEntry): Promise<void> {
       entry.levelName,
       entry.countryCode ?? null,
       entry.countryName ?? null,
+      entry.leaderboardVisible ?? true,
       entry.score,
       entry.maxScore,
       entry.percentage,
@@ -141,7 +145,8 @@ async function updateDisplayEntry(entry: LeaderboardEntry): Promise<void> {
          quiz_title = $3,
          level_name = $4,
          country_code = $5,
-         country_name = $6
+         country_name = $6,
+         leaderboard_visible = $7
      WHERE id = $1`,
     [
       entry.id,
@@ -150,6 +155,7 @@ async function updateDisplayEntry(entry: LeaderboardEntry): Promise<void> {
       entry.levelName,
       entry.countryCode ?? null,
       entry.countryName ?? null,
+      entry.leaderboardVisible ?? true,
     ],
   );
 }
@@ -174,9 +180,21 @@ export async function recordBestEntry(entry: LeaderboardEntry): Promise<BestEntr
     levelName: entry.levelName,
     countryCode: entry.countryCode ?? null,
     countryName: entry.countryName ?? null,
+    leaderboardVisible: entry.leaderboardVisible ?? true,
   };
   await updateDisplayEntry(displayUpdated);
   return { entry: displayUpdated, improved: false };
+}
+
+export async function hideParticipantEntries(entry: LeaderboardEntry): Promise<void> {
+  await pool.query(
+    `UPDATE leaderboard
+     SET leaderboard_visible = FALSE
+     WHERE quiz_id = $1
+       AND (($2::text IS NOT NULL AND user_id = $2)
+         OR ($2::text IS NULL AND $3::text IS NOT NULL AND user_id IS NULL AND visitor_id = $3))`,
+    [entry.quizId, entry.userId ?? null, entry.visitorId ?? null],
+  );
 }
 
 export async function rankOf(id: string, options: LeaderboardFilters = {}): Promise<number> {
@@ -186,6 +204,7 @@ export async function rankOf(id: string, options: LeaderboardFilters = {}): Prom
        FROM leaderboard
        WHERE ($1::text IS NULL OR quiz_id = $1)
          AND ($2::text IS NULL OR level_id = $2)
+         AND leaderboard_visible = TRUE
      ),
      best_entries AS (
        SELECT DISTINCT ON (quiz_id, participant_key) id, percentage, time_spent_seconds, completed_at
@@ -210,6 +229,7 @@ export async function list(options: LeaderboardFilters = {}): Promise<Leaderboar
        WHERE ($1::text IS NULL OR quiz_id = $1)
          AND ($2::text IS NULL OR level_id = $2)
          AND ($3::text IS NULL OR country_code = $3)
+         AND leaderboard_visible = TRUE
      ),
      best_entries AS (
        SELECT DISTINCT ON (quiz_id, participant_key) *
@@ -230,7 +250,7 @@ export async function listByUser(userId: string, limit = 100): Promise<Leaderboa
     `WITH filtered AS (
        SELECT *, ${participantKeySql} AS participant_key
        FROM leaderboard
-       WHERE user_id = $1
+      WHERE user_id = $1
      ),
      best_entries AS (
        SELECT DISTINCT ON (quiz_id, participant_key) *
@@ -246,6 +266,44 @@ export async function listByUser(userId: string, limit = 100): Promise<Leaderboa
   return result.rows;
 }
 
+export async function setVisibilityForUser(
+  userId: string,
+  quizId: string,
+  visible: boolean,
+): Promise<boolean> {
+  const result = await pool.query(
+    `UPDATE leaderboard
+     SET leaderboard_visible = $3
+     WHERE user_id = $1 AND quiz_id = $2`,
+    [userId, quizId, visible],
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function setVisibilityForVisitor(
+  quizId: string,
+  visitorId: string,
+  visible: boolean,
+): Promise<boolean> {
+  const result = await pool.query(
+    `UPDATE leaderboard
+     SET leaderboard_visible = $3
+     WHERE quiz_id = $1 AND user_id IS NULL AND visitor_id = $2`,
+    [quizId, visitorId, visible],
+  );
+  return (result.rowCount ?? 0) > 0;
+}
+
+export async function updateDisplayNameForUser(
+  userId: string,
+  playerName: string,
+): Promise<void> {
+  await pool.query(
+    `UPDATE leaderboard SET player_name = $2 WHERE user_id = $1`,
+    [userId, playerName],
+  );
+}
+
 export async function count(options: LeaderboardFilters = {}): Promise<number> {
   const result = await pool.query<{ count: string }>(
     `WITH filtered AS (
@@ -254,6 +312,7 @@ export async function count(options: LeaderboardFilters = {}): Promise<number> {
        WHERE ($1::text IS NULL OR quiz_id = $1)
          AND ($2::text IS NULL OR level_id = $2)
          AND ($3::text IS NULL OR country_code = $3)
+         AND leaderboard_visible = TRUE
      ),
      best_entries AS (
        SELECT DISTINCT ON (quiz_id, participant_key) id
