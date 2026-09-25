@@ -108,6 +108,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { name: "application-name", content: "Quitech: Learn, Challenge & Progress" },
       { name: "author", content: "Quitech" },
       { name: "msvalidate.01", content: "AEDA0A94767F3FB86E4F0C2A6A7D5895" },
+      {
+        name: "google-site-verification",
+        content: "mTUvJ0srBLgs45EEyk1kCPTP6wmwrT4GF-FcBnC5c1s",
+      },
       { name: "robots", content: "index, follow, max-image-preview:large" },
       { name: "referrer", content: "strict-origin-when-cross-origin" },
       { property: "og:title", content: "Quitech: Learn, Challenge & Progress" },
