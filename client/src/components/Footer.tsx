@@ -1,5 +1,14 @@
 import { Link } from "@tanstack/react-router";
-import { HeartHandshake, LifeBuoy, MessageCircle, ShieldCheck } from "lucide-react";
+import {
+  Download,
+  HeartHandshake,
+  LifeBuoy,
+  MessageCircle,
+  Music2,
+  Radio,
+  ShieldCheck,
+} from "lucide-react";
+import { androidAppUrl } from "@/lib/share-links";
 
 const links = [
   { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
@@ -33,12 +42,22 @@ export function Footer() {
             >
               SAPTech Uganda
             </a>
+            <span className="text-muted-foreground">·</span>
+            <a
+              href={androidAppUrl}
+              target="_blank"
+              rel="noreferrer"
+              className="inline-flex items-center gap-1.5 font-semibold text-primary underline decoration-primary/40 underline-offset-4 transition-colors hover:text-primary/80"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Get the app on Google Play
+            </a>
           </div>
         </div>
 
         <nav
-          className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-4"
-          aria-label="Legal and support"
+          className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-6"
+          aria-label="Legal, support, and social links"
         >
           {links.map(({ to, label, icon: Icon }) => (
             <Link
@@ -58,6 +77,26 @@ export function Footer() {
           >
             <MessageCircle className="h-4 w-4" />
             WhatsApp Support
+          </a>
+          <a
+            href="https://www.tiktok.com/@saptechug"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent lg:justify-start"
+            aria-label="Follow SAPTech Uganda on TikTok"
+          >
+            <Music2 className="h-4 w-4" />
+            Follow us on TikTok
+          </a>
+          <a
+            href="https://whatsapp.com/channel/0029VaCnZ7N1SWt8esJuGa0Q"
+            target="_blank"
+            rel="noreferrer"
+            className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent lg:justify-start"
+            aria-label="Follow the SAPTech Uganda WhatsApp channel"
+          >
+            <Radio className="h-4 w-4" />
+            Follow our WhatsApp channel
           </a>
         </nav>
       </div>

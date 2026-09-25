@@ -25,6 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { APP_VERSION, compareVersions, isUpdateRequired } from "@/lib/app-version";
+import { androidAppUrl } from "@/lib/share-links";
 import { getAppUpdateSettings, submitAnswers } from "@/lib/api";
 import { loadPendingSubmissions, removePendingSubmission, saveAttempt } from "@/lib/attempt-store";
 import { toast } from "sonner";
@@ -239,11 +240,12 @@ function RootComponent() {
   }, []);
 
   const handleUpdate = () => {
-    if (updateDialog?.storeUrl) {
+    const storeUrl = Capacitor.isNativePlatform() ? androidAppUrl : updateDialog?.storeUrl;
+    if (storeUrl) {
       if (Capacitor.isNativePlatform()) {
-        void Browser.open({ url: updateDialog.storeUrl });
+        void Browser.open({ url: storeUrl });
       } else {
-        window.open(updateDialog.storeUrl, "_blank", "noopener,noreferrer");
+        window.open(storeUrl, "_blank", "noopener,noreferrer");
       }
       return;
     }
@@ -270,7 +272,7 @@ function RootComponent() {
               onClick={handleUpdate}
               className="mt-6 inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
             >
-              Update now
+              {Capacitor.isNativePlatform() ? "Check for update on Google Play" : "Update now"}
             </button>
           </div>
         </div>
