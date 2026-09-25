@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { History as HistoryIcon, Play, Trash2 } from "lucide-react";
 import {
+  clearProgress,
   clearHistory,
   loadAllProgress,
   loadBookmarkedQuizIds,
