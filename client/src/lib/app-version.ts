@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.7";
+export const APP_VERSION = "2.8";
 
 export function compareVersions(current: string, target: string): number {
   const normalize = (value: string) =>
@@ -21,6 +21,12 @@ export function compareVersions(current: string, target: string): number {
   return 0;
 }
 
-export function isUpdateRequired(current: string, minimumVersion: string, latestVersion: string): boolean {
-  return compareVersions(current, minimumVersion) < 0 || compareVersions(current, latestVersion) < 0;
+export function isUpdateRequired(
+  current: string,
+  minimumVersion: string,
+  latestVersion: string,
+): boolean {
+  return (
+    compareVersions(current, minimumVersion) < 0 || compareVersions(current, latestVersion) < 0
+  );
 }
