@@ -406,11 +406,7 @@ export async function downloadCertificatePdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(navy[0], navy[1], navy[2]);
-  doc.text("Powered by SAPTech Uganda", width / 2, height - 47, { align: "center" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(7.5);
-  doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("www.saptechug.com", width / 2, height - 36, { align: "center" });
+  doc.text("Powered by SAPTech Uganda", width / 2, height - 40, { align: "center" });
 
   const filename = `Quitech-certificate-${certificate.code}.pdf`;
   if (!Capacitor.isNativePlatform()) {

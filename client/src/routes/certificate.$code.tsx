@@ -289,14 +289,6 @@ function CertificatePage() {
 
           <div className="mt-6 border-t border-amber-600/30 pt-4 text-center">
             <p className="text-xs font-semibold text-slate-800">Powered by SAPTech Uganda</p>
-            <a
-              href="https://www.saptechug.com"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-1 inline-block text-[11px] text-slate-500 hover:text-slate-800"
-            >
-              www.saptechug.com
-            </a>
           </div>
         </div>
       </div>
