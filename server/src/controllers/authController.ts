@@ -3,6 +3,7 @@ import { statfs } from "node:fs/promises";
 import { performance } from "node:perf_hooks";
 import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import { OAuth2Client } from "google-auth-library";
 import * as certificateModel from "../models/certificateModel.js";
 import * as leaderboardModel from "../models/leaderboardModel.js";
 import * as progressModel from "../models/progressModel.js";
@@ -20,6 +21,8 @@ import {
   setSessionCookie,
 } from "../sessionCookie.js";
 import { pool } from "../db.js";
+import { sendPasswordResetEmail } from "../services/emailService.js";
+import { sendPushNotification } from "../services/pushService.js";
 
 const optionalEmail = z.preprocess(
   (value) =>
@@ -52,6 +55,24 @@ const loginCredentials = z.object({
   identifier: z.string().trim().min(3).max(254).optional(),
   email: z.string().trim().min(3).max(254).optional(),
   password: z.string().min(8).max(200),
+});
+
+const googleCredentials = z.object({
+  credential: z.string().min(100).max(10_000),
+});
+const emailSchema = z.object({ email: z.string().trim().email().max(254) });
+const resetPasswordSchema = z.object({
+  token: z.string().min(32).max(200),
+  password: z.string().min(8).max(200),
+});
+const pushDeviceSchema = z.object({
+  token: z.string().min(20).max(4096),
+  platform: z.enum(["android", "ios", "web"]),
+});
+const pushNotificationSchema = z.object({
+  title: z.string().trim().min(2).max(80),
+  body: z.string().trim().min(2).max(240),
+  url: z.string().trim().max(500).optional().or(z.literal("")),
 });
 
 const progressSchema = z.object({
@@ -142,11 +163,15 @@ async function processCpuPercent(): Promise<number> {
   const usage = process.cpuUsage(startedUsage);
   const cpuMilliseconds = (usage.user + usage.system) / 1000;
   return roundMetric(
-    (cpuMilliseconds / (elapsedMilliseconds * Math.max(os.cpus().length, 1))) * 100,
+    (cpuMilliseconds / (elapsedMilliseconds * Math.max(os.cpus().length, 1))) *
+      100,
   );
 }
 
-async function diskMetrics(): Promise<{ totalBytes: number; freeBytes: number } | null> {
+async function diskMetrics(): Promise<{
+  totalBytes: number;
+  freeBytes: number;
+} | null> {
   try {
     const stats = await statfs(process.cwd());
     return {
@@ -207,6 +232,166 @@ export async function login(
   reply.send({ user: result.user, token: result.token });
 }
 
+export async function googleLogin(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = googleCredentials.safeParse(request.body);
+  const audiences =
+    process.env["GOOGLE_CLIENT_IDS"]
+      ?.split(",")
+      .map((value) => value.trim())
+      .filter(Boolean) ?? [];
+  if (!parsed.success || audiences.length === 0) {
+    reply.code(audiences.length ? 400 : 503).send({
+      error: audiences.length
+        ? "Google credential is required"
+        : "Google sign-in is not configured",
+    });
+    return;
+  }
+  try {
+    const ticket = await new OAuth2Client().verifyIdToken({
+      idToken: parsed.data.credential,
+      audience: audiences,
+    });
+    const profile = ticket.getPayload();
+    if (!profile?.sub || !profile.email || profile.email_verified !== true) {
+      reply
+        .code(401)
+        .send({ error: "Google could not verify this email address" });
+      return;
+    }
+    const result = await auth.loginWithGoogle({
+      sub: profile.sub,
+      email: profile.email,
+      displayName:
+        profile.name ?? profile.given_name ?? profile.email.split("@")[0]!,
+    });
+    setSessionCookie(reply, result.token);
+    reply.send({ user: result.user, token: result.token });
+  } catch {
+    reply.code(401).send({ error: "Google sign-in could not be verified" });
+  }
+}
+
+export async function requestPasswordReset(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = emailSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Enter a valid email address" });
+    return;
+  }
+  const reset = await auth.createPasswordResetToken(parsed.data.email);
+  if (reset) {
+    try {
+      await sendPasswordResetEmail(reset.email, reset.token);
+    } catch (error) {
+      request.log.error(error, "Could not send password reset email");
+    }
+  }
+  reply.send({
+    ok: true,
+    message: "If that email belongs to an account, a reset link is on its way.",
+  });
+}
+
+export async function resetPassword(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = resetPasswordSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply
+      .code(400)
+      .send({
+        error: "Use a valid reset link and a password of at least 8 characters",
+      });
+    return;
+  }
+  if (
+    !(await auth.resetPasswordWithToken(
+      parsed.data.token,
+      parsed.data.password,
+    ))
+  ) {
+    reply
+      .code(400)
+      .send({ error: "This reset link is invalid or has expired" });
+    return;
+  }
+  reply.send({ ok: true });
+}
+
+export async function registerPushDevice(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await requireUser(
+    request,
+    reply,
+    "Sign in to enable notifications",
+  );
+  if (!user) return;
+  const parsed = pushDeviceSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Invalid notification device" });
+    return;
+  }
+  await auth.savePushDevice(user.id, parsed.data.token, parsed.data.platform);
+  reply.send({ ok: true });
+}
+
+export async function sendAdminPushNotification(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const parsed = pushNotificationSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Add a notification title and message" });
+    return;
+  }
+  try {
+    const result = await sendPushNotification({
+      title: parsed.data.title,
+      body: parsed.data.body,
+      url: parsed.data.url || undefined,
+    });
+    if (!result.configured) {
+      reply
+        .code(503)
+        .send({ error: "Firebase push notifications are not configured" });
+      return;
+    }
+    await adminAuditModel.record(
+      admin.id,
+      "notification.sent",
+      "notification",
+      randomAuditId(),
+      {
+        title: parsed.data.title,
+        recipients: result.recipients,
+        sent: result.sent,
+        failed: result.failed,
+      },
+    );
+    reply.send(result);
+  } catch (error) {
+    request.log.error(error, "Could not send push notification");
+    reply
+      .code(502)
+      .send({ error: "Firebase could not send this notification" });
+  }
+}
+
+function randomAuditId(): string {
+  return `push-${Date.now()}`;
+}
+
 export async function me(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -242,7 +427,8 @@ export async function getAdminSystemMetrics(
       uptimeSeconds: Math.round(process.uptime()),
       cpuCores: os.cpus().length,
       processCpuPercent: cpuPercent,
-      loadAverage1m: process.platform === "win32" ? null : roundMetric(os.loadavg()[0] ?? 0),
+      loadAverage1m:
+        process.platform === "win32" ? null : roundMetric(os.loadavg()[0] ?? 0),
       memoryTotalBytes: os.totalmem(),
       memoryFreeBytes: os.freemem(),
       processRssBytes: memory.rss,
@@ -268,9 +454,14 @@ export async function getAdminAnalytics(
   const admin = await requireAdmin(request, reply);
   if (!admin) return;
   const query = request.query as { from?: string; to?: string };
-  reply.header("cache-control", "no-store").send(
-    await adminAnalyticsModel.getAnalytics({ from: query.from, to: query.to }),
-  );
+  reply
+    .header("cache-control", "no-store")
+    .send(
+      await adminAnalyticsModel.getAnalytics({
+        from: query.from,
+        to: query.to,
+      }),
+    );
 }
 
 export async function updateMe(
@@ -279,10 +470,15 @@ export async function updateMe(
 ): Promise<void> {
   const parsed = profileSchema.safeParse(request.body);
   if (!parsed.success) {
-    reply.code(400).send({ error: "Display name must be between 1 and 80 characters" });
+    reply
+      .code(400)
+      .send({ error: "Display name must be between 1 and 80 characters" });
     return;
   }
-  const user = await auth.updateCurrentUser(readSessionToken(request), parsed.data.displayName);
+  const user = await auth.updateCurrentUser(
+    readSessionToken(request),
+    parsed.data.displayName,
+  );
   if (!user) {
     reply.code(401).send({ error: "Sign in to update your profile" });
     return;
@@ -297,7 +493,9 @@ export async function changePassword(
 ): Promise<void> {
   const parsed = passwordChangeSchema.safeParse(request.body);
   if (!parsed.success) {
-    reply.code(400).send({ error: "Both passwords must be at least 8 characters" });
+    reply
+      .code(400)
+      .send({ error: "Both passwords must be at least 8 characters" });
     return;
   }
   if (parsed.data.currentPassword === parsed.data.newPassword) {
@@ -341,7 +539,8 @@ export async function setLeaderboardVisibility(
   const params = request.params as { quizId?: string };
   const quizId = params.quizId?.trim();
   const body = request.body as { visible?: unknown; visitorId?: unknown };
-  const visitorId = typeof body?.visitorId === "string" ? body.visitorId.trim() : "";
+  const visitorId =
+    typeof body?.visitorId === "string" ? body.visitorId.trim() : "";
   if (!quizId || typeof body?.visible !== "boolean") {
     reply.code(400).send({ error: "Quiz id and visibility are required" });
     return;
@@ -349,7 +548,11 @@ export async function setLeaderboardVisibility(
   if (user) {
     await leaderboardModel.setVisibilityForUser(user.id, quizId, body.visible);
   } else if (/^[A-Za-z0-9:_-]{12,100}$/.test(visitorId)) {
-    await leaderboardModel.setVisibilityForVisitor(quizId, visitorId, body.visible);
+    await leaderboardModel.setVisibilityForVisitor(
+      quizId,
+      visitorId,
+      body.visible,
+    );
   } else {
     reply.code(401).send({ error: "Sign in or provide a valid visitor id" });
     return;
@@ -380,7 +583,11 @@ export async function listProgress(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const user = await requireUser(request, reply, "Sign in to load saved progress");
+  const user = await requireUser(
+    request,
+    reply,
+    "Sign in to load saved progress",
+  );
   if (!user) return;
   reply.send({ progress: await progressModel.list(user.id) });
 }
@@ -436,7 +643,9 @@ export async function logout(
   reply: FastifyReply,
 ): Promise<void> {
   await auth.logout(readSessionToken(request));
-  clearSessionCookie(reply).header("cache-control", "no-store").send({ ok: true });
+  clearSessionCookie(reply)
+    .header("cache-control", "no-store")
+    .send({ ok: true });
 }
 
 export async function deleteAccount(
@@ -448,7 +657,9 @@ export async function deleteAccount(
     reply.code(401).send({ error: "Sign in before deleting your account" });
     return;
   }
-  clearSessionCookie(reply).header("cache-control", "no-store").send({ ok: true });
+  clearSessionCookie(reply)
+    .header("cache-control", "no-store")
+    .send({ ok: true });
 }
 
 export async function deleteLeaderboardEntry(
@@ -470,7 +681,12 @@ export async function deleteLeaderboardEntry(
     reply.code(404).send({ error: "Leaderboard record not found" });
     return;
   }
-  await adminAuditModel.record(admin.id, "leaderboard.deleted", "leaderboard", id);
+  await adminAuditModel.record(
+    admin.id,
+    "leaderboard.deleted",
+    "leaderboard",
+    id,
+  );
 
   reply.send({ ok: true });
 }
@@ -482,7 +698,11 @@ export async function listAdminUsers(
   const admin = await requireAdmin(request, reply);
   if (!admin) return;
 
-  const query = request.query as { search?: string; limit?: string; offset?: string };
+  const query = request.query as {
+    search?: string;
+    limit?: string;
+    offset?: string;
+  };
   const limit = Math.min(Math.max(Number(query.limit) || 50, 1), 100);
   const offset = Math.max(Number(query.offset) || 0, 0);
   reply.send(await adminDataModel.listUsers(query.search ?? "", limit, offset));
@@ -502,7 +722,9 @@ export async function deleteAdminUser(
     return;
   }
   if (userId === admin.id) {
-    reply.code(400).send({ error: "You cannot delete your own admin account here" });
+    reply
+      .code(400)
+      .send({ error: "You cannot delete your own admin account here" });
     return;
   }
 
@@ -527,13 +749,24 @@ export async function updateAdminUser(
     reply.code(400).send({ error: "User id and display name are required" });
     return;
   }
-  if (!(await adminDataModel.updateUserDisplayName(userId, parsed.data.displayName))) {
+  if (
+    !(await adminDataModel.updateUserDisplayName(
+      userId,
+      parsed.data.displayName,
+    ))
+  ) {
     reply.code(404).send({ error: "User not found" });
     return;
   }
-  await adminAuditModel.record(admin.id, "user.display_name_updated", "user", userId, {
-    displayName: parsed.data.displayName,
-  });
+  await adminAuditModel.record(
+    admin.id,
+    "user.display_name_updated",
+    "user",
+    userId,
+    {
+      displayName: parsed.data.displayName,
+    },
+  );
   reply.send({ ok: true });
 }
 
@@ -608,7 +841,12 @@ export async function deleteAdminCertificate(
     reply.code(404).send({ error: "Certificate not found" });
     return;
   }
-  await adminAuditModel.record(admin.id, "certificate.revoked", "certificate", code.toUpperCase());
+  await adminAuditModel.record(
+    admin.id,
+    "certificate.revoked",
+    "certificate",
+    code.toUpperCase(),
+  );
   reply.header("cache-control", "no-store").send({ ok: true });
 }
 
@@ -660,12 +898,18 @@ export async function saveAppUpdateSettings(
     message: parsed.data.message,
     updatedBy: admin.id,
   });
-  await adminAuditModel.record(admin.id, "app_update.settings_saved", "app_update", "settings", {
-    enabled: settings.enabled,
-    minimumVersion: settings.minimumVersion,
-    latestVersion: settings.latestVersion,
-    required: settings.required,
-  });
+  await adminAuditModel.record(
+    admin.id,
+    "app_update.settings_saved",
+    "app_update",
+    "settings",
+    {
+      enabled: settings.enabled,
+      minimumVersion: settings.minimumVersion,
+      latestVersion: settings.latestVersion,
+      required: settings.required,
+    },
+  );
 
   reply.send({ settings });
 }
@@ -685,7 +929,11 @@ export async function saveCatalogueDraft(
     return;
   }
 
-  const section = await quizModel.saveCatalogueDraft(sectionId, parsed.data, admin.id);
+  const section = await quizModel.saveCatalogueDraft(
+    sectionId,
+    parsed.data,
+    admin.id,
+  );
   if (!section) {
     reply.code(404).send({ error: "Catalogue section not found" });
     return;
@@ -709,7 +957,9 @@ export async function publishCatalogueSection(
 
   const section = await quizModel.publishCatalogueSection(sectionId, admin.id);
   if (!section) {
-    reply.code(404).send({ error: "Save a draft before publishing this section" });
+    reply
+      .code(404)
+      .send({ error: "Save a draft before publishing this section" });
     return;
   }
   reply.send({ section });

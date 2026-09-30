@@ -1,464 +1,356 @@
-import { useState } from "react";
-import { createFileRoute, useNavigate, Link } from "@tanstack/react-router";
+import { useState, type ReactNode } from "react";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { Loader2, LogIn, Mail, Phone, UserPlus } from "lucide-react";
+import { ArrowLeft, Loader2, LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
+import { FcGoogle } from "react-icons/fc";
+import { SocialLogin } from "@capgo/capacitor-social-login";
 import { CountrySelect } from "@/components/CountrySelect";
-import { loginAccount, registerAccount } from "@/lib/api";
+import { loginAccount, loginWithGoogle, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
+import { enablePushNotifications } from "@/lib/native-services";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
-  head: () => ({
-    meta: [
-      { title: "Sign in - Quitech certificate wallet" },
-      {
-        name: "description",
-        content:
-          "Sign in to Quitech to sync quiz progress across devices and keep every certificate you earn in one wallet.",
-      },
-      { property: "og:title", content: "Sign in - Quitech certificate wallet" },
-      {
-        property: "og:description",
-        content: "Sync progress across devices and store your certificates.",
-      },
-      { property: "og:type", content: "website" },
-      { name: "twitter:card", content: "summary_large_image" },
-    ],
-  }),
+  head: () => ({ meta: [{ title: "Sign in or create an account - Quitech" }] }),
   component: AuthPage,
 });
 
-function safeNext(raw: string | null): string {
-  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return "/";
-  return raw;
+type Mode = "signin" | "signup";
+type Method = "email" | "phone" | null;
+
+function safeNext(raw: string | null) {
+  return raw?.startsWith("/") && !raw.startsWith("//") ? raw : "/";
 }
 
-function initialAuthMode(): "signin" | "signup" {
-  if (typeof window === "undefined") return "signin";
-  return new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "signin";
+function initialMode(): Mode {
+  return typeof window !== "undefined" &&
+    new URLSearchParams(location.search).get("mode") === "signup"
+    ? "signup"
+    : "signin";
 }
-
-type ContactMethod = "email" | "phone";
 
 function initialCountry(): CountryDialCode {
-  if (typeof window !== "undefined") {
-    const localeRegion = window.navigator.language.split("-").pop();
-    if (localeRegion) {
-      const country = findCountryByIso(localeRegion);
-      if (country) return country;
-    }
-  }
-  return findCountryByIso("UG") ?? COUNTRIES[0]!;
+  const region = typeof navigator !== "undefined" ? navigator.language.split("-").pop() : "UG";
+  return findCountryByIso(region ?? "UG") ?? COUNTRIES[0]!;
 }
 
-function nationalDigits(value: string): string {
-  return value.replace(/\D/g, "").replace(/^0+/, "");
-}
-
-function phoneE164(country: CountryDialCode, value: string): string {
+function phoneE164(country: CountryDialCode, value: string) {
   const compact = value.trim().replace(/[().\s-]/g, "");
   if (compact.startsWith("+")) return /^\+[1-9]\d{7,14}$/.test(compact) ? compact : "";
-
-  let digits = nationalDigits(value);
-  const countryDigitsValue = country.dialCode.replace(/\D/g, "");
-  if (digits.startsWith(countryDigitsValue) && digits.length > countryDigitsValue.length + 3) {
-    digits = digits.slice(countryDigitsValue.length);
-  }
-
-  const countryDigits = country.dialCode.replace(/\D/g, "").length;
-  if (digits.length < 4 || digits.length + countryDigits > 15) return "";
-  return `${country.dialCode}${digits}`;
+  let digits = compact.replace(/\D/g, "").replace(/^0+/, "");
+  const dialDigits = country.dialCode.replace(/\D/g, "");
+  if (digits.startsWith(dialDigits) && digits.length > dialDigits.length + 3)
+    digits = digits.slice(dialDigits.length);
+  return digits.length >= 4 && digits.length + dialDigits.length <= 15
+    ? `${country.dialCode}${digits}`
+    : "";
 }
 
 function AuthPage() {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
-  const [mode, setMode] = useState<"signin" | "signup">(initialAuthMode);
-  const [signInMethod, setSignInMethod] = useState<ContactMethod>("email");
-  const [contactMethod, setContactMethod] = useState<ContactMethod>("email");
-  const [identifier, setIdentifier] = useState("");
-  const [signInCountry, setSignInCountry] = useState<CountryDialCode>(initialCountry);
-  const [signInPhoneNumber, setSignInPhoneNumber] = useState("");
+  const [mode, setMode] = useState<Mode>(initialMode);
+  const [method, setMethod] = useState<Method>(null);
+  const [country, setCountry] = useState(initialCountry);
   const [email, setEmail] = useState("");
-  const [country, setCountry] = useState<CountryDialCode>(initialCountry);
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
-  const [displayName, setDisplayName] = useState("");
+  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [message, setMessage] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    const params = new URLSearchParams(window.location.search);
-    return params.get("accountApi") === "offline"
-      ? "Account services are temporarily unavailable. Please try again shortly."
-      : null;
-  });
   const [error, setError] = useState<string | null>(null);
-
   const next =
-    typeof window !== "undefined"
-      ? safeNext(new URLSearchParams(window.location.search).get("next"))
-      : "/";
+    typeof window === "undefined"
+      ? "/"
+      : safeNext(new URLSearchParams(location.search).get("next"));
 
-  const submit = async (event: React.FormEvent) => {
+  const finish = (user: Awaited<ReturnType<typeof loginAccount>>["user"]) => {
+    queryClient.setQueryData(["auth", "me"], { user });
+    void enablePushNotifications();
+    toast.success(mode === "signup" ? "Welcome to Quitech" : "Welcome back");
+    void navigate({ to: user.mustChangePassword ? "/wallet" : next, replace: true });
+  };
+
+  const submitCredentials = async (event: React.FormEvent) => {
     event.preventDefault();
-    const loginIdentifier =
-      signInMethod === "email" ? identifier.trim() : phoneE164(signInCountry, signInPhoneNumber);
-    const signupEmail = email.trim();
-    const signupPhone = phoneE164(country, phoneNumber);
-
-    if (mode === "signin" && signInMethod === "email" && !loginIdentifier) {
-      setError("Enter your email address.");
+    if (!method) return;
+    const contact = method === "email" ? email.trim() : phoneE164(country, phone);
+    if (!contact) {
+      setError(
+        method === "email"
+          ? "Enter a valid email address."
+          : "Choose a country code and enter a valid phone number.",
+      );
       return;
     }
-
-    if (mode === "signin" && signInMethod === "phone" && !loginIdentifier) {
-      setError("Choose your country code and enter a valid phone number.");
-      return;
-    }
-
-    if (mode === "signup" && contactMethod === "email" && !signupEmail) {
-      setError("Enter your email address.");
-      return;
-    }
-
-    if (mode === "signup" && contactMethod === "phone" && !signupPhone) {
-      setError("Choose your country code and enter a valid phone number.");
-      return;
-    }
-
     setBusy(true);
     setError(null);
-    setMessage(null);
     try {
-      if (mode === "signup") {
-        const phoneTail = nationalDigits(phoneNumber).slice(-4);
-        const displayNameFallback =
-          displayName.trim() ||
-          signupEmail.split("@")[0] ||
-          (phoneTail ? `Learner ${phoneTail}` : "Learner");
-        const { user } = await registerAccount({
-          ...(contactMethod === "email" ? { email: signupEmail } : { phoneE164: signupPhone }),
-          password,
-          displayName: displayNameFallback,
-        });
-        queryClient.setQueryData(["auth", "me"], { user });
-        toast.success("Account created", { description: "Welcome to Quitech." });
-        void navigate({ to: next, replace: true });
+      if (mode === "signin") {
+        finish((await loginAccount({ identifier: contact, password })).user);
       } else {
-        const { user } = await loginAccount({ identifier: loginIdentifier, password });
-        queryClient.setQueryData(["auth", "me"], { user });
-        if (user.mustChangePassword) {
-          toast.success("You are signed in", { description: "Please choose a new password first." });
-          void navigate({ to: "/wallet", replace: true });
-        } else {
-          toast.success("Signed in", { description: "Your account is ready." });
-          void navigate({ to: next, replace: true });
-        }
+        const fallback =
+          method === "email"
+            ? email.split("@")[0]!
+            : `Learner ${phone.replace(/\D/g, "").slice(-4)}`;
+        finish(
+          (
+            await registerAccount({
+              ...(method === "email" ? { email: contact } : { phoneE164: contact }),
+              password,
+              displayName: name.trim() || fallback,
+            })
+          ).user,
+        );
       }
-    } catch (failure) {
-      const message = (failure as Error).message;
-      setError(
-        message === "Failed to fetch"
-          ? "Account services are temporarily unavailable. Please try again shortly."
-          : message,
-      );
-      toast.error("We couldn't sign you in", { description: message });
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "We could not complete that request.");
     } finally {
       setBusy(false);
     }
   };
 
+  const googleLogin = async () => {
+    const webClientId = import.meta.env["VITE_GOOGLE_WEB_CLIENT_ID"] as string | undefined;
+    if (!webClientId) {
+      setError("Google sign-in is being configured. Please use email or phone for now.");
+      return;
+    }
+    setBusy(true);
+    setError(null);
+    try {
+      await SocialLogin.initialize({ google: { webClientId, mode: "online" } });
+      const response = await SocialLogin.login({
+        provider: "google",
+        options: { scopes: ["email", "profile"] },
+      });
+      const credential = "idToken" in response.result ? response.result.idToken : null;
+      if (!credential) throw new Error("Google did not return a sign-in credential.");
+      finish((await loginWithGoogle(credential)).user);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Google sign-in was not completed.");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const switchMode = () => {
+    setMode(mode === "signin" ? "signup" : "signin");
+    setMethod(null);
+    setError(null);
+    setPassword("");
+  };
+
   return (
-    <div className="mx-auto max-w-md px-4 py-8 sm:px-6 sm:py-16">
-      <div className="rounded-lg border border-border bg-card p-5 shadow-sm sm:p-8">
-        <h1 className="text-2xl font-semibold tracking-tight text-card-foreground">
-          {mode === "signin" ? "Welcome back" : "Create your account"}
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Signing in keeps your progress synced across devices and stores every certificate you
-          earn.
-        </p>
-
-        <div className="mt-6 grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
-          <button
-            type="button"
-            onClick={() => setMode("signin")}
-            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              mode === "signin"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <LogIn className="h-4 w-4" />
-            Sign in
-          </button>
-          <button
-            type="button"
-            onClick={() => setMode("signup")}
-            className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-              mode === "signup"
-                ? "bg-background text-foreground shadow-sm"
-                : "text-muted-foreground hover:text-foreground"
-            }`}
-          >
-            <UserPlus className="h-4 w-4" />
-            Create account
-          </button>
+    <main className="mx-auto w-full max-w-lg px-4 py-8 sm:py-14">
+      <section className="overflow-hidden rounded-lg border border-border bg-card shadow-lg shadow-slate-200/50 dark:shadow-none">
+        <div className="border-b border-border bg-emerald-50/70 px-6 py-4 dark:bg-emerald-950/20">
+          <p className="flex items-center gap-2 text-xs font-semibold uppercase text-emerald-800 dark:text-emerald-300">
+            <ShieldCheck className="h-4 w-4" /> Secure member access
+          </p>
         </div>
+        <div className="p-6 sm:p-8">
+          {method && (
+            <button
+              type="button"
+              onClick={() => {
+                setMethod(null);
+                setError(null);
+              }}
+              className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
+            >
+              <ArrowLeft className="h-4 w-4" /> Choose another method
+            </button>
+          )}
+          <h1 className="text-3xl font-bold text-card-foreground sm:text-4xl">
+            {mode === "signin" ? "Welcome back" : "Join Quitech"}
+          </h1>
+          <p className="mt-3 text-base leading-7 text-muted-foreground">
+            {method
+              ? mode === "signin"
+                ? "Enter your details and continue where you left off."
+                : "Create your account and keep every achievement in one place."
+              : `Choose how you would like to ${mode === "signin" ? "sign in" : "create your account"}.`}
+          </p>
 
-        <form onSubmit={(event) => void submit(event)} className="mt-5 space-y-4">
-          {mode === "signin" ? (
-            <>
-              <ContactMethodTabs
-                label="Sign in with"
-                value={signInMethod}
-                onChange={setSignInMethod}
+          {!method ? (
+            <div className="mt-8 space-y-3">
+              <AuthChoice
+                icon={<Mail className="h-6 w-6 text-rose-700" />}
+                tone="bg-rose-50"
+                title="Continue with email"
+                copy="Use your email address and password"
+                onClick={() => setMethod("email")}
               />
-              {signInMethod === "email" ? (
-                <div>
-                  <label htmlFor="identifier" className="block text-sm font-medium text-foreground">
-                    Email
-                  </label>
-                  <input
-                    id="identifier"
-                    type="email"
-                    required
-                    value={identifier}
-                    onChange={(event) => setIdentifier(event.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                    placeholder="you@example.com"
-                  />
-                </div>
-              ) : (
-                <PhoneNumberField
-                  id="signin-phone-number"
-                  country={signInCountry}
-                  onCountryChange={setSignInCountry}
-                  value={signInPhoneNumber}
-                  onChange={setSignInPhoneNumber}
-                  preview={phoneE164(signInCountry, signInPhoneNumber)}
-                  intent="signin"
-                />
-              )}
-            </>
+              <AuthChoice
+                icon={<Phone className="h-6 w-6 text-emerald-700" />}
+                tone="bg-emerald-50"
+                title="Continue with phone number"
+                copy="Use your country code and phone number"
+                onClick={() => setMethod("phone")}
+              />
+              <AuthChoice
+                icon={<FcGoogle className="h-6 w-6" />}
+                tone="bg-slate-50"
+                title="Continue with Google"
+                copy="Use the Google account on your device"
+                onClick={() => void googleLogin()}
+                disabled={busy}
+              />
+            </div>
           ) : (
-            <>
-              <div>
-                <label htmlFor="name" className="block text-sm font-medium text-foreground">
-                  Display name (optional)
-                </label>
-                <input
-                  id="name"
-                  value={displayName}
-                  onChange={(event) => setDisplayName(event.target.value)}
-                  className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  placeholder="How your certificate should read"
-                />
-              </div>
-
-              <ContactMethodTabs
-                label="Sign up with"
-                value={contactMethod}
-                onChange={setContactMethod}
-              />
-
-              {contactMethod === "email" ? (
-                <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-foreground">
-                    Email
-                  </label>
+            <form onSubmit={(event) => void submitCredentials(event)} className="mt-7 space-y-5">
+              {mode === "signup" && (
+                <Field label="Your name" icon={<UserRound className="h-4 w-4" />}>
                   <input
-                    id="email"
+                    value={name}
+                    onChange={(event) => setName(event.target.value)}
+                    placeholder="How your certificate should read"
+                    className="w-full rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                </Field>
+              )}
+              {method === "email" ? (
+                <Field label="Email address" icon={<Mail className="h-4 w-4" />}>
+                  <input
                     type="email"
                     required
                     value={email}
                     onChange={(event) => setEmail(event.target.value)}
-                    className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     placeholder="you@example.com"
+                    className="w-full rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
                   />
-                </div>
+                </Field>
               ) : (
-                <PhoneNumberField
-                  id="signup-phone-number"
-                  country={country}
-                  onCountryChange={setCountry}
-                  value={phoneNumber}
-                  onChange={setPhoneNumber}
-                  preview={phoneE164(country, phoneNumber)}
-                  intent="signup"
-                />
+                <div>
+                  <label className="text-sm font-semibold text-foreground">Phone number</label>
+                  <div className="mt-2 grid gap-2 sm:grid-cols-[190px_1fr]">
+                    <CountrySelect
+                      id="auth-country"
+                      value={country}
+                      onChange={(value) => value && setCountry(value)}
+                      showDialCode
+                      buttonClassName="min-h-[48px]"
+                    />
+                    <input
+                      type="tel"
+                      required
+                      value={phone}
+                      onChange={(event) => setPhone(event.target.value)}
+                      placeholder="700 000 000"
+                      className="w-full rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
+                    />
+                  </div>
+                </div>
               )}
-            </>
+              <Field label="Password" icon={<LockKeyhole className="h-4 w-4" />}>
+                <input
+                  type="password"
+                  required
+                  minLength={8}
+                  value={password}
+                  onChange={(event) => setPassword(event.target.value)}
+                  className="w-full rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </Field>
+              {mode === "signin" && (
+                <div className="text-right">
+                  <Link
+                    to="/forgot-password"
+                    className="text-sm font-semibold text-primary hover:underline"
+                  >
+                    Forgot password?
+                  </Link>
+                </div>
+              )}
+              {error && (
+                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+                  {error}
+                </p>
+              )}
+              <button
+                disabled={busy}
+                className="flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+              >
+                {busy && <Loader2 className="h-4 w-4 animate-spin" />}
+                {mode === "signin" ? "Sign in securely" : "Create my account"}
+              </button>
+            </form>
           )}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-foreground">
-              Password
-            </label>
-            <input
-              id="password"
-              type="password"
-              required
-              minLength={8}
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-              className="mt-1.5 w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
-          </div>
 
-          {error && <p className="text-sm text-destructive">{error}</p>}
-          {message && <p className="text-sm text-emerald-600 dark:text-emerald-400">{message}</p>}
-
-          <button
-            type="submit"
-            disabled={busy}
-            className="flex w-full items-center justify-center gap-2 rounded-md bg-primary px-4 py-2.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-          >
-            {busy ? (
-              <Loader2 className="h-4 w-4 animate-spin" />
-            ) : mode === "signup" ? (
-              <UserPlus className="h-4 w-4" />
-            ) : (
-              <LogIn className="h-4 w-4" />
-            )}
-            {mode === "signin" ? "Sign in" : "Create account"}
-          </button>
-
-          {mode === "signin" && (
-            <p className="text-center">
-              <Link to="/forgot-password" className="text-sm font-medium text-primary hover:underline">
-                Forgot password?
-              </Link>
+          {!method && error && (
+            <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              {error}
             </p>
           )}
-        </form>
-
-        <p className="mt-5 text-center text-sm text-muted-foreground">
-          {mode === "signin" ? "New to Quitech?" : "Already have an account?"}{" "}
-          <button
-            type="button"
-            onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-            className="font-medium text-primary hover:underline"
-          >
-            {mode === "signin" ? "Create an account" : "Sign in instead"}
-          </button>
-        </p>
-        <p className="mt-4 text-center text-xs leading-5 text-muted-foreground">
-          By using Quitech, you agree to the{" "}
-          <Link to="/terms" className="font-medium text-primary hover:underline">
-            Terms of Service
-          </Link>{" "}
-          and{" "}
-          <Link to="/privacy" className="font-medium text-primary hover:underline">
-            Privacy Policy
-          </Link>
-          .
-        </p>
-      </div>
-
-      <p className="mt-6 text-center text-sm leading-6 text-muted-foreground">
-        You can keep practising without an account -{" "}
-        <Link to="/" className="font-medium text-primary hover:underline">
-          browse sections
-        </Link>
-        .
-      </p>
-    </div>
+          <div className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">
+            {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
+            <button
+              type="button"
+              onClick={switchMode}
+              className="font-bold text-primary hover:underline"
+            >
+              {mode === "signin" ? "Create one" : "Sign in"}
+            </button>
+          </div>
+          <p className="mt-5 text-center text-xs leading-5 text-muted-foreground">
+            By continuing, you agree to our{" "}
+            <Link to="/terms" className="font-medium underline">
+              Terms
+            </Link>{" "}
+            and{" "}
+            <Link to="/privacy" className="font-medium underline">
+              Privacy Policy
+            </Link>
+            .
+          </p>
+        </div>
+      </section>
+    </main>
   );
 }
 
-function ContactMethodTabs({
-  label,
-  value,
-  onChange,
+function AuthChoice({
+  icon,
+  tone,
+  title,
+  copy,
+  onClick,
+  disabled,
 }: {
-  label: string;
-  value: ContactMethod;
-  onChange: (value: ContactMethod) => void;
+  icon: ReactNode;
+  tone: string;
+  title: string;
+  copy: string;
+  onClick: () => void;
+  disabled?: boolean;
 }) {
   return (
-    <div>
-      <p className="block text-sm font-medium text-foreground">{label}</p>
-      <div className="mt-1.5 grid grid-cols-2 gap-2 rounded-lg bg-muted p-1">
-        <button
-          type="button"
-          onClick={() => onChange("email")}
-          className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-            value === "email"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Mail className="h-4 w-4" />
-          Email
-        </button>
-        <button
-          type="button"
-          onClick={() => onChange("phone")}
-          className={`inline-flex items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-medium transition-colors ${
-            value === "phone"
-              ? "bg-background text-foreground shadow-sm"
-              : "text-muted-foreground hover:text-foreground"
-          }`}
-        >
-          <Phone className="h-4 w-4" />
-          Phone
-        </button>
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      disabled={disabled}
+      className="flex min-h-28 w-full items-center gap-4 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:opacity-60"
+    >
+      <span className={`grid h-14 w-14 shrink-0 place-items-center rounded-lg ${tone}`}>
+        {icon}
+      </span>
+      <span>
+        <span className="block text-lg font-bold text-foreground">{title}</span>
+        <span className="mt-1 block text-sm leading-5 text-muted-foreground">{copy}</span>
+      </span>
+    </button>
   );
 }
 
-function PhoneNumberField({
-  id,
-  country,
-  onCountryChange,
-  value,
-  onChange,
-  preview,
-  intent,
-}: {
-  id: string;
-  country: CountryDialCode;
-  onCountryChange: (country: CountryDialCode) => void;
-  value: string;
-  onChange: (value: string) => void;
-  preview: string;
-  intent: "signin" | "signup";
-}) {
+function Field({ label, icon, children }: { label: string; icon: ReactNode; children: ReactNode }) {
   return (
-    <div>
-      <label htmlFor={id} className="block text-sm font-medium text-foreground">
-        Phone number
-      </label>
-      <div className="mt-1.5 grid gap-2 sm:grid-cols-[190px_1fr]">
-        <CountrySelect
-          id={`${id}-country`}
-          value={country}
-          onChange={(nextCountry) => {
-            if (nextCountry) onCountryChange(nextCountry);
-          }}
-          showDialCode
-          buttonClassName="min-h-[46px]"
-        />
-        <input
-          id={id}
-          type="tel"
-          inputMode="tel"
-          required
-          value={value}
-          onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-md border border-input bg-background px-3 py-2.5 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          placeholder="700 000 000"
-        />
-      </div>
-      <p className="mt-1.5 text-xs text-muted-foreground">
-        {preview
-          ? intent === "signin"
-            ? `We will sign you in with ${preview}.`
-            : `This will be saved as ${preview}.`
-          : "Select a country code and enter the number without the country code."}
-      </p>
-    </div>
+    <label className="block">
+      <span className="flex items-center gap-2 text-sm font-semibold text-foreground">
+        {icon}
+        {label}
+      </span>
+      <span className="mt-2 block">{children}</span>
+    </label>
   );
 }

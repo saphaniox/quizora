@@ -103,7 +103,9 @@ export async function login(
   return createSession(toUser(row));
 }
 
-export async function setTemporaryPassword(userId: string): Promise<string | null> {
+export async function setTemporaryPassword(
+  userId: string,
+): Promise<string | null> {
   const temporaryPassword = randomBytes(9).toString("base64url");
   const passwordHash = await hashPassword(temporaryPassword);
   const result = await pool.query(
@@ -126,7 +128,8 @@ export async function changeCurrentPassword(
     [hashToken(token)],
   );
   const row = result.rows[0];
-  if (!row || !(await verifyPassword(currentPassword, row.password_hash))) return false;
+  if (!row || !(await verifyPassword(currentPassword, row.password_hash)))
+    return false;
   const passwordHash = await hashPassword(nextPassword);
   await pool.query(
     `UPDATE users SET password_hash = $2, must_change_password = FALSE
@@ -170,6 +173,95 @@ export async function updateCurrentUser(
     [hashToken(token), displayName.trim()],
   );
   return result.rows[0] ? toUser(result.rows[0]) : null;
+}
+
+export async function loginWithGoogle(profile: {
+  sub: string;
+  email: string;
+  displayName: string;
+}): Promise<{ user: User; token: string }> {
+  const email = profile.email.trim().toLowerCase();
+  const existing = await pool.query<UserRow>(
+    `SELECT id, email, phone_e164, display_name, role, must_change_password
+     FROM users WHERE google_sub = $1 OR email = $2 ORDER BY google_sub = $1 DESC LIMIT 1`,
+    [profile.sub, email],
+  );
+  let row = existing.rows[0];
+  if (row) {
+    const linked = await pool.query<UserRow>(
+      `UPDATE users SET google_sub = $2
+       WHERE id = $1
+       RETURNING id, email, phone_e164, display_name, role, must_change_password`,
+      [row.id, profile.sub],
+    );
+    row = linked.rows[0]!;
+  } else {
+    const passwordHash = await hashPassword(
+      randomBytes(32).toString("base64url"),
+    );
+    const created = await pool.query<UserRow>(
+      `INSERT INTO users (id, email, password_hash, display_name, google_sub)
+       VALUES ($1, $2, $3, $4, $5)
+       RETURNING id, email, phone_e164, display_name, role, must_change_password`,
+      [
+        randomUUID(),
+        email,
+        passwordHash,
+        profile.displayName.trim() || email.split("@")[0],
+        profile.sub,
+      ],
+    );
+    row = created.rows[0]!;
+  }
+  return createSession(toUser(row));
+}
+
+export async function createPasswordResetToken(email: string) {
+  const user = await pool.query<{ id: string; email: string }>(
+    "SELECT id, email FROM users WHERE email = $1",
+    [email.trim().toLowerCase()],
+  );
+  if (!user.rows[0]) return null;
+  const token = randomBytes(32).toString("base64url");
+  await pool.query(
+    "DELETE FROM auth_tokens WHERE user_id = $1 AND purpose = 'reset_password'",
+    [user.rows[0].id],
+  );
+  await pool.query(
+    "INSERT INTO auth_tokens (token_hash, user_id, purpose, expires_at) VALUES ($1, $2, $3, NOW() + ($4 * INTERVAL '1 minute'))",
+    [hashToken(token), user.rows[0].id, "reset_password", 60],
+  );
+  return { token, email: user.rows[0].email };
+}
+
+export async function resetPasswordWithToken(
+  token: string,
+  password: string,
+): Promise<boolean> {
+  const passwordHash = await hashPassword(password);
+  const result = await pool.query(
+    `UPDATE users SET password_hash = $2, must_change_password = FALSE
+     WHERE id = (SELECT user_id FROM auth_tokens WHERE token_hash = $1 AND purpose = 'reset_password' AND used_at IS NULL AND expires_at > NOW())`,
+    [hashToken(token), passwordHash],
+  );
+  if (!result.rowCount) return false;
+  await pool.query(
+    "UPDATE auth_tokens SET used_at = NOW() WHERE token_hash = $1",
+    [hashToken(token)],
+  );
+  return true;
+}
+
+export async function savePushDevice(
+  userId: string,
+  token: string,
+  platform: "android" | "ios" | "web",
+) {
+  await pool.query(
+    `INSERT INTO push_devices (token, user_id, platform) VALUES ($1, $2, $3)
+     ON CONFLICT (token) DO UPDATE SET user_id = EXCLUDED.user_id, platform = EXCLUDED.platform, enabled = TRUE, updated_at = NOW()`,
+    [token, userId, platform],
+  );
 }
 
 export async function logout(token: string | undefined): Promise<void> {

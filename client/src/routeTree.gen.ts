@@ -38,12 +38,16 @@ import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-l
 import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
 import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
 import { Route as ApiAdminFeedbackRouteImport } from './routes/api/admin/feedback'
+import { Route as ApiAdminNotificationsRouteImport } from './routes/api/admin/notifications'
 import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
+import { Route as ApiAuthForgotPasswordRouteImport } from './routes/api/auth/forgot-password'
+import { Route as ApiAuthGoogleRouteImport } from './routes/api/auth/google'
 import { Route as ApiAuthLoginRouteImport } from './routes/api/auth/login'
 import { Route as ApiAuthLogoutRouteImport } from './routes/api/auth/logout'
 import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 import { Route as ApiAuthRegisterRouteImport } from './routes/api/auth/register'
+import { Route as ApiAuthResetPasswordRouteImport } from './routes/api/auth/reset-password'
 import { Route as ApiCertificatesCodeRouteImport } from './routes/api/certificates.$code'
 import { Route as ApiQuizzesIndexRouteImport } from './routes/api/quizzes.index'
 import { Route as ApiQuizzesIdRouteImport } from './routes/api/quizzes.$id'
@@ -55,6 +59,7 @@ import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/user
 import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
 import { Route as ApiAuthMePasswordRouteImport } from './routes/api/auth/me/password'
 import { Route as ApiAuthMeProgressRouteImport } from './routes/api/auth/me/progress'
+import { Route as ApiAuthMePushDeviceRouteImport } from './routes/api/auth/me/push-device'
 import { Route as ApiAdminCatalogueSectionIdPublishRouteImport } from './routes/api/admin/catalogue.$sectionId.publish'
 import { Route as ApiAdminUsersUserIdResetPasswordRouteImport } from './routes/api/admin/users.$userId.reset-password'
 import { Route as ApiAdminUsersUserIdRoleRouteImport } from './routes/api/admin/users.$userId.role'
@@ -205,6 +210,11 @@ const ApiAdminFeedbackRoute = ApiAdminFeedbackRouteImport.update({
   path: '/api/admin/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminNotificationsRoute = ApiAdminNotificationsRouteImport.update({
+  id: '/api/admin/notifications',
+  path: '/api/admin/notifications',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminSystemRoute = ApiAdminSystemRouteImport.update({
   id: '/api/admin/system',
   path: '/api/admin/system',
@@ -213,6 +223,16 @@ const ApiAdminSystemRoute = ApiAdminSystemRouteImport.update({
 const ApiAdminUsersRoute = ApiAdminUsersRouteImport.update({
   id: '/api/admin/users',
   path: '/api/admin/users',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthForgotPasswordRoute = ApiAuthForgotPasswordRouteImport.update({
+  id: '/api/auth/forgot-password',
+  path: '/api/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthGoogleRoute = ApiAuthGoogleRouteImport.update({
+  id: '/api/auth/google',
+  path: '/api/auth/google',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAuthLoginRoute = ApiAuthLoginRouteImport.update({
@@ -233,6 +253,11 @@ const ApiAuthMeRoute = ApiAuthMeRouteImport.update({
 const ApiAuthRegisterRoute = ApiAuthRegisterRouteImport.update({
   id: '/api/auth/register',
   path: '/api/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAuthResetPasswordRoute = ApiAuthResetPasswordRouteImport.update({
+  id: '/api/auth/reset-password',
+  path: '/api/auth/reset-password',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCertificatesCodeRoute = ApiCertificatesCodeRouteImport.update({
@@ -290,6 +315,11 @@ const ApiAuthMePasswordRoute = ApiAuthMePasswordRouteImport.update({
 const ApiAuthMeProgressRoute = ApiAuthMeProgressRouteImport.update({
   id: '/progress',
   path: '/progress',
+  getParentRoute: () => ApiAuthMeRoute,
+} as any)
+const ApiAuthMePushDeviceRoute = ApiAuthMePushDeviceRouteImport.update({
+  id: '/push-device',
+  path: '/push-device',
   getParentRoute: () => ApiAuthMeRoute,
 } as any)
 const ApiAdminCatalogueSectionIdPublishRoute =
@@ -350,12 +380,16 @@ export interface FileRoutesByFullPath {
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/auth/forgot-password': typeof ApiAuthForgotPasswordRoute
+  '/api/auth/google': typeof ApiAuthGoogleRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRouteWithChildren
   '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
@@ -367,6 +401,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
+  '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
   '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
   '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
@@ -402,12 +437,16 @@ export interface FileRoutesByTo {
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/auth/forgot-password': typeof ApiAuthForgotPasswordRoute
+  '/api/auth/google': typeof ApiAuthGoogleRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRouteWithChildren
   '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes': typeof ApiQuizzesIndexRoute
@@ -419,6 +458,7 @@ export interface FileRoutesByTo {
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
+  '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
   '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
   '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
@@ -456,12 +496,16 @@ export interface FileRoutesById {
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
+  '/api/auth/forgot-password': typeof ApiAuthForgotPasswordRoute
+  '/api/auth/google': typeof ApiAuthGoogleRoute
   '/api/auth/login': typeof ApiAuthLoginRoute
   '/api/auth/logout': typeof ApiAuthLogoutRoute
   '/api/auth/me': typeof ApiAuthMeRouteWithChildren
   '/api/auth/register': typeof ApiAuthRegisterRoute
+  '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
@@ -473,6 +517,7 @@ export interface FileRoutesById {
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
+  '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
   '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
   '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
@@ -510,12 +555,16 @@ export interface FileRouteTypes {
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
     | '/api/admin/feedback'
+    | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
+    | '/api/auth/forgot-password'
+    | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
     | '/api/auth/register'
+    | '/api/auth/reset-password'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
     | '/api/quizzes/'
@@ -527,6 +576,7 @@ export interface FileRouteTypes {
     | '/api/auth/me/activity'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
+    | '/api/auth/me/push-device'
     | '/api/admin/catalogue/$sectionId/publish'
     | '/api/admin/users/$userId/reset-password'
     | '/api/admin/users/$userId/role'
@@ -562,12 +612,16 @@ export interface FileRouteTypes {
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
     | '/api/admin/feedback'
+    | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
+    | '/api/auth/forgot-password'
+    | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
     | '/api/auth/register'
+    | '/api/auth/reset-password'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
     | '/api/quizzes'
@@ -579,6 +633,7 @@ export interface FileRouteTypes {
     | '/api/auth/me/activity'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
+    | '/api/auth/me/push-device'
     | '/api/admin/catalogue/$sectionId/publish'
     | '/api/admin/users/$userId/reset-password'
     | '/api/admin/users/$userId/role'
@@ -615,12 +670,16 @@ export interface FileRouteTypes {
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
     | '/api/admin/feedback'
+    | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
+    | '/api/auth/forgot-password'
+    | '/api/auth/google'
     | '/api/auth/login'
     | '/api/auth/logout'
     | '/api/auth/me'
     | '/api/auth/register'
+    | '/api/auth/reset-password'
     | '/api/certificates/$code'
     | '/api/quizzes/$id'
     | '/api/quizzes/'
@@ -632,6 +691,7 @@ export interface FileRouteTypes {
     | '/api/auth/me/activity'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
+    | '/api/auth/me/push-device'
     | '/api/admin/catalogue/$sectionId/publish'
     | '/api/admin/users/$userId/reset-password'
     | '/api/admin/users/$userId/role'
@@ -667,12 +727,16 @@ export interface RootRouteChildren {
   ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
   ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRouteWithChildren
   ApiAdminFeedbackRoute: typeof ApiAdminFeedbackRouteWithChildren
+  ApiAdminNotificationsRoute: typeof ApiAdminNotificationsRoute
   ApiAdminSystemRoute: typeof ApiAdminSystemRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
+  ApiAuthForgotPasswordRoute: typeof ApiAuthForgotPasswordRoute
+  ApiAuthGoogleRoute: typeof ApiAuthGoogleRoute
   ApiAuthLoginRoute: typeof ApiAuthLoginRoute
   ApiAuthLogoutRoute: typeof ApiAuthLogoutRoute
   ApiAuthMeRoute: typeof ApiAuthMeRouteWithChildren
   ApiAuthRegisterRoute: typeof ApiAuthRegisterRoute
+  ApiAuthResetPasswordRoute: typeof ApiAuthResetPasswordRoute
   ApiCertificatesCodeRoute: typeof ApiCertificatesCodeRoute
   ApiQuizzesIdRoute: typeof ApiQuizzesIdRoute
   ApiQuizzesIndexRoute: typeof ApiQuizzesIndexRoute
@@ -884,6 +948,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminFeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/notifications': {
+      id: '/api/admin/notifications'
+      path: '/api/admin/notifications'
+      fullPath: '/api/admin/notifications'
+      preLoaderRoute: typeof ApiAdminNotificationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/system': {
       id: '/api/admin/system'
       path: '/api/admin/system'
@@ -896,6 +967,20 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/users'
       fullPath: '/api/admin/users'
       preLoaderRoute: typeof ApiAdminUsersRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/forgot-password': {
+      id: '/api/auth/forgot-password'
+      path: '/api/auth/forgot-password'
+      fullPath: '/api/auth/forgot-password'
+      preLoaderRoute: typeof ApiAuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/google': {
+      id: '/api/auth/google'
+      path: '/api/auth/google'
+      fullPath: '/api/auth/google'
+      preLoaderRoute: typeof ApiAuthGoogleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/auth/login': {
@@ -924,6 +1009,13 @@ declare module '@tanstack/react-router' {
       path: '/api/auth/register'
       fullPath: '/api/auth/register'
       preLoaderRoute: typeof ApiAuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/auth/reset-password': {
+      id: '/api/auth/reset-password'
+      path: '/api/auth/reset-password'
+      fullPath: '/api/auth/reset-password'
+      preLoaderRoute: typeof ApiAuthResetPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/certificates/$code': {
@@ -1001,6 +1093,13 @@ declare module '@tanstack/react-router' {
       path: '/progress'
       fullPath: '/api/auth/me/progress'
       preLoaderRoute: typeof ApiAuthMeProgressRouteImport
+      parentRoute: typeof ApiAuthMeRoute
+    }
+    '/api/auth/me/push-device': {
+      id: '/api/auth/me/push-device'
+      path: '/push-device'
+      fullPath: '/api/auth/me/push-device'
+      preLoaderRoute: typeof ApiAuthMePushDeviceRouteImport
       parentRoute: typeof ApiAuthMeRoute
     }
     '/api/admin/catalogue/$sectionId/publish': {
@@ -1142,6 +1241,7 @@ interface ApiAuthMeRouteChildren {
   ApiAuthMeActivityRoute: typeof ApiAuthMeActivityRoute
   ApiAuthMePasswordRoute: typeof ApiAuthMePasswordRoute
   ApiAuthMeProgressRoute: typeof ApiAuthMeProgressRouteWithChildren
+  ApiAuthMePushDeviceRoute: typeof ApiAuthMePushDeviceRoute
   ApiAuthMeLeaderboardQuizIdRoute: typeof ApiAuthMeLeaderboardQuizIdRoute
 }
 
@@ -1149,6 +1249,7 @@ const ApiAuthMeRouteChildren: ApiAuthMeRouteChildren = {
   ApiAuthMeActivityRoute: ApiAuthMeActivityRoute,
   ApiAuthMePasswordRoute: ApiAuthMePasswordRoute,
   ApiAuthMeProgressRoute: ApiAuthMeProgressRouteWithChildren,
+  ApiAuthMePushDeviceRoute: ApiAuthMePushDeviceRoute,
   ApiAuthMeLeaderboardQuizIdRoute: ApiAuthMeLeaderboardQuizIdRoute,
 }
 
@@ -1184,12 +1285,16 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
   ApiAdminCertificatesRoute: ApiAdminCertificatesRouteWithChildren,
   ApiAdminFeedbackRoute: ApiAdminFeedbackRouteWithChildren,
+  ApiAdminNotificationsRoute: ApiAdminNotificationsRoute,
   ApiAdminSystemRoute: ApiAdminSystemRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
+  ApiAuthForgotPasswordRoute: ApiAuthForgotPasswordRoute,
+  ApiAuthGoogleRoute: ApiAuthGoogleRoute,
   ApiAuthLoginRoute: ApiAuthLoginRoute,
   ApiAuthLogoutRoute: ApiAuthLogoutRoute,
   ApiAuthMeRoute: ApiAuthMeRouteWithChildren,
   ApiAuthRegisterRoute: ApiAuthRegisterRoute,
+  ApiAuthResetPasswordRoute: ApiAuthResetPasswordRoute,
   ApiCertificatesCodeRoute: ApiCertificatesCodeRoute,
   ApiQuizzesIdRoute: ApiQuizzesIdRoute,
   ApiQuizzesIndexRoute: ApiQuizzesIndexRoute,

@@ -458,6 +458,52 @@ export async function loginAccount(payload: {
   return result;
 }
 
+export async function loginWithGoogle(
+  credential: string,
+): Promise<{ user: AccountUser; token?: string }> {
+  const result = await fetchJson<{ user: AccountUser; token?: string }>("/auth/google", {
+    method: "POST",
+    body: JSON.stringify({ credential }),
+  });
+  saveSessionToken(result.token ?? null);
+  return result;
+}
+
+export async function requestPasswordReset(email: string): Promise<{ ok: true; message: string }> {
+  return fetchJson<{ ok: true; message: string }>("/auth/forgot-password", {
+    method: "POST",
+    body: JSON.stringify({ email }),
+  });
+}
+
+export async function resetPassword(token: string, password: string): Promise<void> {
+  await fetchJson<{ ok: true }>("/auth/reset-password", {
+    method: "POST",
+    body: JSON.stringify({ token, password }),
+  });
+}
+
+export async function registerPushDevice(
+  token: string,
+  platform: "android" | "ios" | "web",
+): Promise<void> {
+  await fetchJson<{ ok: true }>("/auth/me/push-device", {
+    method: "PUT",
+    body: JSON.stringify({ token, platform }),
+  });
+}
+
+export async function sendAdminPushNotification(payload: {
+  title: string;
+  body: string;
+  url?: string;
+}): Promise<{ recipients: number; sent: number; failed: number }> {
+  return fetchJson<{ recipients: number; sent: number; failed: number }>("/admin/notifications", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
 export async function logoutAccount(): Promise<void> {
   await fetchJson<{ ok: true }>("/auth/logout", { method: "POST" });
   saveSessionToken(null);

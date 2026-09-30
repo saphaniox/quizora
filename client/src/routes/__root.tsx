@@ -4,6 +4,7 @@ import {
   Link,
   createRootRouteWithContext,
   useRouter,
+  useRouterState,
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
@@ -26,11 +27,16 @@ import {
 } from "@/components/ui/alert-dialog";
 import { APP_VERSION, compareVersions, isUpdateRequired } from "@/lib/app-version";
 import { androidAppUrl } from "@/lib/share-links";
-import { getAppUpdateSettings, submitAnswers } from "@/lib/api";
+import { getAppUpdateSettings, getCurrentUser, submitAnswers } from "@/lib/api";
 import { loadPendingSubmissions, removePendingSubmission, saveAttempt } from "@/lib/attempt-store";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
+import {
+  enablePushNotifications,
+  initializeNativeAds,
+  setNativeAdsVisible,
+} from "@/lib/native-services";
 
 const SITE_URL = "https://quitech.online";
 
@@ -169,6 +175,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateDialog, setUpdateDialog] = useState<{
     required: boolean;
@@ -177,6 +184,29 @@ function RootComponent() {
     currentVersion: string;
     latestVersion: string;
   } | null>(null);
+
+  useEffect(() => {
+    void initializeNativeAds();
+    void getCurrentUser()
+      .then(({ user }) => {
+        if (user) void enablePushNotifications();
+      })
+      .catch(() => undefined);
+  }, []);
+
+  useEffect(() => {
+    const hidden = [
+      "/auth",
+      "/forgot-password",
+      "/privacy",
+      "/terms",
+      "/support",
+      "/delete-data",
+      "/delete-account",
+      "/admin",
+    ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
+    void setNativeAdsVisible(!hidden);
+  }, [pathname]);
 
   useEffect(() => {
     let active = true;

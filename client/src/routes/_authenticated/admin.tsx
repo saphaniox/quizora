@@ -44,13 +44,14 @@ import {
   getAdminUsers,
   getAdminCertificates,
   getAdminSystemMetrics,
-    getAdminAnalytics,
+  getAdminAnalytics,
   getLeaderboard,
   getLevels,
   getAppUpdateSettings,
   publishCatalogueSection,
   saveAppUpdateSettings,
   saveCatalogueDraft,
+  sendAdminPushNotification,
   updateFeedbackStatus,
   updateAdminUser,
   resetAdminUserPassword,
@@ -200,7 +201,10 @@ function AdminPage() {
   const [confirmingUserId, setConfirmingUserId] = useState<string | null>(null);
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [editingUserName, setEditingUserName] = useState("");
-  const [temporaryPassword, setTemporaryPassword] = useState<{ userId: string; value: string } | null>(null);
+  const [temporaryPassword, setTemporaryPassword] = useState<{
+    userId: string;
+    value: string;
+  } | null>(null);
   const [userQuery, setUserQuery] = useState("");
   const [userOffset, setUserOffset] = useState(0);
   const [confirmingCertificateCode, setConfirmingCertificateCode] = useState<string | null>(null);
@@ -229,6 +233,8 @@ function AdminPage() {
   const [feedbackFilter, setFeedbackFilter] = useState<FeedbackStatus | "all">("all");
   const [analyticsFrom, setAnalyticsFrom] = useState("");
   const [analyticsTo, setAnalyticsTo] = useState("");
+  const [pushDraft, setPushDraft] = useState({ title: "", body: "", url: "/" });
+  const [pushAction, setPushAction] = useState<{ tone: StatusTone; message: string } | null>(null);
 
   const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
   const account = accountQuery.data?.user ?? null;
@@ -277,7 +283,8 @@ function AdminPage() {
   });
   const analyticsQuery = useQuery({
     queryKey: ["admin", "analytics", analyticsFrom, analyticsTo],
-    queryFn: () => getAdminAnalytics({ from: analyticsFrom || undefined, to: analyticsTo || undefined }),
+    queryFn: () =>
+      getAdminAnalytics({ from: analyticsFrom || undefined, to: analyticsTo || undefined }),
     enabled: isAdmin,
     refetchInterval: 60_000,
   });
@@ -339,17 +346,30 @@ function AdminPage() {
     mutationFn: resetAdminUserPassword,
     onSuccess: (result, userId) => {
       setTemporaryPassword({ userId, value: result.temporaryPassword });
-      setLeaderboardAction({ tone: "ready", message: "Temporary password generated. Copy it now; it will not be shown again." });
+      setLeaderboardAction({
+        tone: "ready",
+        message: "Temporary password generated. Copy it now; it will not be shown again.",
+      });
     },
-    onError: (error) => setLeaderboardAction({ tone: "blocked", message: error instanceof Error ? error.message : "Could not generate a temporary password." }),
+    onError: (error) =>
+      setLeaderboardAction({
+        tone: "blocked",
+        message:
+          error instanceof Error ? error.message : "Could not generate a temporary password.",
+      }),
   });
   const updateAdminRoleMutation = useMutation({
-    mutationFn: ({ userId, role }: { userId: string; role: "user" | "admin" }) => updateAdminUserRole(userId, role),
+    mutationFn: ({ userId, role }: { userId: string; role: "user" | "admin" }) =>
+      updateAdminUserRole(userId, role),
     onSuccess: () => {
       void usersQuery.refetch();
       setLeaderboardAction({ tone: "ready", message: "Admin access updated." });
     },
-    onError: (error) => setLeaderboardAction({ tone: "blocked", message: error instanceof Error ? error.message : "Could not update admin access." }),
+    onError: (error) =>
+      setLeaderboardAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not update admin access.",
+      }),
   });
   const deleteAdminCertificateMutation = useMutation({
     mutationFn: deleteAdminCertificate,
@@ -394,7 +414,8 @@ function AdminPage() {
       });
       setAppUpdateAction({
         tone: "ready",
-        message: "App update policy saved. Users will see the reminder until the app version matches the latest setting.",
+        message:
+          "App update policy saved. Users will see the reminder until the app version matches the latest setting.",
       });
       void appUpdateQuery.refetch();
     },
@@ -424,12 +445,33 @@ function AdminPage() {
     },
   });
   const feedbackStatusMutation = useMutation({
-    mutationFn: ({ id, status }: { id: string; status: FeedbackStatus }) => updateFeedbackStatus(id, status),
+    mutationFn: ({ id, status }: { id: string; status: FeedbackStatus }) =>
+      updateFeedbackStatus(id, status),
     onSuccess: () => {
       void feedbackQuery.refetch();
       setLeaderboardAction({ tone: "ready", message: "Feedback status updated." });
     },
-    onError: (error) => setLeaderboardAction({ tone: "blocked", message: error instanceof Error ? error.message : "Could not update feedback status." }),
+    onError: (error) =>
+      setLeaderboardAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not update feedback status.",
+      }),
+  });
+  const sendPushMutation = useMutation({
+    mutationFn: sendAdminPushNotification,
+    onSuccess: (result) => {
+      setPushDraft({ title: "", body: "", url: "/" });
+      setPushAction({
+        tone: result.failed ? "warning" : "ready",
+        message: `Sent to ${formatNumber(result.sent)} of ${formatNumber(result.recipients)} registered devices.`,
+      });
+    },
+    onError: (error) => {
+      setPushAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not send the notification.",
+      });
+    },
   });
 
   const loadedLevels = levelsQuery.data?.levels;
@@ -830,8 +872,16 @@ function AdminPage() {
               <MetricCard
                 icon={Database}
                 label="Disk space"
-                value={systemMetrics.host.diskFreeBytes === null ? "Unavailable" : formatBytes(systemMetrics.host.diskFreeBytes)}
-                detail={systemMetrics.host.diskTotalBytes === null ? "Host disk metrics unavailable" : `${formatBytes(systemMetrics.host.diskTotalBytes)} total capacity`}
+                value={
+                  systemMetrics.host.diskFreeBytes === null
+                    ? "Unavailable"
+                    : formatBytes(systemMetrics.host.diskFreeBytes)
+                }
+                detail={
+                  systemMetrics.host.diskTotalBytes === null
+                    ? "Host disk metrics unavailable"
+                    : `${formatBytes(systemMetrics.host.diskTotalBytes)} total capacity`
+                }
               />
               <MetricCard
                 icon={Activity}
@@ -843,6 +893,89 @@ function AdminPage() {
           ) : (
             <p className="mt-4 rounded-md border border-border bg-background p-4 text-sm text-muted-foreground">
               System telemetry is unavailable. Check the API and database connection.
+            </p>
+          )}
+        </section>
+
+        <section className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Send className="h-5 w-5 text-primary" />
+            <h2 className="text-base font-semibold text-card-foreground">Push notification</h2>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Send a concise update to learners who enabled notifications in the mobile app.
+          </p>
+          <form
+            className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.5fr)_minmax(0,0.7fr)_auto] lg:items-end"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setPushAction(null);
+              sendPushMutation.mutate({
+                title: pushDraft.title,
+                body: pushDraft.body,
+                ...(pushDraft.url ? { url: pushDraft.url } : {}),
+              });
+            }}
+          >
+            <label className="text-xs font-medium text-muted-foreground">
+              Title
+              <input
+                required
+                maxLength={80}
+                value={pushDraft.title}
+                onChange={(event) =>
+                  setPushDraft((draft) => ({ ...draft, title: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="New challenge available"
+              />
+            </label>
+            <label className="text-xs font-medium text-muted-foreground">
+              Message
+              <input
+                required
+                maxLength={240}
+                value={pushDraft.body}
+                onChange={(event) =>
+                  setPushDraft((draft) => ({ ...draft, body: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="A fresh practice round is ready when you are."
+              />
+            </label>
+            <label className="text-xs font-medium text-muted-foreground">
+              In-app path
+              <input
+                maxLength={500}
+                value={pushDraft.url}
+                onChange={(event) =>
+                  setPushDraft((draft) => ({ ...draft, url: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="/"
+              />
+            </label>
+            <button
+              type="submit"
+              disabled={sendPushMutation.isPending}
+              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+            >
+              {sendPushMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Send className="h-4 w-4" />
+              )}
+              Send
+            </button>
+          </form>
+          {pushAction && (
+            <p
+              className={cn(
+                "mt-3 rounded-md border px-3 py-2 text-sm",
+                statusClass(pushAction.tone),
+              )}
+            >
+              {pushAction.message}
             </p>
           )}
         </section>
@@ -954,14 +1087,18 @@ function AdminPage() {
                     analyticsQuery.data.countries.map((country) => (
                       <div key={country.countryCode} className="flex justify-between gap-3 text-sm">
                         <span className="text-muted-foreground">{country.countryName}</span>
-                        <span className="font-medium text-foreground">{formatNumber(country.attempts)}</span>
+                        <span className="font-medium text-foreground">
+                          {formatNumber(country.attempts)}
+                        </span>
                       </div>
                     ))
                   )}
                 </div>
               </div>
               <div>
-                <h3 className="text-sm font-semibold text-card-foreground">Most attempted quizzes</h3>
+                <h3 className="text-sm font-semibold text-card-foreground">
+                  Most attempted quizzes
+                </h3>
                 <div className="mt-3 space-y-2">
                   {analyticsQuery.data.topQuizzes.length === 0 ? (
                     <p className="text-sm text-muted-foreground">No quiz attempts yet.</p>
@@ -986,9 +1123,12 @@ function AdminPage() {
             <div className="border-b border-border p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
-                  <h2 className="text-base font-semibold text-card-foreground">App update controls</h2>
+                  <h2 className="text-base font-semibold text-card-foreground">
+                    App update controls
+                  </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    When enabled, the app reminder opens on every launch until the installed version matches the configured minimum/latest version.
+                    When enabled, the app reminder opens on every launch until the installed version
+                    matches the configured minimum/latest version.
                   </p>
                 </div>
               </div>
@@ -1010,7 +1150,10 @@ function AdminPage() {
                   <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
                     <div>
                       <p className="text-sm font-medium text-foreground">Enable reminder</p>
-                      <p className="text-xs text-muted-foreground">Display update prompts on every open while the app is behind the target version.</p>
+                      <p className="text-xs text-muted-foreground">
+                        Display update prompts on every open while the app is behind the target
+                        version.
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -1028,7 +1171,10 @@ function AdminPage() {
                       <input
                         value={appUpdateDraft.minimumVersion}
                         onChange={(event) =>
-                          setAppUpdateDraft({ ...appUpdateDraft, minimumVersion: event.target.value })
+                          setAppUpdateDraft({
+                            ...appUpdateDraft,
+                            minimumVersion: event.target.value,
+                          })
                         }
                         className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
@@ -1038,7 +1184,10 @@ function AdminPage() {
                       <input
                         value={appUpdateDraft.latestVersion}
                         onChange={(event) =>
-                          setAppUpdateDraft({ ...appUpdateDraft, latestVersion: event.target.value })
+                          setAppUpdateDraft({
+                            ...appUpdateDraft,
+                            latestVersion: event.target.value,
+                          })
                         }
                         className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                       />
@@ -1048,7 +1197,9 @@ function AdminPage() {
                   <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
                     <div>
                       <p className="text-sm font-medium text-foreground">Block use until update</p>
-                      <p className="text-xs text-muted-foreground">If on, the dialog is required and can only be dismissed by updating the app.</p>
+                      <p className="text-xs text-muted-foreground">
+                        If on, the dialog is required and can only be dismissed by updating the app.
+                      </p>
                     </div>
                     <input
                       type="checkbox"
@@ -1624,25 +1775,26 @@ function AdminPage() {
               />
             </label>
             <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground sm:self-end">
-                <button
-                  type="button"
-                  onClick={() => setUserOffset((offset) => Math.max(0, offset - 50))}
-                  disabled={userOffset === 0 || usersQuery.isFetching}
-                  className="rounded-md border border-input px-2 py-1 disabled:opacity-50"
-                >
-                  Previous
-                </button>
-                <span>
-                  {userOffset + 1}-{Math.min(userOffset + 50, usersQuery.data?.total ?? 0)} of {usersQuery.data?.total ?? 0}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setUserOffset((offset) => offset + 50)}
-                  disabled={userOffset + 50 >= (usersQuery.data?.total ?? 0) || usersQuery.isFetching}
-                  className="rounded-md border border-input px-2 py-1 disabled:opacity-50"
-                >
-                  Next
-                </button>
+              <button
+                type="button"
+                onClick={() => setUserOffset((offset) => Math.max(0, offset - 50))}
+                disabled={userOffset === 0 || usersQuery.isFetching}
+                className="rounded-md border border-input px-2 py-1 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>
+                {userOffset + 1}-{Math.min(userOffset + 50, usersQuery.data?.total ?? 0)} of{" "}
+                {usersQuery.data?.total ?? 0}
+              </span>
+              <button
+                type="button"
+                onClick={() => setUserOffset((offset) => offset + 50)}
+                disabled={userOffset + 50 >= (usersQuery.data?.total ?? 0) || usersQuery.isFetching}
+                className="rounded-md border border-input px-2 py-1 disabled:opacity-50"
+              >
+                Next
+              </button>
             </div>
           </div>
           <div className="overflow-x-auto">
@@ -1676,8 +1828,15 @@ function AdminPage() {
                             />
                             <button
                               type="button"
-                              onClick={() => updateAdminUserMutation.mutate({ userId: adminUser.id, displayName: editingUserName })}
-                              disabled={updateAdminUserMutation.isPending || !editingUserName.trim()}
+                              onClick={() =>
+                                updateAdminUserMutation.mutate({
+                                  userId: adminUser.id,
+                                  displayName: editingUserName,
+                                })
+                              }
+                              disabled={
+                                updateAdminUserMutation.isPending || !editingUserName.trim()
+                              }
                               className="rounded-md bg-primary px-2 py-1.5 text-xs font-semibold text-primary-foreground disabled:opacity-60"
                             >
                               Save
@@ -1691,7 +1850,9 @@ function AdminPage() {
                             </button>
                           </div>
                         ) : (
-                          <p className="font-medium text-card-foreground">{adminUser.displayName}</p>
+                          <p className="font-medium text-card-foreground">
+                            {adminUser.displayName}
+                          </p>
                         )}
                         <p className="mt-1 text-xs text-muted-foreground">
                           {adminUser.email ?? adminUser.phoneE164 ?? "No contact"}
@@ -1699,14 +1860,28 @@ function AdminPage() {
                         {temporaryPassword?.userId === adminUser.id && (
                           <div className="mt-2 rounded-md border border-amber-500/30 bg-amber-500/10 p-2 text-xs text-amber-800 dark:text-amber-200">
                             <p>Temporary password. Share it securely once:</p>
-                            <code className="mt-1 block select-all font-semibold">{temporaryPassword.value}</code>
-                            <button type="button" onClick={() => setTemporaryPassword(null)} className="mt-1 underline">Hide it</button>
+                            <code className="mt-1 block select-all font-semibold">
+                              {temporaryPassword.value}
+                            </code>
+                            <button
+                              type="button"
+                              onClick={() => setTemporaryPassword(null)}
+                              className="mt-1 underline"
+                            >
+                              Hide it
+                            </button>
                           </div>
                         )}
                       </td>
                       <td className="px-5 py-4 text-muted-foreground">{adminUser.role}</td>
                       <td className="px-5 py-4 text-xs text-muted-foreground">
-                        <span className={adminUser.isOnline ? "font-semibold text-emerald-600 dark:text-emerald-300" : ""}>
+                        <span
+                          className={
+                            adminUser.isOnline
+                              ? "font-semibold text-emerald-600 dark:text-emerald-300"
+                              : ""
+                          }
+                        >
                           {adminUser.isOnline ? "Online" : "Offline"}
                         </span>
                         <span className="mt-1 block">
@@ -1740,12 +1915,21 @@ function AdminPage() {
                             disabled={resetAdminPasswordMutation.isPending}
                             className="rounded-md border border-amber-500/30 bg-amber-500/5 px-3 py-2 text-xs font-semibold text-amber-700 hover:bg-amber-500/10 disabled:opacity-60 dark:text-amber-300"
                           >
-                            {resetAdminPasswordMutation.isPending ? "Generating..." : "Reset password"}
+                            {resetAdminPasswordMutation.isPending
+                              ? "Generating..."
+                              : "Reset password"}
                           </button>
                           <button
                             type="button"
-                            onClick={() => updateAdminRoleMutation.mutate({ userId: adminUser.id, role: adminUser.role === "admin" ? "user" : "admin" })}
-                            disabled={adminUser.id === account?.id || updateAdminRoleMutation.isPending}
+                            onClick={() =>
+                              updateAdminRoleMutation.mutate({
+                                userId: adminUser.id,
+                                role: adminUser.role === "admin" ? "user" : "admin",
+                              })
+                            }
+                            disabled={
+                              adminUser.id === account?.id || updateAdminRoleMutation.isPending
+                            }
                             className="rounded-md border border-input px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
                           >
                             {updateAdminRoleMutation.isPending
@@ -2001,7 +2185,9 @@ function AdminPage() {
           {(feedbackQuery.data?.feedback ?? []).length === 0 && (
             <div className="p-10 text-center">
               <p className="font-medium text-foreground">Nothing to review here</p>
-              <p className="mt-1 text-sm text-muted-foreground">New learner messages will show up here.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                New learner messages will show up here.
+              </p>
             </div>
           )}
         </section>

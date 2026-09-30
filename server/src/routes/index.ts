@@ -26,14 +26,22 @@ const routes: FastifyPluginAsync = async (app) => {
       return;
     }
   };
-  const authRateLimit = async (request: FastifyRequest, reply: FastifyReply) => {
+  const authRateLimit = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
     const key = request.ip;
     const now = Date.now();
-    const recent = (authAttemptTimes.get(key) ?? []).filter((time) => now - time < 15 * 60_000);
+    const recent = (authAttemptTimes.get(key) ?? []).filter(
+      (time) => now - time < 15 * 60_000,
+    );
     recent.push(now);
     authAttemptTimes.set(key, recent);
     if (recent.length > 10) {
-      await reply.header("retry-after", "900").code(429).send({ error: "Too many account attempts. Try again later." });
+      await reply
+        .header("retry-after", "900")
+        .code(429)
+        .send({ error: "Too many account attempts. Try again later." });
       return;
     }
   };
@@ -47,21 +55,45 @@ const routes: FastifyPluginAsync = async (app) => {
   );
   app.get("/leaderboard", resultController.getLeaderboard);
   app.get("/certificates/:code", resultController.getCertificate);
-  app.post("/auth/register", { preHandler: authRateLimit }, authController.register);
+  app.post(
+    "/auth/register",
+    { preHandler: authRateLimit },
+    authController.register,
+  );
   app.post("/auth/login", { preHandler: authRateLimit }, authController.login);
+  app.post(
+    "/auth/google",
+    { preHandler: authRateLimit },
+    authController.googleLogin,
+  );
+  app.post(
+    "/auth/forgot-password",
+    { preHandler: authRateLimit },
+    authController.requestPasswordReset,
+  );
+  app.post(
+    "/auth/reset-password",
+    { preHandler: authRateLimit },
+    authController.resetPassword,
+  );
   app.get("/auth/me", authController.me);
   app.get("/admin/system", authController.getAdminSystemMetrics);
   app.get("/admin/analytics", authController.getAdminAnalytics);
   app.patch("/auth/me", authController.updateMe);
   app.post("/auth/me/password", authController.changePassword);
   app.get("/auth/me/activity", authController.activity);
-  app.patch("/auth/me/leaderboard/:quizId", authController.setLeaderboardVisibility);
+  app.patch(
+    "/auth/me/leaderboard/:quizId",
+    authController.setLeaderboardVisibility,
+  );
   app.get("/auth/me/progress", authController.listProgress);
   app.get("/auth/me/progress/:quizId", authController.getProgress);
   app.put("/auth/me/progress/:quizId", authController.saveProgress);
   app.delete("/auth/me/progress/:quizId", authController.deleteProgress);
   app.delete("/auth/me", authController.deleteAccount);
   app.post("/auth/logout", authController.logout);
+  app.put("/auth/me/push-device", authController.registerPushDevice);
+  app.post("/admin/notifications", authController.sendAdminPushNotification);
   app.post("/feedback", feedbackController.createFeedback);
   app.get("/app-update", authController.getAppUpdateSettings);
   app.put("/app-update", authController.saveAppUpdateSettings);
@@ -71,13 +103,22 @@ const routes: FastifyPluginAsync = async (app) => {
   app.patch("/admin/feedback/:id", feedbackController.updateFeedbackStatus);
   app.get("/admin/users", authController.listAdminUsers);
   app.patch("/admin/users/:userId", authController.updateAdminUser);
-  app.post("/admin/users/:userId/reset-password", authController.resetAdminUserPassword);
+  app.post(
+    "/admin/users/:userId/reset-password",
+    authController.resetAdminUserPassword,
+  );
   app.patch("/admin/users/:userId/role", authController.updateAdminUserRole);
   app.delete("/admin/users/:userId", authController.deleteAdminUser);
   app.get("/admin/certificates", authController.listAdminCertificates);
-  app.delete("/admin/certificates/:code", authController.deleteAdminCertificate);
+  app.delete(
+    "/admin/certificates/:code",
+    authController.deleteAdminCertificate,
+  );
   app.put("/admin/catalogue/:sectionId", authController.saveCatalogueDraft);
-  app.post("/admin/catalogue/:sectionId/publish", authController.publishCatalogueSection);
+  app.post(
+    "/admin/catalogue/:sectionId/publish",
+    authController.publishCatalogueSection,
+  );
   app.delete("/admin/leaderboard/:id", authController.deleteLeaderboardEntry);
 };
 

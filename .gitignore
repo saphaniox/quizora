@@ -32,6 +32,7 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 .cache/
+.npm-cache*/
 .vite/
 coverage/
 
@@ -40,3 +41,6 @@ coverage/
 Thumbs.db
 .idea/
 .vscode/
+
+# Firebase Android configuration is supplied per deployment.
+client/android/app/google-services.json
