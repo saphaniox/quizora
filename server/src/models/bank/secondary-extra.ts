@@ -2,7 +2,7 @@ import { draft, fromMap, generate, numericOptions, type SectionDefinition } from
 
 const historyFacts: [string, string][] = [
   ["Who was the first President of the United States?", "George Washington"],
-  ["Which civilisation built the pyramids at Giza?", "Ancient Egypt"],
+  ["Which Babylonian ruler is associated with an early written law code?", "Hammurabi"],
   ["In which year did the Second World War end?", "1945"],
   ["Which conference divided Africa among European powers?", "The Berlin Conference of 1884"],
   ["Who led India's non-violent independence movement?", "Mahatma Gandhi"],
@@ -17,7 +17,7 @@ const historyFacts: [string, string][] = [
   ["Which kingdom in West Africa was famous for gold trade?", "The Mali Empire"],
   ["Who was the Egyptian queen who ruled with Mark Antony?", "Cleopatra"],
   ["Which war was fought between 1914 and 1918?", "The First World War"],
-  ["What organisation replaced the League of Nations?", "The United Nations"],
+  ["Which 1962 crisis brought the United States and Soviet Union close to nuclear war?", "The Cuban Missile Crisis"],
   ["Which country colonised Kenya before independence?", "Britain"],
   ["What is the study of past human life through remains called?", "Archaeology"],
   ["What do we call a written record of past events?", "A historical source"],

@@ -33,16 +33,27 @@ async function logoDataUrl(size: number, opacity = 1): Promise<string | null> {
   });
 }
 
-function centeredText(
+function fittedCenteredText(
   doc: jsPDF,
   text: string,
   x: number,
   y: number,
   maxWidth: number,
-  lineHeight: number,
+  maxLines: number,
+  maxFontSize: number,
+  minFontSize: number,
 ): number {
-  const lines = doc.splitTextToSize(text, maxWidth) as string[];
-  doc.text(lines, x, y, { align: "center" });
+  let fontSize = maxFontSize;
+  let lines = doc.splitTextToSize(text, maxWidth) as string[];
+
+  while (lines.length > maxLines && fontSize > minFontSize) {
+    fontSize -= 1;
+    doc.setFontSize(fontSize);
+    lines = doc.splitTextToSize(text, maxWidth) as string[];
+  }
+
+  const lineHeight = fontSize * 1.08;
+  doc.text(lines, x, y, { align: "center", lineHeightFactor: 1.08 });
   return y + Math.max(0, lines.length - 1) * lineHeight;
 }
 
@@ -129,6 +140,48 @@ function drawDivider(doc: jsPDF, width: number, y: number, blue: PdfColor, gold:
   doc.circle(width / 2 + 12, y, 2, "F");
 }
 
+function drawDiamondWatermark(doc: jsPDF, width: number): void {
+  const center = width / 2;
+  const topY = 120;
+  const upperY = 164;
+  const crownY = 218;
+  const bottomY = 447;
+  const upperLeft = center - 128;
+  const upperRight = center + 128;
+  const left = center - 214;
+  const right = center + 214;
+
+  setFillColor(doc, [248, 250, 252]);
+  doc.triangle(center, topY, left, crownY, center, bottomY, "F");
+  doc.triangle(center, topY, right, crownY, center, bottomY, "F");
+  setFillColor(doc, [253, 250, 240]);
+  doc.triangle(center, topY, upperLeft, upperY, left, crownY, "F");
+  doc.triangle(center, topY, upperRight, upperY, right, crownY, "F");
+
+  setDrawColor(doc, [219, 231, 248]);
+  doc.setLineWidth(0.75);
+  doc.line(center, topY, upperLeft, upperY);
+  doc.line(upperLeft, upperY, left, crownY);
+  doc.line(left, crownY, center, bottomY);
+  doc.line(center, bottomY, right, crownY);
+  doc.line(right, crownY, upperRight, upperY);
+  doc.line(upperRight, upperY, center, topY);
+  doc.line(left, crownY, right, crownY);
+  doc.line(center, topY, center, bottomY);
+  doc.line(center, topY, left, crownY);
+  doc.line(center, topY, right, crownY);
+  doc.line(upperLeft, upperY, center, crownY);
+  doc.line(upperRight, upperY, center, crownY);
+  doc.line(left, crownY, center, crownY);
+  doc.line(right, crownY, center, crownY);
+
+  setDrawColor(doc, [239, 224, 185]);
+  doc.setLineWidth(0.9);
+  doc.line(upperLeft, upperY, upperRight, upperY);
+  doc.line(upperLeft, upperY, center, bottomY);
+  doc.line(upperRight, upperY, center, bottomY);
+}
+
 /** Render a certificate as a landscape A4 PDF and trigger a download. */
 export async function downloadCertificatePdf(
   certificate: Certificate,
@@ -148,18 +201,28 @@ export async function downloadCertificatePdf(
     month: "long",
     day: "numeric",
   }).format(new Date(certificate.issuedAt));
-  const [logo, watermark] = await Promise.all([logoDataUrl(128), logoDataUrl(512, 0.07)]);
+  const [logo, watermark] = await Promise.all([logoDataUrl(128), logoDataUrl(512, 0.045)]);
   const qrCode = await QRCode.toDataURL(verifyUrl, {
-    errorCorrectionLevel: "M",
+    errorCorrectionLevel: "H",
     margin: 1,
-    width: 160,
+    width: 256,
+  });
+
+  doc.setProperties({
+    title: `Quitech Certificate - ${certificate.playerName}`,
+    subject: `${certificate.quizTitle} certificate of achievement`,
+    author: "Quitech, powered by SAPTech Uganda",
+    creator: "Quitech",
+    keywords: "Quitech, certificate, achievement, SAPTech Uganda",
   });
 
   doc.setFillColor(251, 252, 248);
   doc.rect(0, 0, width, height, "F");
 
+  drawDiamondWatermark(doc, width);
+
   if (watermark) {
-    doc.addImage(watermark, "PNG", width / 2 - 160, height / 2 - 160, 320, 320);
+    doc.addImage(watermark, "PNG", width / 2 - 125, height / 2 - 125, 250, 250);
   }
 
   drawCertificateFrame(doc, width, height, blue, gold);
@@ -193,55 +256,83 @@ export async function downloadCertificatePdf(
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(13);
-  doc.text("This certifies that", width / 2, 174, { align: "center" });
+  doc.text("Presented with pride to", width / 2, 174, { align: "center" });
 
   doc.setTextColor(navy[0], navy[1], navy[2]);
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(certificate.playerName.length > 28 ? 28 : 36);
-  const nameBottom = centeredText(doc, certificate.playerName, width / 2, 218, width - 190, 34);
-
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(13);
-  doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("has successfully completed the full Quitech section", width / 2, nameBottom + 34, {
-    align: "center",
-  });
-
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(20);
-  doc.setTextColor(navy[0], navy[1], navy[2]);
-  const titleBottom = centeredText(
+  doc.setFontSize(36);
+  const nameBottom = fittedCenteredText(
     doc,
-    certificate.quizTitle,
+    certificate.playerName,
     width / 2,
-    nameBottom + 70,
-    width - 220,
-    22,
+    214,
+    width - 240,
+    2,
+    36,
+    23,
   );
+
+  setDrawColor(doc, gold);
+  doc.setLineWidth(0.9);
+  doc.line(width / 2 - 150, nameBottom + 10, width / 2 + 150, nameBottom + 10);
 
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text(`${certificate.levelName}  -  ${certificate.category}`, width / 2, titleBottom + 24, {
-    align: "center",
-  });
-  if (certificate.countryName) {
-    doc.text(certificate.countryName, width / 2, titleBottom + 44, { align: "center" });
-  }
+  doc.text(
+    "has successfully completed the full Quitech learning section",
+    width / 2,
+    nameBottom + 32,
+    {
+      align: "center",
+    },
+  );
 
-  const detailY = 382;
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(20);
+  doc.setTextColor(navy[0], navy[1], navy[2]);
+  const titleBottom = fittedCenteredText(
+    doc,
+    certificate.quizTitle,
+    width / 2,
+    nameBottom + 63,
+    width - 290,
+    2,
+    20,
+    16,
+  );
+
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(11);
+  doc.setTextColor(slate[0], slate[1], slate[2]);
+  doc.text(`${certificate.levelName}  |  ${certificate.category}`, width / 2, titleBottom + 22, {
+    align: "center",
+    maxWidth: width - 300,
+  });
+
+  doc.setFont("helvetica", "italic");
+  doc.setFontSize(10);
+  doc.setTextColor(emerald[0], emerald[1], emerald[2]);
+  doc.text(
+    "Awarded in recognition of focused learning, persistence, and achievement.",
+    width / 2,
+    357,
+    { align: "center" },
+  );
+
+  const detailY = 375;
   doc.setFillColor(255, 255, 255);
   doc.setDrawColor(226, 232, 240);
-  doc.roundedRect(96, detailY, width - 192, 72, 8, 8, "FD");
-  doc.line(width / 3, detailY + 14, width / 3, detailY + 58);
-  doc.line((width / 3) * 2, detailY + 14, (width / 3) * 2, detailY + 58);
+  doc.roundedRect(96, detailY, width - 192, 62, 7, 7, "FD");
+  doc.line(width / 3, detailY + 12, width / 3, detailY + 50);
+  doc.line((width / 3) * 2, detailY + 12, (width / 3) * 2, detailY + 50);
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("FINAL SCORE", width / 6, detailY + 24, { align: "center" });
-  doc.text("ISSUED", width / 2, detailY + 24, { align: "center" });
-  doc.text("COUNTRY", (width / 6) * 5, detailY + 24, { align: "center" });
+  doc.text("FINAL SCORE", width / 6, detailY + 20, { align: "center" });
+  doc.text("DATE ISSUED", width / 2, detailY + 20, { align: "center" });
+  doc.text("COUNTRY", (width / 6) * 5, detailY + 20, { align: "center" });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(17);
@@ -249,38 +340,77 @@ export async function downloadCertificatePdf(
   doc.text(
     `${certificate.score}/${certificate.maxScore} (${certificate.percentage}%)`,
     width / 6,
-    detailY + 50,
+    detailY + 44,
     { align: "center" },
   );
-  doc.setFontSize(12);
+  doc.setFontSize(11);
   doc.setTextColor(navy[0], navy[1], navy[2]);
-  doc.text(issuedDate, width / 2, detailY + 50, { align: "center" });
-  doc.text(certificate.countryName ?? "Not shown", (width / 6) * 5, detailY + 50, {
+  doc.text(issuedDate, width / 2, detailY + 44, { align: "center" });
+  doc.text(certificate.countryName ?? "Not provided", (width / 6) * 5, detailY + 44, {
     align: "center",
-    maxWidth: 170,
+    maxWidth: 160,
   });
 
+  const verifyX = 82;
+  const verifyY = 452;
+  const verifyWidth = width - 164;
+  const verifyHeight = 72;
+  doc.setFillColor(248, 250, 252);
   doc.setDrawColor(203, 213, 225);
-  doc.line(82, height - 118, 256, height - 118);
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
-  doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("Quitech Verification", 82, height - 100);
-  doc.text("Digitally issued and publicly verifiable", 82, height - 84);
+  doc.roundedRect(verifyX, verifyY, verifyWidth, verifyHeight, 7, 7, "FD");
+  doc.line(342, verifyY + 12, 342, verifyY + verifyHeight - 12);
+  doc.line(650, verifyY + 12, 650, verifyY + verifyHeight - 12);
 
-  doc.addImage(qrCode, "PNG", width - 170, height - 168, 86, 86);
+  setFillColor(doc, [236, 253, 245]);
+  setDrawColor(doc, [167, 243, 208]);
+  doc.circle(103, verifyY + 24, 7, "FD");
+  setFillColor(doc, emerald);
+  doc.circle(103, verifyY + 24, 2.6, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.text("SCAN TO VERIFY", width - 127, height - 70, { align: "center" });
+  doc.setTextColor(emerald[0], emerald[1], emerald[2]);
+  doc.text("VERIFIED ONLINE", 118, verifyY + 27);
+  doc.setFontSize(11);
+  doc.setTextColor(navy[0], navy[1], navy[2]);
+  doc.text("Quitech Verification", 102, verifyY + 46);
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(8.5);
+  doc.setTextColor(slate[0], slate[1], slate[2]);
+  doc.text("Digitally issued and publicly verifiable", 102, verifyY + 59);
 
   doc.setFont("helvetica", "bold");
+  doc.setFontSize(8);
+  doc.setTextColor(slate[0], slate[1], slate[2]);
+  doc.text("CREDENTIAL ID", 496, verifyY + 22, { align: "center" });
   doc.setFontSize(12);
   doc.setTextColor(navy[0], navy[1], navy[2]);
-  doc.text(certificate.code, width - 82, height - 100, { align: "right" });
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(10);
+  doc.text(certificate.code, 496, verifyY + 43, { align: "center", maxWidth: 270 });
+  doc.setFontSize(8.5);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("Credential ID", width - 82, height - 84, { align: "right" });
+  doc.setFont("helvetica", "normal");
+  doc.text("Use this ID or scan the code to confirm authenticity", 496, verifyY + 58, {
+    align: "center",
+  });
+
+  const qrSize = 54;
+  const qrX = 680;
+  const qrY = verifyY + 5;
+  doc.setFillColor(255, 255, 255);
+  doc.roundedRect(qrX - 4, qrY - 3, qrSize + 8, qrSize + 8, 3, 3, "F");
+  doc.addImage(qrCode, "PNG", qrX, qrY, qrSize, qrSize);
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(7.5);
+  doc.setTextColor(slate[0], slate[1], slate[2]);
+  doc.text("SCAN TO VERIFY", qrX + qrSize / 2, verifyY + 65, { align: "center" });
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(9);
+  doc.setTextColor(navy[0], navy[1], navy[2]);
+  doc.text("Powered by SAPTech Uganda", width / 2, height - 47, { align: "center" });
+  doc.setFont("helvetica", "normal");
+  doc.setFontSize(7.5);
+  doc.setTextColor(slate[0], slate[1], slate[2]);
+  doc.text("www.saptechug.com", width / 2, height - 36, { align: "center" });
 
   const filename = `Quitech-certificate-${certificate.code}.pdf`;
   if (!Capacitor.isNativePlatform()) {

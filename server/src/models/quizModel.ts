@@ -9,9 +9,10 @@ import type {
 import * as catalogueEditModel from "./catalogueEditModel.js";
 import type { CatalogueDraftInput, CatalogueEditRow } from "./catalogueEditModel.js";
 import {
-  expandTo,
   finalize,
   makeRng,
+  normalizeQuestionText,
+  type Draft,
   type SectionDefinition,
 } from "./bank/helpers.js";
 import { primarySections } from "./bank/primary.js";
@@ -145,24 +146,21 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   },
 ];
 
-const LEVEL_TARGETS: Record<string, number> = {
-  foundations: 500,
-  secondary: 500,
-  college: 500,
-  professional: 500,
-};
-
-function targetFor(levelId: string, section: SectionDefinition): number {
-  return section.target ?? LEVEL_TARGETS[levelId] ?? 500;
-}
-
 function buildQuizzes(): Quiz[] {
   const out: Quiz[] = [];
+  const uniquePrompts = new Set<string>();
   for (const level of levelDefinitions) {
     for (const section of level.sections) {
+      const drafts: Draft[] = [];
+      for (const item of section.build()) {
+        const prompt = normalizeQuestionText(item.text);
+        if (!prompt || uniquePrompts.has(prompt)) continue;
+        uniquePrompts.add(prompt);
+        drafts.push(item);
+      }
       const questions = finalize(
         section.id,
-        expandTo(section.id, section.build(), targetFor(level.id, section)),
+        section.target === undefined ? drafts : drafts.slice(0, section.target),
       );
       out.push({
         id: section.id,

@@ -198,8 +198,8 @@ const programmingBank = () => [
 const economicsBank = () => [
   ...fromMap(
     [
-      ["What happens to demand when price rises, all else equal?", "Demand falls"],
-      ["What is the value of the next best alternative called?", "Opportunity cost"],
+      ["A rise in income shifts demand for a normal good in which direction?", "To the right"],
+      ["What is a good called when its demand falls as income rises?", "An inferior good"],
       ["What measures a country's total output?", "Gross Domestic Product"],
       ["What is a sustained rise in the general price level?", "Inflation"],
       ["What policy is controlled by the central bank?", "Monetary policy"],
@@ -214,7 +214,10 @@ const economicsBank = () => [
       ["What is the study of individual markets?", "Microeconomics"],
       ["What is the study of the whole economy?", "Macroeconomics"],
       ["What measures responsiveness of demand to price?", "Price elasticity of demand"],
-      ["What is unemployment caused by an economic downturn?", "Cyclical unemployment"],
+      [
+        "What is unemployment caused by workers moving between jobs called?",
+        "Frictional unemployment",
+      ],
       ["What is money's function as a way to compare value?", "A unit of account"],
       ["What is the excess of exports over imports?", "A trade surplus"],
       ["What is a persistent government spending gap?", "A budget deficit"],

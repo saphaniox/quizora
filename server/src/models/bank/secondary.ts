@@ -160,15 +160,15 @@ const physicsBank = () => [
 const biologyFacts: [string, string][] = [
   ["What is the basic unit of life?", "The cell"], ["Which organelle carries out photosynthesis?", "The chloroplast"],
   ["Which molecule carries genetic information?", "DNA"], ["What is the liquid part of blood called?", "Plasma"],
-  ["Which blood cells fight infection?", "White blood cells"], ["What pigment carries oxygen in blood?", "Haemoglobin"],
+  ["What is the main role of platelets in blood?", "Helping blood clot"], ["What pigment carries oxygen in blood?", "Haemoglobin"],
   ["Which system includes the heart and blood vessels?", "The circulatory system"],
   ["Which organ produces insulin?", "The pancreas"], ["What is the male gamete in humans?", "The sperm cell"],
   ["What is the female gamete in humans?", "The egg cell (ovum)"], ["Where does fertilisation occur in humans?", "In the fallopian tube"],
-  ["What process do plants use to lose water vapour?", "Transpiration"], ["What is the green pigment in plants?", "Chlorophyll"],
+  ["What process do plants use to lose water vapour?", "Transpiration"], ["Which structure in the eye controls how much light enters?", "The iris"],
   ["What is the product of photosynthesis?", "Glucose and oxygen"], ["What is respiration in cells for?", "Releasing energy from glucose"],
   ["Which kingdom do mushrooms belong to?", "Fungi"], ["What is a group of similar cells called?", "A tissue"],
-  ["Which part of the brain controls balance?", "The cerebellum"], ["What is the study of heredity called?", "Genetics"],
-  ["What are organisms that break down dead matter called?", "Decomposers"], ["What structure controls what enters a cell?", "The cell membrane"],
+  ["Which brain region helps regulate appetite and body temperature?", "The hypothalamus"], ["What is the study of heredity called?", "Genetics"],
+  ["Which bacteria convert atmospheric nitrogen into forms plants can use?", "Nitrogen-fixing bacteria"], ["What structure controls what enters a cell?", "The cell membrane"],
   ["What is an animal without a backbone called?", "An invertebrate"], ["Which vitamin is made by the skin in sunlight?", "Vitamin D"],
   ["What is the exchange surface in the lungs?", "The alveoli"], ["What is the natural home of an organism called?", "Its habitat"],
   ["What is a food chain's first level called?", "The producer"], ["Which process makes identical body cells?", "Mitosis"],
@@ -197,7 +197,7 @@ const biologyBank = () => [
 ];
 
 const geographyFacts: [string, string][] = [
-  ["Which is the longest river in Africa?", "The Nile"], ["Which is the largest desert in the world?", "The Sahara"],
+  ["Which is the longest river in Africa?", "The Nile"], ["Which continent is the largest desert in the world?", "Antarctica"],
   ["Which is the highest mountain on earth?", "Mount Everest"], ["Which is the deepest ocean trench?", "The Mariana Trench"],
   ["What is molten rock below the surface called?", "Magma"], ["What instrument measures earthquakes?", "A seismograph"],
   ["What is the imaginary line at 0° longitude?", "The Prime Meridian"], ["What causes day and night?", "The earth's rotation"],
@@ -210,7 +210,7 @@ const geographyFacts: [string, string][] = [
   ["Which continent is the coldest?", "Antarctica"], ["Which country has the largest population?", "India"],
   ["Which is the largest country by land area?", "Russia"], ["Which sea is the saltiest famous inland lake?", "The Dead Sea"],
   ["What is the study of population called?", "Demography"], ["What is a periodic dry spell called?", "A drought"],
-  ["What is the movement of people into a country called?", "Immigration"], ["What is the main gas causing global warming?", "Carbon dioxide"],
+  ["What is an area drained by a river and its tributaries called?", "A drainage basin"], ["What is the main gas causing global warming?", "Carbon dioxide"],
   ["What is a river's starting point called?", "Its source"], ["Where a river meets the sea is called?", "The mouth"],
 ];
 

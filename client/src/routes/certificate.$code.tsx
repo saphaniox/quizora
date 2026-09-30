@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Award, BadgeCheck, Download, Loader2, Printer, Share2 } from "lucide-react";
+import { Award, BadgeCheck, Download, Gem, Loader2, Printer, Share2 } from "lucide-react";
 import QRCode from "qrcode";
 import { getCertificate } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
@@ -98,7 +98,7 @@ function CertificatePage() {
     month: "long",
     day: "numeric",
   }).format(new Date(certificate.issuedAt));
-  const verificationUrl = certificateUrl;
+  const verificationUrl = webAppUrl(`/certificate/${certificate.code}`);
 
   const handleDownload = async () => {
     setDownloading(true);
@@ -155,10 +155,20 @@ function CertificatePage() {
         <div className="pointer-events-none absolute right-16 top-16 hidden h-16 w-16 border-r border-t border-blue-700/60 sm:block" />
         <div className="pointer-events-none absolute bottom-16 left-16 hidden h-16 w-16 border-b border-l border-blue-700/60 sm:block" />
         <div className="pointer-events-none absolute bottom-16 right-16 hidden h-16 w-16 border-b border-r border-blue-700/60 sm:block" />
+        <Gem
+          aria-hidden="true"
+          strokeWidth={0.65}
+          className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 text-blue-300/20 sm:h-[32rem] sm:w-[32rem]"
+        />
+        <Gem
+          aria-hidden="true"
+          strokeWidth={0.55}
+          className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 text-amber-500/10 sm:h-[25rem] sm:w-[25rem]"
+        />
         <img
           src="/logo.png"
           alt=""
-          className="pointer-events-none absolute left-1/2 top-1/2 h-44 w-44 -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.05] sm:h-72 sm:w-72"
+          className="pointer-events-none absolute left-1/2 top-1/2 h-40 w-40 -translate-x-1/2 -translate-y-1/2 object-contain opacity-[0.035] sm:h-64 sm:w-64"
         />
 
         <div className="relative z-10">
@@ -215,7 +225,11 @@ function CertificatePage() {
             )}
           </div>
 
-          <div className="mx-auto mt-10 grid max-w-4xl gap-4 border-y border-slate-200 py-5 text-left sm:grid-cols-3">
+          <p className="mx-auto mt-6 max-w-2xl text-sm italic text-emerald-700">
+            Awarded in recognition of focused learning, persistence, and achievement.
+          </p>
+
+          <div className="mx-auto mt-8 grid max-w-4xl gap-4 border-y border-slate-200 py-5 text-left sm:grid-cols-3">
             <div>
               <p className="text-xs font-medium uppercase text-slate-500">Final Score</p>
               <p className="mt-1 text-xl font-bold text-emerald-700">
@@ -227,28 +241,63 @@ function CertificatePage() {
               <p className="mt-1 text-sm font-semibold text-slate-900">{issuedDate}</p>
             </div>
             <div>
-              <p className="text-xs font-medium uppercase text-slate-500">Credential ID</p>
-              <p className="mt-1 break-all font-mono text-sm font-semibold text-slate-900">
-                {certificate.code}
+              <p className="text-xs font-medium uppercase text-slate-500">Country</p>
+              <p className="mt-1 text-sm font-semibold text-slate-900">
+                {certificate.countryName
+                  ? `${countryFlag(certificate.countryCode ?? "")} ${certificate.countryName}`
+                  : "Not provided"}
               </p>
             </div>
           </div>
 
-          <div className="mx-auto mt-10 flex max-w-4xl flex-col gap-6 text-left sm:flex-row sm:items-end sm:justify-between">
-            <div>
-              <div className="h-px w-56 bg-slate-300" />
-              <p className="mt-2 text-sm font-semibold text-slate-900">Quitech Verification</p>
-              <p className="text-xs text-slate-500">Digitally issued and publicly verifiable</p>
-            </div>
-          </div>
-          {qrCode && (
-            <div className="mx-auto mt-8 flex w-fit flex-col items-center gap-2 rounded-md border border-slate-200 bg-white p-3 text-center">
-              <img src={qrCode} alt="Scan to verify this certificate" className="h-32 w-32" />
-              <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-                Scan to verify
+          <div className="mx-auto mt-8 grid max-w-4xl overflow-hidden rounded-md border border-slate-200 bg-slate-50 text-left sm:grid-cols-[1fr_1.2fr_9rem] sm:divide-x sm:divide-slate-200">
+            <div className="p-4 sm:p-5">
+              <div className="flex items-center gap-2 text-xs font-semibold uppercase text-emerald-700">
+                <BadgeCheck className="h-4 w-4" /> Verified online
+              </div>
+              <p className="mt-3 text-sm font-semibold text-slate-900">Quitech Verification</p>
+              <p className="mt-1 text-xs text-slate-500">
+                Digitally issued and publicly verifiable
               </p>
             </div>
-          )}
+            <div className="border-t border-slate-200 p-4 sm:border-t-0 sm:p-5 sm:text-center">
+              <p className="text-xs font-medium uppercase text-slate-500">Credential ID</p>
+              <p className="mt-2 break-all font-mono text-sm font-semibold text-slate-900">
+                {certificate.code}
+              </p>
+              <p className="mt-2 text-xs text-slate-500">
+                Use this ID or scan the code to confirm authenticity
+              </p>
+            </div>
+            <div className="flex min-h-40 items-center justify-center border-t border-slate-200 p-3 sm:min-h-0 sm:border-t-0">
+              {qrCode ? (
+                <div className="flex flex-col items-center gap-1.5">
+                  <img
+                    src={qrCode}
+                    alt="Scan to verify this certificate"
+                    className="h-24 w-24 bg-white p-1"
+                  />
+                  <p className="text-[10px] font-semibold uppercase text-slate-500">
+                    Scan to verify
+                  </p>
+                </div>
+              ) : (
+                <Loader2 className="h-5 w-5 animate-spin text-slate-400" />
+              )}
+            </div>
+          </div>
+
+          <div className="mt-6 border-t border-amber-600/30 pt-4 text-center">
+            <p className="text-xs font-semibold text-slate-800">Powered by SAPTech Uganda</p>
+            <a
+              href="https://www.saptechug.com"
+              target="_blank"
+              rel="noreferrer"
+              className="mt-1 inline-block text-[11px] text-slate-500 hover:text-slate-800"
+            >
+              www.saptechug.com
+            </a>
+          </div>
         </div>
       </div>
 

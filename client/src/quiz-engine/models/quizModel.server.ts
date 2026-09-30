@@ -1,5 +1,11 @@
 import type { Level, Quiz, QuizSummary, PublicQuiz } from "../types.server";
-import { expandTo, finalize, makeRng, type SectionDefinition } from "./bank/helpers.server";
+import {
+  finalize,
+  makeRng,
+  normalizeQuestionText,
+  type Draft,
+  type SectionDefinition,
+} from "./bank/helpers.server";
 import { primarySections } from "./bank/primary.server";
 import { primaryExtraSections } from "./bank/primary-extra.server";
 import { secondarySections } from "./bank/secondary.server";
@@ -126,19 +132,39 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   },
 ];
 
-/**
- * Certificate sections are marathons: every section is grown to this many
- * questions so only committed learners finish a full run.
- */
-const LEVEL_TARGETS: Record<string, number> = {
-  foundations: 500,
-  secondary: 500,
-  college: 500,
-  professional: 500,
-};
+let draftCache: Map<string, Draft[]> | undefined;
 
-function targetFor(levelId: string, section: SectionDefinition): number {
-  return section.target ?? LEVEL_TARGETS[levelId] ?? 500;
+function draftsBySection(): Map<string, Draft[]> {
+  if (draftCache) return draftCache;
+
+  const uniquePrompts = new Set<string>();
+  const drafts = new Map<string, Draft[]>();
+  for (const level of levelDefinitions) {
+    for (const section of level.sections) {
+      const sectionDrafts: Draft[] = [];
+      for (const item of section.build()) {
+        const prompt = normalizeQuestionText(item.text);
+        if (!prompt || uniquePrompts.has(prompt)) continue;
+        uniquePrompts.add(prompt);
+        sectionDrafts.push(item);
+      }
+      drafts.set(
+        section.id,
+        section.target === undefined ? sectionDrafts : sectionDrafts.slice(0, section.target),
+      );
+    }
+  }
+
+  draftCache = drafts;
+  return drafts;
+}
+
+function draftsFor(section: SectionDefinition): Draft[] {
+  return draftsBySection().get(section.id) ?? [];
+}
+
+function targetFor(section: SectionDefinition): number {
+  return draftsFor(section).length;
 }
 
 /** Timed practice gives Hard runs two minutes per question; other practice is one minute. */
@@ -162,7 +188,7 @@ function metaIndex(): Map<string, SectionMeta> {
     metaCache = new Map();
     for (const level of levelDefinitions) {
       for (const section of level.sections) {
-        metaCache.set(section.id, { level, section, target: targetFor(level.id, section) });
+        metaCache.set(section.id, { level, section, target: targetFor(section) });
       }
     }
   }
@@ -186,14 +212,11 @@ function summaryFor(meta: SectionMeta): QuizSummary {
 
 const quizCache = new Map<string, Quiz>();
 
-/** Built lazily per section: the full bank is far too large to build eagerly. */
+/** Build each authored bank once, assigning duplicate prompts to the first section. */
 function buildQuiz(meta: SectionMeta): Quiz {
   const cached = quizCache.get(meta.section.id);
   if (cached) return cached;
-  const questions = finalize(
-    meta.section.id,
-    expandTo(meta.section.id, meta.section.build(), meta.target),
-  );
+  const questions = finalize(meta.section.id, draftsFor(meta.section));
   const quiz: Quiz = {
     id: meta.section.id,
     title: meta.section.name,

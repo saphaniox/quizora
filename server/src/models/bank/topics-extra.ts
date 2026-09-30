@@ -47,7 +47,7 @@ const spellingFacts: [string, string][] = [
 
 const healthFacts: [string, string][] = [
   ["How often should we brush our teeth?", "Twice a day"], ["What should we wash before eating?", "Our hands"],
-  ["How many glasses of water should we aim for daily?", "About eight"], ["What food group builds muscles?", "Proteins"],
+  ["What factors can increase fluid needs?", "Heat, exercise, fever, or vomiting"], ["What food group builds muscles?", "Proteins"],
   ["What food group gives quick energy?", "Carbohydrates"], ["Which vitamin comes from sunlight?", "Vitamin D"],
   ["Which vitamin is found in oranges?", "Vitamin C"], ["What disease is caused by lack of vitamin C?", "Scurvy"],
   ["What spreads germs most easily?", "Dirty hands"], ["Why should we cover our mouth when coughing?", "To stop germs spreading"],
@@ -66,9 +66,9 @@ const capitalFacts: [string, string][] = [
   ["What is the capital of Brazil?", "Brasília"], ["What is the capital of Canada?", "Ottawa"],
   ["What is the capital of India?", "New Delhi"], ["What is the capital of China?", "Beijing"],
   ["What is the largest continent?", "Asia"], ["What is the longest river in Africa?", "The Nile"],
-  ["What is the largest ocean?", "The Pacific Ocean"], ["What is the largest desert in Africa?", "The Sahara"],
+  ["What is the largest ocean?", "The Pacific Ocean"], ["Which desert covers parts of Botswana, Namibia, and South Africa?", "The Kalahari Desert"],
   ["Which mountain is the highest in Africa?", "Kilimanjaro"], ["Which lake is the largest in Africa?", "Lake Victoria"],
-  ["How many continents are there?", "7"], ["Which line divides the earth into north and south?", "The equator"],
+  ["Which sea separates southern Europe from northern Africa?", "The Mediterranean Sea"], ["Which line divides the earth into north and south?", "The equator"],
 ];
 
 export const primaryExtraTopics: SectionDefinition[] = [
@@ -139,12 +139,12 @@ export const primaryExtraTopics: SectionDefinition[] = [
 
 const chemFacts: [string, string][] = [
   ["What is the chemical formula of water?", "H₂O"], ["What is the formula of carbon dioxide?", "CO₂"],
-  ["What is the formula of table salt?", "NaCl"], ["What is the formula of methane?", "CH₄"],
-  ["What is the formula of ammonia?", "NH₃"], ["What is the formula of sulfuric acid?", "H₂SO₄"],
-  ["What is the symbol for iron?", "Fe"], ["What is the symbol for potassium?", "K"],
-  ["What is the symbol for sodium?", "Na"], ["What is the symbol for gold?", "Au"],
+  ["What is the formula of calcium carbonate?", "CaCO₃"], ["What is the formula of methane?", "CH₄"],
+  ["What is the formula of ammonia?", "NH₃"], ["What is the formula of nitric acid?", "HNO₃"],
+  ["What does oxidation involve in electron transfer?", "Loss of electrons"], ["What does reduction involve in electron transfer?", "Gain of electrons"],
+  ["Which family contains lithium, sodium, and potassium?", "The alkali metals"], ["What does an element's atomic number equal?", "Its number of protons"],
   ["What is the pH of a neutral solution?", "7"], ["What gas is produced when acid reacts with a metal?", "Hydrogen"],
-  ["What is the process of a solid turning to gas directly?", "Sublimation"], ["What holds atoms together in a molecule?", "Chemical bonds"],
+  ["What is the direct change from gas to solid called?", "Deposition"], ["What holds atoms together in a molecule?", "Chemical bonds"],
   ["What bond involves sharing electrons?", "A covalent bond"], ["What bond involves transferring electrons?", "An ionic bond"],
   ["What is Avogadro's number approximately?", "6.02 × 10²³"], ["What is the charge on an electron?", "Negative"],
   ["Which particle has no charge?", "The neutron"], ["What is the centre of an atom called?", "The nucleus"],
@@ -167,11 +167,11 @@ const historyFacts: [string, string][] = [
   ["In which year did the Second World War end?", "1945"], ["In which year did the First World War begin?", "1914"],
   ["Who was the first president of the United States?", "George Washington"], ["Who led India's non-violent independence movement?", "Mahatma Gandhi"],
   ["Who was South Africa's first black president?", "Nelson Mandela"], ["Which empire built the Colosseum?", "The Roman Empire"],
-  ["Which civilisation built the pyramids of Giza?", "Ancient Egypt"], ["Which conference divided Africa in 1884–85?", "The Berlin Conference"],
+  ["Which ancient people built the city of Petra?", "The Nabataeans"], ["Which conference divided Africa in 1884–85?", "The Berlin Conference"],
   ["In which year did Kenya gain independence?", "1963"], ["In which year did Uganda gain independence?", "1962"],
   ["What was the trade route linking Asia and Europe?", "The Silk Road"], ["What revolution began in Britain in the 1700s?", "The Industrial Revolution"],
   ["Which wall divided Berlin until 1989?", "The Berlin Wall"], ["Who discovered the sea route to India in 1498?", "Vasco da Gama"],
-  ["What was the period of European learning after the Middle Ages?", "The Renaissance"], ["Which organisation replaced the League of Nations?", "The United Nations"],
+  ["What was the period of European learning after the Middle Ages?", "The Renaissance"], ["What event divided Berlin into East and West sectors after World War II?", "The Berlin Wall"],
   ["What was the cold rivalry between the USA and USSR called?", "The Cold War"], ["Which document limited English royal power in 1215?", "Magna Carta"],
   ["What ended slavery in the British Empire in 1833?", "The Slavery Abolition Act"], ["Who was the first person in space?", "Yuri Gagarin"],
 ];
@@ -271,8 +271,8 @@ export const secondaryExtraTopics: SectionDefinition[] = [
 
 const accountingFacts: [string, string][] = [
   ["What is the accounting equation?", "Assets = liabilities + equity"],
-  ["What statement shows profit over a period?", "The income statement"],
-  ["What statement shows position at a point in time?", "The balance sheet"],
+  ["What is the quick ratio formula?", "(Cash + receivables + marketable securities) ÷ current liabilities"],
+  ["What is working capital?", "Current assets minus current liabilities"],
   ["What statement tracks cash movements?", "The cash flow statement"],
   ["What is a resource owned by a business?", "An asset"],
   ["What is an obligation of the business?", "A liability"],
@@ -318,7 +318,7 @@ const lawFacts: [string, string][] = [
 const dsFacts: [string, string][] = [
   ["What data structure is last-in-first-out?", "A stack"],
   ["What data structure is first-in-first-out?", "A queue"],
-  ["What is the average time complexity of binary search?", "O(log n)"],
+  ["Which traversal visits the left subtree, root, then right subtree?", "Inorder traversal"],
   ["What is the worst case of quicksort?", "O(n²)"],
   ["What is the time complexity of merge sort?", "O(n log n)"],
   ["What structure stores key/value pairs with hashing?", "A hash table"],
@@ -389,7 +389,7 @@ const researchFacts: [string, string][] = [
   ["What is the null hypothesis?", "A statement of no effect or difference"],
   ["What p-value is commonly used as a threshold?", "0.05"],
   ["What is a subset of a population called?", "A sample"],
-  ["What sampling gives everyone an equal chance?", "Simple random sampling"],
+  ["What sampling method selects every kth member after a random start?", "Systematic sampling"],
   ["What sampling divides a population into groups?", "Stratified sampling"],
   ["What is the consistency of a measure called?", "Reliability"],
   ["What is measuring what you intend to measure?", "Validity"],
@@ -400,8 +400,8 @@ const researchFacts: [string, string][] = [
   ["What is a structured set of questions?", "A questionnaire"],
   ["What is a small trial before the main study?", "A pilot study"],
   ["What committee approves study ethics?", "An ethics review board"],
-  ["What is rejecting a true null hypothesis?", "A Type I error"],
-  ["What is failing to reject a false null hypothesis?", "A Type II error"],
+  ["What ethical principle requires voluntary agreement before taking part?", "Informed consent"],
+  ["What ethical principle protects participants' identities?", "Confidentiality"],
   ["What describes the spread of data?", "Standard deviation"],
   ["What review summarises existing work?", "A literature review"],
   ["What citation style is common in social sciences?", "APA"],
@@ -482,7 +482,12 @@ primaryExtraTopics.push(
     return draft(
       `In the number ${value}, which digit is in the ${places[position]} place?`,
       digit,
-      digits.split("").filter((d) => d !== digit).slice(0, 3),
+      Array.from(
+        new Set([
+          ...digits.split("").filter((d) => d !== digit),
+          ..."0123456789".split("").filter((d) => d !== digit),
+        ]),
+      ).slice(0, 3),
       `Reading ${value} from the left, the ${places[position]} digit is ${digit}.`,
     );
   }),
@@ -510,7 +515,7 @@ collegeExtraTopics.push(
       return draft(
         `What is the derivative of ${coefficient}x^${power}?`,
         `${coefficient * power}x^${power - 1}`,
-        [`${coefficient}x^${power - 1}`, `${coefficient * power}x^${power}`, `${coefficient + power}x^${power - 1}`],
+        [`${coefficient}x^${power - 1}`, `${coefficient * power}x^${power}`, `${coefficient * power + 1}x^${power - 1}`],
         `Bring down the power: ${coefficient} × ${power} = ${coefficient * power}, then reduce the exponent by one.`,
       );
     }
@@ -526,7 +531,7 @@ collegeExtraTopics.push(
 collegeExtraTopics.push(
   factSection("college-project-management", "Project Management", "Scope, schedule, risk, quality and stakeholder control.", "Medium", [
     ["What defines the work included in a project?", "The scope"],
-    ["What are the three classic project constraints?", "Scope, time and cost"],
+    ["What change-control record tracks approved project changes?", "A change log"],
     ["What chart shows tasks against a timeline?", "A Gantt chart"],
     ["What is the longest sequence of dependent tasks?", "The critical path"],
     ["What document authorises a project?", "The project charter"],

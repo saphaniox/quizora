@@ -73,7 +73,7 @@ const grammarFacts: [string, string][] = [
   ["The mark that ends a question", "A question mark"],
   ["The mark that shows strong feeling", "An exclamation mark"],
   ["The mark used to show speech", "Quotation marks"],
-  ["A group of words with a subject and a verb", "A sentence"],
+  ["The punctuation mark used to show possession or a contraction", "An apostrophe"],
   ["The naming part of a sentence", "The subject"],
   ["Words such as in, on and under", "Prepositions"],
   ["Words such as and, but and because", "Conjunctions"],
@@ -95,7 +95,7 @@ const spellings: [string, string][] = [
   ["adress / address", "address"],
   ["seperate / separate", "separate"],
   ["definately / definitely", "definitely"],
-  ["libary / library", " library"],
+  ["libary / library", "library"],
   ["writting / writing", "writing"],
   ["begining / beginning", "beginning"],
   ["neccessary / necessary", "necessary"],
@@ -141,12 +141,12 @@ const readingBank = () => [
 ];
 
 const healthFacts: [string, string][] = [
-  ["How often should you brush your teeth?", "Twice a day"],
+  ["How long should hands be scrubbed with soap and water?", "At least 20 seconds"],
   ["What should you do after using the toilet?", "Wash your hands with soap"],
-  ["Which food group gives us energy?", "Carbohydrates"],
+  ["What is one common sign of dehydration?", "Thirst"],
   ["Which food group builds the body?", "Proteins"],
   ["Which foods protect the body from disease?", "Fruits and vegetables"],
-  ["How many glasses of water should we drink daily?", "About eight"],
+  ["Which mineral is needed to build and maintain strong bones?", "Calcium"],
   ["What do we call food eaten in the right balance?", "A balanced diet"],
   ["Which insect spreads malaria?", "The mosquito"],
   ["What protects us from mosquito bites at night?", "A treated mosquito net"],

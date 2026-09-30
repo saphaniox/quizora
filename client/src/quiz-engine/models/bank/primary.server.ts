@@ -3,7 +3,7 @@ import { draft, fromMap, generate, numericOptions, type SectionDefinition } from
 const mathBank = (): ReturnType<SectionDefinition["build"]> => {
   const kinds = 6;
   return generate(
-    95,
+    115,
     (index, random) => {
       const kind = index % kinds;
       const a = 2 + Math.floor(random() * 48);
@@ -211,8 +211,18 @@ const natureFacts: [string, string][] = [
   ["Which material lets electricity flow easily?", "Metal"],
   ["What do we call water falling from clouds?", "Rain"],
   ["What do bees collect from flowers?", "Nectar"],
-  ["Which animal group lays eggs and has feathers?", "Birds"],
+  ["Which group of animals is characterized by feathers?", "Birds"],
   ["What is the process of a caterpillar becoming a butterfly called?", "Metamorphosis"],
+  ["What is the change from a solid to a liquid called?", "Melting"],
+  ["What is the change from a liquid to a gas called?", "Evaporation"],
+  ["What is the change from a liquid to a solid called?", "Freezing"],
+  ["What type of energy is stored in food?", "Chemical energy"],
+  ["What is a material that resists the flow of electricity called?", "An insulator"],
+  ["What is the natural place where an organism lives called?", "A habitat"],
+  ["What is the center of an atom called?", "The nucleus"],
+  ["What unit is used to measure electric current?", "The ampere"],
+  ["Which flower part can develop into a fruit after fertilisation?", "The ovary"],
+  ["What is water loss from a plant's leaves called?", "Transpiration"],
 ];
 
 const scienceBank = () => [
@@ -229,7 +239,10 @@ const scienceBank = () => [
   ...fromMap(
     natureFacts,
     (k) => k,
-    (_k, v) => `The correct answer is: ${v}.`,
+    (k, v) =>
+      v === "Birds"
+        ? "Feathers are the defining feature shared by all living birds."
+        : `The correct answer is: ${v}.`,
   ),
 ];
 
@@ -285,7 +298,7 @@ const civics: [string, string][] = [
   ["Which document shows where and when you were born?", "A birth certificate"],
   ["What do we call the study of the earth's surface?", "Geography"],
   ["What shows places drawn to scale on paper?", "A map"],
-  ["How many continents are there?", "Seven"],
+  ["Which direction is opposite east on a compass?", "West"],
   ["Which is the largest ocean?", "The Pacific Ocean"],
   ["Which is the largest continent?", "Asia"],
   ["Which line divides the earth into north and south?", "The equator"],

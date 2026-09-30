@@ -56,7 +56,7 @@ const electricalBank = () => [
       ["What instrument measures resistance, voltage and current?", "A multimeter"],
       ["What device protects a circuit from overcurrent?", "A circuit breaker"],
       ["What device provides a low-resistance path to earth?", "The earthing conductor"],
-      ["What is the standard mains frequency in most of Africa and Europe?", "50 Hz"],
+      ["What device converts solar-panel DC output into AC for household use?", "An inverter"],
       ["What is the standard mains frequency in North America?", "60 Hz"],
       ["What device steps voltage up or down in AC systems?", "A transformer"],
       ["What component stores energy in an electric field?", "A capacitor"],

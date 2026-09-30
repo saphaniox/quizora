@@ -68,7 +68,7 @@ const grammarFacts: [string, string][] = [
   ["The mark that ends a question", "A question mark"],
   ["The mark that shows strong feeling", "An exclamation mark"],
   ["The mark used to show speech", "Quotation marks"],
-  ["A group of words with a subject and a verb", "A sentence"],
+  ["The punctuation mark used to show possession or a contraction", "An apostrophe"],
   ["The naming part of a sentence", "The subject"],
   ["Words such as in, on and under", "Prepositions"],
   ["Words such as and, but and because", "Conjunctions"],
@@ -84,7 +84,7 @@ const grammarFacts: [string, string][] = [
 const spellings: [string, string][] = [
   ["recieve / receive", "receive"], ["freind / friend", "friend"], ["becuase / because", "because"],
   ["beautifull / beautiful", "beautiful"], ["tomorow / tomorrow", "tomorrow"], ["adress / address", "address"],
-  ["seperate / separate", "separate"], ["definately / definitely", "definitely"], ["libary / library"," library"],
+  ["seperate / separate", "separate"], ["definately / definitely", "definitely"], ["libary / library","library"],
   ["writting / writing", "writing"], ["begining / beginning", "beginning"], ["neccessary / necessary", "necessary"],
   ["occassion / occasion", "occasion"], ["enviroment / environment", "environment"], ["goverment / government", "government"],
 ];
@@ -115,12 +115,12 @@ const readingBank = () => [
 ];
 
 const healthFacts: [string, string][] = [
-  ["How often should you brush your teeth?", "Twice a day"],
+  ["How long should hands be scrubbed with soap and water?", "At least 20 seconds"],
   ["What should you do after using the toilet?", "Wash your hands with soap"],
-  ["Which food group gives us energy?", "Carbohydrates"],
+  ["What is one common sign of dehydration?", "Thirst"],
   ["Which food group builds the body?", "Proteins"],
   ["Which foods protect the body from disease?", "Fruits and vegetables"],
-  ["How many glasses of water should we drink daily?", "About eight"],
+    ["Which mineral is needed to build and maintain strong bones?", "Calcium"],
   ["What do we call food eaten in the right balance?", "A balanced diet"],
   ["Which insect spreads malaria?", "The mosquito"],
   ["What protects us from mosquito bites at night?", "A treated mosquito net"],
@@ -166,6 +166,22 @@ const healthBank = () => [
     },
     "foundations-health",
   ),
+    ...fromMap(
+      healthFacts,
+      (k) => k,
+      (k, v) => {
+        if (k.startsWith("How long should hands")) {
+          return "Scrubbing with soap and water for at least 20 seconds helps remove germs.";
+        }
+        if (k.startsWith("What is one common sign")) {
+          return "Thirst can signal a need for fluids; hydration needs vary with activity, climate, and health.";
+        }
+        if (k.startsWith("Which mineral is needed")) {
+          return "Calcium is a key mineral in bones and helps maintain their strength.";
+        }
+        return `The correct answer is: ${v}.`;
+      },
+    ),
 ];
 
 const reasoningBank = () =>
