@@ -4,6 +4,8 @@ import helmet from "@fastify/helmet";
 import routes from "./routes/index.js";
 import { closeDatabase, checkDatabase } from "./db.js";
 import { recordRequest, startRequestTimer } from "./runtimeMetrics.js";
+import { startEmailWorker } from "./services/emailService.js";
+import { startPushWorker } from "./services/pushService.js";
 
 export async function createApp() {
   const app = Fastify({ logger: true, trustProxy: true, bodyLimit: 100_000 });
@@ -37,12 +39,22 @@ export async function createApp() {
     "file://",
     "null",
   ];
-  const configuredOrigins = process.env["CLIENT_ORIGIN"]?.split(",").map((origin) => origin.trim()).filter(Boolean);
-  const productionOrigins = [...new Set([...defaultProductionOrigins, ...(configuredOrigins ?? [])])];
+  const configuredOrigins = process.env["CLIENT_ORIGIN"]
+    ?.split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const productionOrigins = [
+    ...new Set([...defaultProductionOrigins, ...(configuredOrigins ?? [])]),
+  ];
   const isAllowedOrigin = (origin: string | undefined) => {
     if (!origin || origin === "null") return true;
     if (localCapacitorOrigins.includes(origin)) return true;
-    if (origin.startsWith("capacitor://") || origin.startsWith("http://localhost") || origin.startsWith("http://127.0.0.1")) return true;
+    if (
+      origin.startsWith("capacitor://") ||
+      origin.startsWith("http://localhost") ||
+      origin.startsWith("http://127.0.0.1")
+    )
+      return true;
     return productionOrigins.includes(origin);
   };
 
@@ -62,7 +74,13 @@ export async function createApp() {
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization", "Cookie", "X-Requested-With", "Accept"],
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization",
+      "Cookie",
+      "X-Requested-With",
+      "Accept",
+    ],
   });
   await app.register(helmet);
   app.get("/", async () => ({ status: "ok", service: "quitech-api" }));
@@ -78,8 +96,12 @@ if (process.env["NODE_ENV"] !== "test") {
   const app = await createApp();
   await checkDatabase();
   await app.listen({ port, host });
+  const stopEmailWorker = startEmailWorker(app.log);
+  const stopPushWorker = startPushWorker(app.log);
   app.log.info(`Quitech API listening on ${host}:${port}`);
   const shutdown = async () => {
+    stopEmailWorker();
+    stopPushWorker();
     await app.close();
     await closeDatabase();
   };

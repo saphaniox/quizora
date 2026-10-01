@@ -119,6 +119,20 @@ export interface AppUpdateSettings {
   updatedAt: string;
 }
 
+export interface EmailPreferences {
+  learningUpdates: boolean;
+  reminders: boolean;
+  productUpdates: boolean;
+}
+
+export type AdminEmailTemplate =
+  | "adminMessage"
+  | "appUpdate"
+  | "newContent"
+  | "maintenanceNotice"
+  | "securityNotice"
+  | "privacyTermsUpdate";
+
 export type FeedbackType = "feature" | "topic" | "bug" | "general";
 export type FeedbackStatus = "new" | "reviewing" | "planned" | "resolved" | "dismissed";
 
@@ -493,6 +507,21 @@ export async function registerPushDevice(
   });
 }
 
+export async function getPushNotificationPreference(): Promise<{
+  enabled: boolean;
+}> {
+  return fetchJson<{ enabled: boolean }>("/auth/me/push-device");
+}
+
+export async function savePushNotificationPreference(
+  enabled: boolean,
+): Promise<{ enabled: boolean }> {
+  return fetchJson<{ enabled: boolean }>("/auth/me/push-device", {
+    method: "PATCH",
+    body: JSON.stringify({ enabled }),
+  });
+}
+
 export async function sendAdminPushNotification(payload: {
   title: string;
   body: string;
@@ -501,6 +530,62 @@ export async function sendAdminPushNotification(payload: {
   return fetchJson<{ recipients: number; sent: number; failed: number }>("/admin/notifications", {
     method: "POST",
     body: JSON.stringify(payload),
+  });
+}
+
+export async function getEmailPreferences(): Promise<{
+  preferences: EmailPreferences;
+}> {
+  return fetchJson<{ preferences: EmailPreferences }>("/auth/me/email-preferences");
+}
+
+export async function saveEmailPreferences(
+  preferences: EmailPreferences,
+): Promise<{ preferences: EmailPreferences }> {
+  return fetchJson<{ preferences: EmailPreferences }>("/auth/me/email-preferences", {
+    method: "PUT",
+    body: JSON.stringify(preferences),
+  });
+}
+
+export async function getPublicEmailPreferences(
+  token: string,
+): Promise<{ preferences: EmailPreferences }> {
+  return fetchJson<{ preferences: EmailPreferences }>(
+    `/email-preferences?token=${encodeURIComponent(token)}`,
+  );
+}
+
+export async function savePublicEmailPreferences(
+  token: string,
+  preferences: EmailPreferences,
+): Promise<{ preferences: EmailPreferences }> {
+  return fetchJson<{ preferences: EmailPreferences }>("/email-preferences", {
+    method: "PUT",
+    body: JSON.stringify({ token, ...preferences }),
+  });
+}
+
+export async function sendAdminEmail(payload: {
+  template: AdminEmailTemplate;
+  subject: string;
+  title: string;
+  message: string;
+  actionLabel?: string;
+  actionUrl?: string;
+}): Promise<{ queued: number; campaignId: string }> {
+  return fetchJson<{ queued: number; campaignId: string }>("/admin/emails", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function sendAdminTestEmail(): Promise<{
+  sentTo: string;
+  messageId: string | null;
+}> {
+  return fetchJson<{ sentTo: string; messageId: string | null }>("/admin/emails/test", {
+    method: "POST",
   });
 }
 

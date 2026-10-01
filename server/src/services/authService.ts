@@ -179,7 +179,7 @@ export async function loginWithGoogle(profile: {
   sub: string;
   email: string;
   displayName: string;
-}): Promise<{ user: User; token: string }> {
+}): Promise<{ user: User; token: string; isNewAccount: boolean }> {
   const email = profile.email.trim().toLowerCase();
   const existing = await pool.query<UserRow>(
     `SELECT id, email, phone_e164, display_name, role, must_change_password
@@ -187,6 +187,7 @@ export async function loginWithGoogle(profile: {
     [profile.sub, email],
   );
   let row = existing.rows[0];
+  const isNewAccount = !row;
   if (row) {
     const linked = await pool.query<UserRow>(
       `UPDATE users SET google_sub = $2
@@ -213,12 +214,17 @@ export async function loginWithGoogle(profile: {
     );
     row = created.rows[0]!;
   }
-  return createSession(toUser(row));
+  return { ...(await createSession(toUser(row))), isNewAccount };
 }
 
 export async function createPasswordResetToken(email: string) {
-  const user = await pool.query<{ id: string; email: string }>(
-    "SELECT id, email FROM users WHERE email = $1",
+  const user = await pool.query<{
+    id: string;
+    email: string;
+    displayName: string;
+  }>(
+    `SELECT id, email, display_name AS "displayName"
+     FROM users WHERE email = $1`,
     [email.trim().toLowerCase()],
   );
   if (!user.rows[0]) return null;
@@ -231,25 +237,31 @@ export async function createPasswordResetToken(email: string) {
     "INSERT INTO auth_tokens (token_hash, user_id, purpose, expires_at) VALUES ($1, $2, $3, NOW() + ($4 * INTERVAL '1 minute'))",
     [hashToken(token), user.rows[0].id, "reset_password", 60],
   );
-  return { token, email: user.rows[0].email };
+  return {
+    token,
+    email: user.rows[0].email,
+    userId: user.rows[0].id,
+    displayName: user.rows[0].displayName,
+  };
 }
 
 export async function resetPasswordWithToken(
   token: string,
   password: string,
-): Promise<boolean> {
+): Promise<User | null> {
   const passwordHash = await hashPassword(password);
-  const result = await pool.query(
+  const result = await pool.query<UserRow>(
     `UPDATE users SET password_hash = $2, must_change_password = FALSE
-     WHERE id = (SELECT user_id FROM auth_tokens WHERE token_hash = $1 AND purpose = 'reset_password' AND used_at IS NULL AND expires_at > NOW())`,
+     WHERE id = (SELECT user_id FROM auth_tokens WHERE token_hash = $1 AND purpose = 'reset_password' AND used_at IS NULL AND expires_at > NOW())
+     RETURNING id, email, phone_e164, display_name, role, must_change_password`,
     [hashToken(token), passwordHash],
   );
-  if (!result.rowCount) return false;
+  if (!result.rowCount) return null;
   await pool.query(
     "UPDATE auth_tokens SET used_at = NOW() WHERE token_hash = $1",
     [hashToken(token)],
   );
-  return true;
+  return toUser(result.rows[0]!);
 }
 
 export async function savePushDevice(
@@ -261,6 +273,24 @@ export async function savePushDevice(
     `INSERT INTO push_devices (token, user_id, platform) VALUES ($1, $2, $3)
      ON CONFLICT (token) DO UPDATE SET user_id = EXCLUDED.user_id, platform = EXCLUDED.platform, enabled = TRUE, updated_at = NOW()`,
     [token, userId, platform],
+  );
+}
+
+export async function getPushNotificationsEnabled(userId: string): Promise<boolean> {
+  const result = await pool.query<{ push_notifications_enabled: boolean }>(
+    "SELECT push_notifications_enabled FROM users WHERE id = $1",
+    [userId],
+  );
+  return result.rows[0]?.push_notifications_enabled ?? false;
+}
+
+export async function setPushNotificationsEnabled(
+  userId: string,
+  enabled: boolean,
+): Promise<void> {
+  await pool.query(
+    "UPDATE users SET push_notifications_enabled = $2 WHERE id = $1",
+    [userId, enabled],
   );
 }
 

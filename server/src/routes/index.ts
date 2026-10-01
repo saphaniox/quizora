@@ -77,6 +77,10 @@ const routes: FastifyPluginAsync = async (app) => {
     authController.resetPassword,
   );
   app.get("/auth/me", authController.me);
+  app.get("/auth/me/email-preferences", authController.getEmailPreferences);
+  app.put("/auth/me/email-preferences", authController.saveEmailPreferences);
+  app.get("/email-preferences", authController.getPublicEmailPreferences);
+  app.put("/email-preferences", authController.savePublicEmailPreferences);
   app.get("/admin/system", authController.getAdminSystemMetrics);
   app.get("/admin/analytics", authController.getAdminAnalytics);
   app.patch("/auth/me", authController.updateMe);
@@ -93,7 +97,11 @@ const routes: FastifyPluginAsync = async (app) => {
   app.delete("/auth/me", authController.deleteAccount);
   app.post("/auth/logout", authController.logout);
   app.put("/auth/me/push-device", authController.registerPushDevice);
+  app.get("/auth/me/push-device", authController.getPushPreference);
+  app.patch("/auth/me/push-device", authController.savePushPreference);
   app.post("/admin/notifications", authController.sendAdminPushNotification);
+  app.post("/admin/emails", authController.sendAdminEmail);
+  app.post("/admin/emails/test", authController.sendAdminTestEmail);
   app.post("/feedback", feedbackController.createFeedback);
   app.get("/app-update", authController.getAppUpdateSettings);
   app.put("/app-update", authController.saveAppUpdateSettings);

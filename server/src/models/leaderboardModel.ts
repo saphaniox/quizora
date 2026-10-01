@@ -11,6 +11,7 @@ interface LeaderboardFilters {
 interface BestEntryResult {
   entry: LeaderboardEntry;
   improved: boolean;
+  previousPercentage: number | null;
 }
 
 const publicColumns = `
@@ -44,8 +45,12 @@ const participantKeySql = `
   END
 `;
 
-function isBetterEntry(next: LeaderboardEntry, current: LeaderboardEntry): boolean {
-  if (next.percentage !== current.percentage) return next.percentage > current.percentage;
+function isBetterEntry(
+  next: LeaderboardEntry,
+  current: LeaderboardEntry,
+): boolean {
+  if (next.percentage !== current.percentage)
+    return next.percentage > current.percentage;
   if (next.score !== current.score) return next.score > current.score;
   if (next.timeSpentSeconds !== current.timeSpentSeconds) {
     return next.timeSpentSeconds < current.timeSpentSeconds;
@@ -78,7 +83,9 @@ async function insertEntry(entry: LeaderboardEntry): Promise<void> {
   );
 }
 
-async function findBestForParticipant(entry: LeaderboardEntry): Promise<LeaderboardEntry | null> {
+async function findBestForParticipant(
+  entry: LeaderboardEntry,
+): Promise<LeaderboardEntry | null> {
   if (entry.userId) {
     const result = await pool.query<LeaderboardEntry>(
       `SELECT ${internalColumns}
@@ -160,17 +167,23 @@ async function updateDisplayEntry(entry: LeaderboardEntry): Promise<void> {
   );
 }
 
-export async function recordBestEntry(entry: LeaderboardEntry): Promise<BestEntryResult> {
+export async function recordBestEntry(
+  entry: LeaderboardEntry,
+): Promise<BestEntryResult> {
   const existing = await findBestForParticipant(entry);
   if (!existing) {
     await insertEntry(entry);
-    return { entry, improved: true };
+    return { entry, improved: true, previousPercentage: null };
   }
 
   if (isBetterEntry(entry, existing)) {
     const updated = { ...entry, id: existing.id };
     await updateScoreEntry(updated);
-    return { entry: updated, improved: true };
+    return {
+      entry: updated,
+      improved: true,
+      previousPercentage: existing.percentage,
+    };
   }
 
   const displayUpdated = {
@@ -183,10 +196,16 @@ export async function recordBestEntry(entry: LeaderboardEntry): Promise<BestEntr
     leaderboardVisible: entry.leaderboardVisible ?? true,
   };
   await updateDisplayEntry(displayUpdated);
-  return { entry: displayUpdated, improved: false };
+  return {
+    entry: displayUpdated,
+    improved: false,
+    previousPercentage: existing.percentage,
+  };
 }
 
-export async function hideParticipantEntries(entry: LeaderboardEntry): Promise<void> {
+export async function hideParticipantEntries(
+  entry: LeaderboardEntry,
+): Promise<void> {
   await pool.query(
     `UPDATE leaderboard
      SET leaderboard_visible = FALSE
@@ -197,7 +216,10 @@ export async function hideParticipantEntries(entry: LeaderboardEntry): Promise<v
   );
 }
 
-export async function rankOf(id: string, options: LeaderboardFilters = {}): Promise<number> {
+export async function rankOf(
+  id: string,
+  options: LeaderboardFilters = {},
+): Promise<number> {
   const result = await pool.query<{ rank: string }>(
     `WITH filtered AS (
        SELECT *, ${participantKeySql} AS participant_key
@@ -221,7 +243,9 @@ export async function rankOf(id: string, options: LeaderboardFilters = {}): Prom
   return result.rows[0] ? Number(result.rows[0].rank) : 0;
 }
 
-export async function list(options: LeaderboardFilters = {}): Promise<LeaderboardEntry[]> {
+export async function list(
+  options: LeaderboardFilters = {},
+): Promise<LeaderboardEntry[]> {
   const result = await pool.query<LeaderboardEntry>(
     `WITH filtered AS (
        SELECT *, ${participantKeySql} AS participant_key
@@ -240,12 +264,20 @@ export async function list(options: LeaderboardFilters = {}): Promise<Leaderboar
      FROM best_entries
      ORDER BY percentage DESC, time_spent_seconds ASC, completed_at ASC
     LIMIT $4`,
-      [options.quizId ?? null, options.levelId ?? null, options.countryCode ?? null, options.limit ?? 100],
+    [
+      options.quizId ?? null,
+      options.levelId ?? null,
+      options.countryCode ?? null,
+      options.limit ?? 100,
+    ],
   );
   return result.rows;
 }
 
-export async function listByUser(userId: string, limit = 100): Promise<LeaderboardEntry[]> {
+export async function listByUser(
+  userId: string,
+  limit = 100,
+): Promise<LeaderboardEntry[]> {
   const result = await pool.query<LeaderboardEntry>(
     `WITH filtered AS (
        SELECT *, ${participantKeySql} AS participant_key
@@ -320,7 +352,11 @@ export async function count(options: LeaderboardFilters = {}): Promise<number> {
        ORDER BY quiz_id, participant_key, percentage DESC, time_spent_seconds ASC, completed_at ASC
      )
      SELECT COUNT(*)::text AS count FROM best_entries`,
-    [options.quizId ?? null, options.levelId ?? null, options.countryCode ?? null],
+    [
+      options.quizId ?? null,
+      options.levelId ?? null,
+      options.countryCode ?? null,
+    ],
   );
   return Number(result.rows[0]?.count ?? 0);
 }

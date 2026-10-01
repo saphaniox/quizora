@@ -21,8 +21,21 @@ import {
   setSessionCookie,
 } from "../sessionCookie.js";
 import { pool } from "../db.js";
-import { sendPasswordResetEmail } from "../services/emailService.js";
+import {
+  isEmailConfigured,
+  queueBulkTemplateEmail,
+  queueTemplateEmail,
+  sendTemplateEmail,
+  sendPasswordResetEmail,
+} from "../services/emailService.js";
 import { sendPushNotification } from "../services/pushService.js";
+import {
+  cancelPushNotification,
+  cancelUserPushNotifications,
+  schedulePushNotification,
+} from "../services/pushService.js";
+import * as emailNotificationModel from "../models/emailNotificationModel.js";
+import { appUrl } from "../email/layout.js";
 
 const optionalEmail = z.preprocess(
   (value) =>
@@ -69,6 +82,7 @@ const pushDeviceSchema = z.object({
   token: z.string().min(20).max(4096),
   platform: z.enum(["android", "ios", "web"]),
 });
+const pushPreferenceSchema = z.object({ enabled: z.boolean() });
 const pushNotificationSchema = z.object({
   title: z.string().trim().min(2).max(80),
   body: z.string().trim().min(2).max(240),
@@ -124,6 +138,35 @@ const passwordChangeSchema = z.object({
 });
 
 const adminRoleSchema = z.object({ role: z.enum(["user", "admin"]) });
+const emailPreferencesSchema = z.object({
+  learningUpdates: z.boolean(),
+  reminders: z.boolean(),
+  productUpdates: z.boolean(),
+});
+const publicEmailPreferencesSchema = emailPreferencesSchema.extend({
+  token: z.string().min(20).max(200),
+});
+const secureEmailActionUrl = z
+  .string()
+  .trim()
+  .url()
+  .max(500)
+  .refine((url) => url.startsWith("https://"), "Use a secure HTTPS link");
+const adminEmailSchema = z.object({
+  template: z.enum([
+    "adminMessage",
+    "appUpdate",
+    "newContent",
+    "maintenanceNotice",
+    "securityNotice",
+    "privacyTermsUpdate",
+  ]),
+  subject: z.string().trim().min(3).max(160),
+  title: z.string().trim().min(3).max(160),
+  message: z.string().trim().min(10).max(5000),
+  actionLabel: z.string().trim().max(60).optional().or(z.literal("")),
+  actionUrl: secureEmailActionUrl.optional().or(z.literal("")),
+});
 
 async function requireUser(
   request: FastifyRequest,
@@ -201,6 +244,17 @@ export async function register(
       parsed.data.displayName,
     );
     setSessionCookie(reply, result.token);
+    if (result.user.email) {
+      void queueTemplateEmail({
+        to: result.user.email,
+        userId: result.user.id,
+        template: "welcome",
+        data: { displayName: result.user.displayName },
+        dedupeKey: `welcome:${result.user.id}`,
+      }).catch((error) =>
+        request.log.error(error, "Could not queue welcome email"),
+      );
+    }
     reply.code(201).send({ user: result.user, token: result.token });
   } catch (error) {
     if ((error as { code?: string }).code === "23505")
@@ -269,6 +323,17 @@ export async function googleLogin(
         profile.name ?? profile.given_name ?? profile.email.split("@")[0]!,
     });
     setSessionCookie(reply, result.token);
+    if (result.isNewAccount && result.user.email) {
+      void queueTemplateEmail({
+        to: result.user.email,
+        userId: result.user.id,
+        template: "googleWelcome",
+        data: { displayName: result.user.displayName },
+        dedupeKey: `welcome:${result.user.id}`,
+      }).catch((error) =>
+        request.log.error(error, "Could not queue Google welcome email"),
+      );
+    }
     reply.send({ user: result.user, token: result.token });
   } catch {
     reply.code(401).send({ error: "Google sign-in could not be verified" });
@@ -287,7 +352,12 @@ export async function requestPasswordReset(
   const reset = await auth.createPasswordResetToken(parsed.data.email);
   if (reset) {
     try {
-      await sendPasswordResetEmail(reset.email, reset.token);
+      await sendPasswordResetEmail(
+        reset.email,
+        reset.token,
+        reset.displayName,
+        reset.userId,
+      );
     } catch (error) {
       request.log.error(error, "Could not send password reset email");
     }
@@ -304,23 +374,30 @@ export async function resetPassword(
 ): Promise<void> {
   const parsed = resetPasswordSchema.safeParse(request.body);
   if (!parsed.success) {
-    reply
-      .code(400)
-      .send({
-        error: "Use a valid reset link and a password of at least 8 characters",
-      });
+    reply.code(400).send({
+      error: "Use a valid reset link and a password of at least 8 characters",
+    });
     return;
   }
-  if (
-    !(await auth.resetPasswordWithToken(
-      parsed.data.token,
-      parsed.data.password,
-    ))
-  ) {
+  const user = await auth.resetPasswordWithToken(
+    parsed.data.token,
+    parsed.data.password,
+  );
+  if (!user) {
     reply
       .code(400)
       .send({ error: "This reset link is invalid or has expired" });
     return;
+  }
+  if (user.email) {
+    void queueTemplateEmail({
+      to: user.email,
+      userId: user.id,
+      template: "passwordChanged",
+      data: { displayName: user.displayName },
+    }).catch((error) =>
+      request.log.error(error, "Could not queue password-change email"),
+    );
   }
   reply.send({ ok: true });
 }
@@ -342,6 +419,33 @@ export async function registerPushDevice(
   }
   await auth.savePushDevice(user.id, parsed.data.token, parsed.data.platform);
   reply.send({ ok: true });
+}
+
+export async function getPushPreference(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await requireUser(request, reply, "Sign in to manage notifications");
+  if (!user) return;
+  reply.header("cache-control", "no-store").send({
+    enabled: await auth.getPushNotificationsEnabled(user.id),
+  });
+}
+
+export async function savePushPreference(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await requireUser(request, reply, "Sign in to manage notifications");
+  if (!user) return;
+  const parsed = pushPreferenceSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Choose a valid notification setting" });
+    return;
+  }
+  await auth.setPushNotificationsEnabled(user.id, parsed.data.enabled);
+  if (!parsed.data.enabled) await cancelUserPushNotifications(user.id);
+  reply.header("cache-control", "no-store").send(parsed.data);
 }
 
 export async function sendAdminPushNotification(
@@ -388,6 +492,98 @@ export async function sendAdminPushNotification(
   }
 }
 
+export async function sendAdminEmail(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const parsed = adminEmailSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply
+      .code(400)
+      .send({ error: "Add a valid subject, heading, and email message" });
+    return;
+  }
+  const campaignId = `admin-${Date.now()}`;
+  const recipients = await queueBulkTemplateEmail({
+    template: parsed.data.template,
+    data: {
+      campaignId,
+      subject: parsed.data.subject,
+      title: parsed.data.title,
+      message: parsed.data.message,
+      actionLabel: parsed.data.actionLabel || undefined,
+      actionUrl: parsed.data.actionUrl || undefined,
+    },
+  });
+  await adminAuditModel.record(
+    admin.id,
+    "email.queued",
+    "email_campaign",
+    campaignId,
+    {
+      template: parsed.data.template,
+      subject: parsed.data.subject,
+      recipients,
+    },
+  );
+  reply.send({ queued: recipients, campaignId });
+}
+
+export async function sendAdminTestEmail(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  if (!admin.email) {
+    reply.code(400).send({
+      error: "Add an email address to this admin account before sending a test",
+    });
+    return;
+  }
+  if (!isEmailConfigured()) {
+    reply.code(503).send({
+      error:
+        "SMTP is not configured. Add the SMTP values in Coolify and deploy again.",
+    });
+    return;
+  }
+
+  try {
+    const result = await sendTemplateEmail({
+      to: admin.email,
+      userId: admin.id,
+      template: "adminMessage",
+      data: {
+        displayName: admin.displayName,
+        subject: "Your Quitech email connection is working",
+        title: "Your test email arrived",
+        message:
+          "This is a test message from the Quitech admin dashboard. If you can read it, your SMTP connection and branded email layout are working properly.",
+        actionLabel: "Open Quitech",
+        actionUrl: appUrl("/"),
+      },
+      ignorePreferences: true,
+    });
+    await adminAuditModel.record(
+      admin.id,
+      "email.test_sent",
+      "email",
+      randomAuditId(),
+      { recipient: admin.email, messageId: result.messageId ?? null },
+    );
+    reply.send({ sentTo: admin.email, messageId: result.messageId ?? null });
+  } catch (error) {
+    request.log.error(error, "Could not send test email");
+    reply.code(502).send({
+      error:
+        "Quitech could not send the test email. Check your SMTP host, port, username, and app password in Coolify.",
+    });
+  }
+}
+
 function randomAuditId(): string {
   return `push-${Date.now()}`;
 }
@@ -398,6 +594,98 @@ export async function me(
 ): Promise<void> {
   const user = await auth.getUser(readSessionToken(request));
   reply.send({ user });
+}
+
+export async function getEmailPreferences(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await requireUser(
+    request,
+    reply,
+    "Sign in to manage email preferences",
+  );
+  if (!user) return;
+  const { preferences } = await emailNotificationModel.ensureEmailPreferences(
+    user.id,
+  );
+  reply.header("cache-control", "no-store").send({ preferences });
+}
+
+export async function saveEmailPreferences(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const user = await requireUser(
+    request,
+    reply,
+    "Sign in to manage email preferences",
+  );
+  if (!user) return;
+  const parsed = emailPreferencesSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Choose valid email preference settings" });
+    return;
+  }
+  const preferences = await emailNotificationModel.updateEmailPreferences(
+    user.id,
+    parsed.data,
+  );
+  if (user.email) {
+    void queueTemplateEmail({
+      to: user.email,
+      userId: user.id,
+      template: "emailPreferencesChanged",
+      data: { displayName: user.displayName },
+    }).catch((error) =>
+      request.log.error(error, "Could not queue preference email"),
+    );
+  }
+  reply.header("cache-control", "no-store").send({ preferences });
+}
+
+export async function getPublicEmailPreferences(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const token = String((request.query as { token?: string }).token ?? "");
+  if (token.length < 20) {
+    reply.code(400).send({ error: "This email preference link is invalid" });
+    return;
+  }
+  const preferences =
+    await emailNotificationModel.getEmailPreferencesByToken(token);
+  if (!preferences) {
+    reply
+      .code(404)
+      .send({ error: "This email preference link is invalid or expired" });
+    return;
+  }
+  reply.header("cache-control", "no-store").send({ preferences });
+}
+
+export async function savePublicEmailPreferences(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = publicEmailPreferencesSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "This email preference request is invalid" });
+    return;
+  }
+  const { token, ...nextPreferences } = parsed.data;
+  const preferences =
+    await emailNotificationModel.updateEmailPreferencesByToken(
+      token,
+      nextPreferences,
+    );
+  if (!preferences) {
+    reply
+      .code(404)
+      .send({ error: "This email preference link is invalid or expired" });
+    return;
+  }
+  reply.header("cache-control", "no-store").send({ preferences });
 }
 
 export async function getAdminSystemMetrics(
@@ -454,14 +742,12 @@ export async function getAdminAnalytics(
   const admin = await requireAdmin(request, reply);
   if (!admin) return;
   const query = request.query as { from?: string; to?: string };
-  reply
-    .header("cache-control", "no-store")
-    .send(
-      await adminAnalyticsModel.getAnalytics({
-        from: query.from,
-        to: query.to,
-      }),
-    );
+  reply.header("cache-control", "no-store").send(
+    await adminAnalyticsModel.getAnalytics({
+      from: query.from,
+      to: query.to,
+    }),
+  );
 }
 
 export async function updateMe(
@@ -484,6 +770,16 @@ export async function updateMe(
     return;
   }
   await leaderboardModel.updateDisplayNameForUser(user.id, user.displayName);
+  if (user.email) {
+    void queueTemplateEmail({
+      to: user.email,
+      userId: user.id,
+      template: "profileUpdated",
+      data: { displayName: user.displayName },
+    }).catch((error) =>
+      request.log.error(error, "Could not queue profile email"),
+    );
+  }
   reply.send({ user });
 }
 
@@ -502,6 +798,12 @@ export async function changePassword(
     reply.code(400).send({ error: "Choose a different password" });
     return;
   }
+  const user = await requireUser(
+    request,
+    reply,
+    "Sign in to change your password",
+  );
+  if (!user) return;
   const changed = await auth.changeCurrentPassword(
     readSessionToken(request),
     parsed.data.currentPassword,
@@ -510,6 +812,16 @@ export async function changePassword(
   if (!changed) {
     reply.code(401).send({ error: "The current password is not correct" });
     return;
+  }
+  if (user.email) {
+    void queueTemplateEmail({
+      to: user.email,
+      userId: user.id,
+      template: "passwordChanged",
+      data: { displayName: user.displayName },
+    }).catch((error) =>
+      request.log.error(error, "Could not queue password-change email"),
+    );
   }
   reply.send({ ok: true });
 }
@@ -615,6 +927,39 @@ export async function saveProgress(
     elapsedSeconds: parsed.data.elapsedSeconds,
     deviceLabel: parsed.data.deviceLabel ?? null,
   });
+  if (user.email) {
+    const quiz = await quizModel.findQuiz(quizId);
+    if (quiz) {
+      void queueTemplateEmail({
+        to: user.email,
+        userId: user.id,
+        template: "unfinishedQuiz",
+        data: {
+          displayName: user.displayName,
+          quizTitle: quiz.title,
+          actionUrl: appUrl(`/quizzes/${quiz.id}`),
+        },
+        dedupeKey: `unfinished:${user.id}:${quiz.id}`,
+        scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000),
+      }).catch((error) =>
+        request.log.error(error, "Could not queue unfinished-quiz reminder"),
+      );
+    }
+  }
+  const quiz = await quizModel.findQuiz(quizId);
+  if (quiz) {
+    await schedulePushNotification({
+      userId: user.id,
+      title: "Pick up where you left off",
+      body: `Your progress in ${quiz.title} is saved and ready when you are.`,
+      url: `/quizzes/${quiz.id}`,
+      type: "unfinished-quiz-reminder",
+      dedupeKey: `unfinished:${user.id}:${quiz.id}`,
+      scheduledFor: new Date(Date.now() + 24 * 60 * 60 * 1000),
+    }).catch((error: unknown) =>
+      request.log.error(error, "Could not schedule unfinished-quiz push reminder"),
+    );
+  }
   reply.send({ progress });
 }
 
@@ -635,6 +980,10 @@ export async function deleteProgress(
     return;
   }
   await progressModel.remove(user.id, quizId);
+  await emailNotificationModel.cancelEmailJob(
+    `unfinished:${user.id}:${quizId}`,
+  );
+  await cancelPushNotification(`unfinished:${user.id}:${quizId}`);
   reply.send({ ok: true });
 }
 
@@ -652,10 +1001,21 @@ export async function deleteAccount(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
+  const currentUser = await auth.getUser(readSessionToken(request));
   const deleted = await auth.deleteCurrentUser(readSessionToken(request));
   if (!deleted) {
     reply.code(401).send({ error: "Sign in before deleting your account" });
     return;
+  }
+  if (currentUser?.email) {
+    void queueTemplateEmail({
+      to: currentUser.email,
+      template: "accountDeleted",
+      data: { displayName: currentUser.displayName },
+      dedupeKey: `account-deleted:${currentUser.id}`,
+    }).catch((error) =>
+      request.log.error(error, "Could not queue account-deletion email"),
+    );
   }
   clearSessionCookie(reply)
     .header("cache-control", "no-store")
@@ -786,6 +1146,17 @@ export async function resetAdminUserPassword(
     reply.code(404).send({ error: "User not found" });
     return;
   }
+  const recipient = await adminDataModel.findUserContact(userId);
+  if (recipient?.email) {
+    void queueTemplateEmail({
+      to: recipient.email,
+      userId: recipient.id,
+      template: "temporaryPassword",
+      data: { displayName: recipient.displayName, temporaryPassword },
+    }).catch((error) =>
+      request.log.error(error, "Could not queue temporary-password email"),
+    );
+  }
   await adminAuditModel.record(admin.id, "user.password_reset", "user", userId);
   reply.send({ temporaryPassword });
 }
@@ -809,6 +1180,17 @@ export async function updateAdminUserRole(
   if (!(await adminDataModel.updateUserRole(userId, parsed.data.role))) {
     reply.code(404).send({ error: "User not found" });
     return;
+  }
+  const recipient = await adminDataModel.findUserContact(userId);
+  if (recipient?.email) {
+    void queueTemplateEmail({
+      to: recipient.email,
+      userId: recipient.id,
+      template: "roleChanged",
+      data: { displayName: recipient.displayName, role: parsed.data.role },
+    }).catch((error) =>
+      request.log.error(error, "Could not queue role-change email"),
+    );
   }
   await adminAuditModel.record(admin.id, "user.role_updated", "user", userId, {
     role: parsed.data.role,

@@ -5,6 +5,7 @@ import {
   CheckCircle2,
   Loader2,
   LogOut,
+  Mail,
   Settings,
   ShieldAlert,
   ShieldCheck,
@@ -19,16 +20,22 @@ import {
   getCurrentUser,
   getMyActivity,
   getAccountProgressList,
+  getEmailPreferences,
+  getPushNotificationPreference,
   logoutAccount,
+  saveEmailPreferences,
+  savePushNotificationPreference,
   updateCurrentUser,
   changeCurrentPassword,
   type AccountUser,
+  type EmailPreferences,
 } from "@/lib/api";
 import type { Certificate } from "@/types/quiz";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
+import { enablePushNotifications } from "@/lib/native-services";
 
 export const Route = createFileRoute("/_authenticated/wallet")({
   head: () => ({
@@ -66,6 +73,11 @@ function WalletPage() {
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [savingPassword, setSavingPassword] = useState(false);
+  const [emailPreferences, setEmailPreferences] = useState<EmailPreferences | null>(null);
+  const [savingEmailPreferences, setSavingEmailPreferences] = useState(false);
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(false);
+  const [loadingPushPreferences, setLoadingPushPreferences] = useState(true);
+  const [savingPushPreferences, setSavingPushPreferences] = useState(false);
 
   const toBase64 = (value: string): string => {
     const bytes = new TextEncoder().encode(value);
@@ -85,7 +97,29 @@ function WalletPage() {
         if (!alive) return;
         setUser(user);
         setDisplayName(user?.displayName ?? "");
-        if (!user) return;
+        if (!user) {
+          setLoadingPushPreferences(false);
+          return;
+        }
+        void getPushNotificationPreference()
+          .then(({ enabled }) => {
+            if (alive) setPushNotificationsEnabled(enabled);
+          })
+          .catch(() => {
+            if (alive) setDeleteError("We could not load your notification choice right now.");
+          })
+          .finally(() => {
+            if (alive) setLoadingPushPreferences(false);
+          });
+        if (user.email) {
+          void getEmailPreferences()
+            .then(({ preferences }) => {
+              if (alive) setEmailPreferences(preferences);
+            })
+            .catch(() => {
+              if (alive) setDeleteError("We could not load your email choices right now.");
+            });
+        }
         void getMyActivity()
           .then(({ certificates }) => {
             if (alive) setCertificates(mergeCertificates(certificates, localCertificates));
@@ -98,7 +132,9 @@ function WalletPage() {
         if (alive) setDeleteError("We could not load your account details right now.");
       })
       .finally(() => {
-        if (alive) setLoadingUser(false);
+        if (alive) {
+          setLoadingUser(false);
+        }
       });
     return () => {
       alive = false;
@@ -194,6 +230,47 @@ function WalletPage() {
       });
     } finally {
       setSavingPassword(false);
+    }
+  };
+
+  const handleEmailPreferencesSave = async () => {
+    if (!emailPreferences || savingEmailPreferences) return;
+    setSavingEmailPreferences(true);
+    try {
+      const result = await saveEmailPreferences(emailPreferences);
+      setEmailPreferences(result.preferences);
+      toast.success("Email choices saved");
+    } catch (failure) {
+      toast.error("We could not save your email choices", {
+        description: failure instanceof Error ? failure.message : "Please try again shortly.",
+      });
+    } finally {
+      setSavingEmailPreferences(false);
+    }
+  };
+
+  const handlePushPreferenceChange = async (enabled: boolean) => {
+    if (savingPushPreferences) return;
+    setSavingPushPreferences(true);
+    try {
+      if (enabled) {
+        const permissionGranted = await enablePushNotifications(true);
+        if (!permissionGranted) {
+          toast.error("Notifications were not enabled", {
+            description: "Allow notifications in your device settings, then try again.",
+          });
+          return;
+        }
+      }
+      const result = await savePushNotificationPreference(enabled);
+      setPushNotificationsEnabled(result.enabled);
+      toast.success(enabled ? "Push notifications enabled" : "Push notifications turned off");
+    } catch (failure) {
+      toast.error("Could not save your notification choice", {
+        description: failure instanceof Error ? failure.message : "Please try again shortly.",
+      });
+    } finally {
+      setSavingPushPreferences(false);
     }
   };
 
@@ -365,6 +442,86 @@ function WalletPage() {
                   {savingPassword ? "Changing..." : "Change password"}
                 </button>
               </form>
+
+              {user.email && emailPreferences && (
+                <div className="mt-5 max-w-md border-t border-border pt-5">
+                  <div className="flex items-center gap-2">
+                    <Mail className="h-4 w-4 text-primary" />
+                    <p className="text-sm font-semibold text-foreground">Email choices</p>
+                  </div>
+                  <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                    Choose what feels useful. Account and security messages always stay on.
+                  </p>
+                  <div className="mt-3 space-y-3">
+                    <WalletEmailChoice
+                      label="Learning updates"
+                      checked={emailPreferences.learningUpdates}
+                      onChange={(learningUpdates) =>
+                        setEmailPreferences((current) =>
+                          current ? { ...current, learningUpdates } : current,
+                        )
+                      }
+                    />
+                    <WalletEmailChoice
+                      label="Gentle reminders"
+                      checked={emailPreferences.reminders}
+                      onChange={(reminders) =>
+                        setEmailPreferences((current) =>
+                          current ? { ...current, reminders } : current,
+                        )
+                      }
+                    />
+                    <WalletEmailChoice
+                      label="Quitech news"
+                      checked={emailPreferences.productUpdates}
+                      onChange={(productUpdates) =>
+                        setEmailPreferences((current) =>
+                          current ? { ...current, productUpdates } : current,
+                        )
+                      }
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => void handleEmailPreferencesSave()}
+                    disabled={savingEmailPreferences}
+                    className="mt-4 inline-flex items-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60"
+                  >
+                    {savingEmailPreferences && <Loader2 className="h-4 w-4 animate-spin" />}
+                    Save email choices
+                  </button>
+                </div>
+              )}
+              <div className="mt-5 max-w-md border-t border-border pt-5">
+                <div className="flex items-center gap-2">
+                  <Settings className="h-4 w-4 text-primary" />
+                  <p className="text-sm font-semibold text-foreground">Push notifications</p>
+                </div>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Get quiz results and unfinished-quiz reminders on this device.
+                </p>
+                {!Capacitor.isNativePlatform() && (
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Push notifications are available in the Android and iOS app.
+                  </p>
+                )}
+                <div className="mt-3">
+                  <WalletEmailChoice
+                    label={
+                      savingPushPreferences
+                        ? "Saving notification choice..."
+                        : "Allow push notifications"
+                    }
+                    checked={pushNotificationsEnabled}
+                    disabled={
+                      loadingPushPreferences ||
+                      savingPushPreferences ||
+                      !Capacitor.isNativePlatform()
+                    }
+                    onChange={(enabled) => void handlePushPreferenceChange(enabled)}
+                  />
+                </div>
+              </div>
             </div>
           </div>
         </section>
@@ -518,6 +675,28 @@ function WalletPage() {
         </section>
       )}
     </div>
+  );
+}
+
+function WalletEmailChoice({
+  label,
+  checked,
+  onChange,
+}: {
+  label: string;
+  checked: boolean;
+  onChange: (checked: boolean) => void;
+}) {
+  return (
+    <label className="flex cursor-pointer items-center justify-between gap-4 text-sm text-foreground">
+      <span>{label}</span>
+      <input
+        type="checkbox"
+        checked={checked}
+        onChange={(event) => onChange(event.target.checked)}
+        className="h-5 w-5 shrink-0 accent-primary"
+      />
+    </label>
   );
 }
 

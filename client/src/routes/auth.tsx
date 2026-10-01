@@ -7,7 +7,7 @@ import { SocialLogin } from "@capgo/capacitor-social-login";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, loginWithGoogle, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
-import { enablePushNotifications } from "@/lib/native-services";
+import { syncPushNotifications } from "@/lib/native-services";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/auth")({
@@ -66,7 +66,7 @@ function AuthPage() {
 
   const finish = (user: Awaited<ReturnType<typeof loginAccount>>["user"]) => {
     queryClient.setQueryData(["auth", "me"], { user });
-    void enablePushNotifications();
+    void syncPushNotifications();
     toast.success(mode === "signup" ? "Welcome to Quitech" : "Welcome back");
     void navigate({ to: user.mustChangePassword ? "/wallet" : next, replace: true });
   };

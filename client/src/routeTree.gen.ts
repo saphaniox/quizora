@@ -14,6 +14,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as DeleteDataRouteImport } from './routes/delete-data'
+import { Route as EmailPreferencesRouteImport } from './routes/email-preferences'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
@@ -25,6 +26,7 @@ import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as ApiIndexRouteImport } from './routes/api.index'
 import { Route as ApiAppUpdateRouteImport } from './routes/api/app-update'
+import { Route as ApiEmailPreferencesRouteImport } from './routes/api/email-preferences'
 import { Route as ApiFeedbackRouteImport } from './routes/api/feedback'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLeaderboardRouteImport } from './routes/api/leaderboard'
@@ -37,6 +39,7 @@ import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analyt
 import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-log'
 import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalogue'
 import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
+import { Route as ApiAdminEmailsRouteImport } from './routes/api/admin/emails'
 import { Route as ApiAdminFeedbackRouteImport } from './routes/api/admin/feedback'
 import { Route as ApiAdminNotificationsRouteImport } from './routes/api/admin/notifications'
 import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
@@ -53,10 +56,12 @@ import { Route as ApiQuizzesIndexRouteImport } from './routes/api/quizzes.index'
 import { Route as ApiQuizzesIdRouteImport } from './routes/api/quizzes.$id'
 import { Route as ApiAdminCatalogueSectionIdRouteImport } from './routes/api/admin/catalogue.$sectionId'
 import { Route as ApiAdminCertificatesCodeRouteImport } from './routes/api/admin/certificates.$code'
+import { Route as ApiAdminEmailsTestRouteImport } from './routes/api/admin/emails.test'
 import { Route as ApiAdminFeedbackIdRouteImport } from './routes/api/admin/feedback.$id'
 import { Route as ApiAdminLeaderboardIdRouteImport } from './routes/api/admin/leaderboard.$id'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users.$userId'
 import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
+import { Route as ApiAuthMeEmailPreferencesRouteImport } from './routes/api/auth/me/email-preferences'
 import { Route as ApiAuthMePasswordRouteImport } from './routes/api/auth/me/password'
 import { Route as ApiAuthMeProgressRouteImport } from './routes/api/auth/me/progress'
 import { Route as ApiAuthMePushDeviceRouteImport } from './routes/api/auth/me/push-device'
@@ -88,6 +93,11 @@ const DeleteAccountRoute = DeleteAccountRouteImport.update({
 const DeleteDataRoute = DeleteDataRouteImport.update({
   id: '/delete-data',
   path: '/delete-data',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const EmailPreferencesRoute = EmailPreferencesRouteImport.update({
+  id: '/email-preferences',
+  path: '/email-preferences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
@@ -143,6 +153,11 @@ const ApiIndexRoute = ApiIndexRouteImport.update({
 const ApiAppUpdateRoute = ApiAppUpdateRouteImport.update({
   id: '/api/app-update',
   path: '/api/app-update',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiEmailPreferencesRoute = ApiEmailPreferencesRouteImport.update({
+  id: '/api/email-preferences',
+  path: '/api/email-preferences',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiFeedbackRoute = ApiFeedbackRouteImport.update({
@@ -203,6 +218,11 @@ const ApiAdminCatalogueRoute = ApiAdminCatalogueRouteImport.update({
 const ApiAdminCertificatesRoute = ApiAdminCertificatesRouteImport.update({
   id: '/api/admin/certificates',
   path: '/api/admin/certificates',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminEmailsRoute = ApiAdminEmailsRouteImport.update({
+  id: '/api/admin/emails',
+  path: '/api/admin/emails',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminFeedbackRoute = ApiAdminFeedbackRouteImport.update({
@@ -287,6 +307,11 @@ const ApiAdminCertificatesCodeRoute =
     path: '/$code',
     getParentRoute: () => ApiAdminCertificatesRoute,
   } as any)
+const ApiAdminEmailsTestRoute = ApiAdminEmailsTestRouteImport.update({
+  id: '/test',
+  path: '/test',
+  getParentRoute: () => ApiAdminEmailsRoute,
+} as any)
 const ApiAdminFeedbackIdRoute = ApiAdminFeedbackIdRouteImport.update({
   id: '/$id',
   path: '/$id',
@@ -307,6 +332,12 @@ const ApiAuthMeActivityRoute = ApiAuthMeActivityRouteImport.update({
   path: '/activity',
   getParentRoute: () => ApiAuthMeRoute,
 } as any)
+const ApiAuthMeEmailPreferencesRoute =
+  ApiAuthMeEmailPreferencesRouteImport.update({
+    id: '/email-preferences',
+    path: '/email-preferences',
+    getParentRoute: () => ApiAuthMeRoute,
+  } as any)
 const ApiAuthMePasswordRoute = ApiAuthMePasswordRouteImport.update({
   id: '/password',
   path: '/password',
@@ -356,6 +387,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
+  '/email-preferences': typeof EmailPreferencesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -366,6 +398,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/api/app-update': typeof ApiAppUpdateRoute
+  '/api/email-preferences': typeof ApiEmailPreferencesRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
@@ -379,6 +412,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
+  '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
@@ -395,10 +429,12 @@ export interface FileRoutesByFullPath {
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
+  '/api/admin/emails/test': typeof ApiAdminEmailsTestRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/auth/me/email-preferences': typeof ApiAuthMeEmailPreferencesRoute
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
@@ -413,6 +449,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
+  '/email-preferences': typeof EmailPreferencesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -423,6 +460,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/api/app-update': typeof ApiAppUpdateRoute
+  '/api/email-preferences': typeof ApiEmailPreferencesRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
@@ -436,6 +474,7 @@ export interface FileRoutesByTo {
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
+  '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
@@ -452,10 +491,12 @@ export interface FileRoutesByTo {
   '/api/quizzes': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
+  '/api/admin/emails/test': typeof ApiAdminEmailsTestRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/auth/me/email-preferences': typeof ApiAuthMeEmailPreferencesRoute
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
@@ -472,6 +513,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
+  '/email-preferences': typeof EmailPreferencesRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
@@ -482,6 +524,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/api/app-update': typeof ApiAppUpdateRoute
+  '/api/email-preferences': typeof ApiEmailPreferencesRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
@@ -495,6 +538,7 @@ export interface FileRoutesById {
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
+  '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
@@ -511,10 +555,12 @@ export interface FileRoutesById {
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
+  '/api/admin/emails/test': typeof ApiAdminEmailsTestRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
+  '/api/auth/me/email-preferences': typeof ApiAuthMeEmailPreferencesRoute
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
@@ -531,6 +577,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/delete-account'
     | '/delete-data'
+    | '/email-preferences'
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
@@ -541,6 +588,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/wallet'
     | '/api/app-update'
+    | '/api/email-preferences'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
@@ -554,6 +602,7 @@ export interface FileRouteTypes {
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
+    | '/api/admin/emails'
     | '/api/admin/feedback'
     | '/api/admin/notifications'
     | '/api/admin/system'
@@ -570,10 +619,12 @@ export interface FileRouteTypes {
     | '/api/quizzes/'
     | '/api/admin/catalogue/$sectionId'
     | '/api/admin/certificates/$code'
+    | '/api/admin/emails/test'
     | '/api/admin/feedback/$id'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
+    | '/api/auth/me/email-preferences'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/auth/me/push-device'
@@ -588,6 +639,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/delete-account'
     | '/delete-data'
+    | '/email-preferences'
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
@@ -598,6 +650,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/wallet'
     | '/api/app-update'
+    | '/api/email-preferences'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
@@ -611,6 +664,7 @@ export interface FileRouteTypes {
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
+    | '/api/admin/emails'
     | '/api/admin/feedback'
     | '/api/admin/notifications'
     | '/api/admin/system'
@@ -627,10 +681,12 @@ export interface FileRouteTypes {
     | '/api/quizzes'
     | '/api/admin/catalogue/$sectionId'
     | '/api/admin/certificates/$code'
+    | '/api/admin/emails/test'
     | '/api/admin/feedback/$id'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
+    | '/api/auth/me/email-preferences'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/auth/me/push-device'
@@ -646,6 +702,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/delete-account'
     | '/delete-data'
+    | '/email-preferences'
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
@@ -656,6 +713,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/_authenticated/wallet'
     | '/api/app-update'
+    | '/api/email-preferences'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
@@ -669,6 +727,7 @@ export interface FileRouteTypes {
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
     | '/api/admin/certificates'
+    | '/api/admin/emails'
     | '/api/admin/feedback'
     | '/api/admin/notifications'
     | '/api/admin/system'
@@ -685,10 +744,12 @@ export interface FileRouteTypes {
     | '/api/quizzes/'
     | '/api/admin/catalogue/$sectionId'
     | '/api/admin/certificates/$code'
+    | '/api/admin/emails/test'
     | '/api/admin/feedback/$id'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
+    | '/api/auth/me/email-preferences'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/auth/me/push-device'
@@ -705,6 +766,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   DeleteAccountRoute: typeof DeleteAccountRoute
   DeleteDataRoute: typeof DeleteDataRoute
+  EmailPreferencesRoute: typeof EmailPreferencesRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
   LeaderboardRoute: typeof LeaderboardRoute
@@ -713,6 +775,7 @@ export interface RootRouteChildren {
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   ApiAppUpdateRoute: typeof ApiAppUpdateRoute
+  ApiEmailPreferencesRoute: typeof ApiEmailPreferencesRoute
   ApiFeedbackRoute: typeof ApiFeedbackRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiLeaderboardRoute: typeof ApiLeaderboardRoute
@@ -726,6 +789,7 @@ export interface RootRouteChildren {
   ApiAdminAuditLogRoute: typeof ApiAdminAuditLogRoute
   ApiAdminCatalogueRoute: typeof ApiAdminCatalogueRouteWithChildren
   ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRouteWithChildren
+  ApiAdminEmailsRoute: typeof ApiAdminEmailsRouteWithChildren
   ApiAdminFeedbackRoute: typeof ApiAdminFeedbackRouteWithChildren
   ApiAdminNotificationsRoute: typeof ApiAdminNotificationsRoute
   ApiAdminSystemRoute: typeof ApiAdminSystemRoute
@@ -778,6 +842,13 @@ declare module '@tanstack/react-router' {
       path: '/delete-data'
       fullPath: '/delete-data'
       preLoaderRoute: typeof DeleteDataRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/email-preferences': {
+      id: '/email-preferences'
+      path: '/email-preferences'
+      fullPath: '/email-preferences'
+      preLoaderRoute: typeof EmailPreferencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/forgot-password': {
@@ -855,6 +926,13 @@ declare module '@tanstack/react-router' {
       path: '/api/app-update'
       fullPath: '/api/app-update'
       preLoaderRoute: typeof ApiAppUpdateRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/email-preferences': {
+      id: '/api/email-preferences'
+      path: '/api/email-preferences'
+      fullPath: '/api/email-preferences'
+      preLoaderRoute: typeof ApiEmailPreferencesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/feedback': {
@@ -939,6 +1017,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/certificates'
       fullPath: '/api/admin/certificates'
       preLoaderRoute: typeof ApiAdminCertificatesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/emails': {
+      id: '/api/admin/emails'
+      path: '/api/admin/emails'
+      fullPath: '/api/admin/emails'
+      preLoaderRoute: typeof ApiAdminEmailsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/feedback': {
@@ -1053,6 +1138,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminCertificatesCodeRouteImport
       parentRoute: typeof ApiAdminCertificatesRoute
     }
+    '/api/admin/emails/test': {
+      id: '/api/admin/emails/test'
+      path: '/test'
+      fullPath: '/api/admin/emails/test'
+      preLoaderRoute: typeof ApiAdminEmailsTestRouteImport
+      parentRoute: typeof ApiAdminEmailsRoute
+    }
     '/api/admin/feedback/$id': {
       id: '/api/admin/feedback/$id'
       path: '/$id'
@@ -1079,6 +1171,13 @@ declare module '@tanstack/react-router' {
       path: '/activity'
       fullPath: '/api/auth/me/activity'
       preLoaderRoute: typeof ApiAuthMeActivityRouteImport
+      parentRoute: typeof ApiAuthMeRoute
+    }
+    '/api/auth/me/email-preferences': {
+      id: '/api/auth/me/email-preferences'
+      path: '/email-preferences'
+      fullPath: '/api/auth/me/email-preferences'
+      preLoaderRoute: typeof ApiAuthMeEmailPreferencesRouteImport
       parentRoute: typeof ApiAuthMeRoute
     }
     '/api/auth/me/password': {
@@ -1190,6 +1289,18 @@ const ApiAdminCertificatesRouteChildren: ApiAdminCertificatesRouteChildren = {
 const ApiAdminCertificatesRouteWithChildren =
   ApiAdminCertificatesRoute._addFileChildren(ApiAdminCertificatesRouteChildren)
 
+interface ApiAdminEmailsRouteChildren {
+  ApiAdminEmailsTestRoute: typeof ApiAdminEmailsTestRoute
+}
+
+const ApiAdminEmailsRouteChildren: ApiAdminEmailsRouteChildren = {
+  ApiAdminEmailsTestRoute: ApiAdminEmailsTestRoute,
+}
+
+const ApiAdminEmailsRouteWithChildren = ApiAdminEmailsRoute._addFileChildren(
+  ApiAdminEmailsRouteChildren,
+)
+
 interface ApiAdminFeedbackRouteChildren {
   ApiAdminFeedbackIdRoute: typeof ApiAdminFeedbackIdRoute
 }
@@ -1239,6 +1350,7 @@ const ApiAuthMeProgressRouteWithChildren =
 
 interface ApiAuthMeRouteChildren {
   ApiAuthMeActivityRoute: typeof ApiAuthMeActivityRoute
+  ApiAuthMeEmailPreferencesRoute: typeof ApiAuthMeEmailPreferencesRoute
   ApiAuthMePasswordRoute: typeof ApiAuthMePasswordRoute
   ApiAuthMeProgressRoute: typeof ApiAuthMeProgressRouteWithChildren
   ApiAuthMePushDeviceRoute: typeof ApiAuthMePushDeviceRoute
@@ -1247,6 +1359,7 @@ interface ApiAuthMeRouteChildren {
 
 const ApiAuthMeRouteChildren: ApiAuthMeRouteChildren = {
   ApiAuthMeActivityRoute: ApiAuthMeActivityRoute,
+  ApiAuthMeEmailPreferencesRoute: ApiAuthMeEmailPreferencesRoute,
   ApiAuthMePasswordRoute: ApiAuthMePasswordRoute,
   ApiAuthMeProgressRoute: ApiAuthMeProgressRouteWithChildren,
   ApiAuthMePushDeviceRoute: ApiAuthMePushDeviceRoute,
@@ -1263,6 +1376,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   DeleteAccountRoute: DeleteAccountRoute,
   DeleteDataRoute: DeleteDataRoute,
+  EmailPreferencesRoute: EmailPreferencesRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
   LeaderboardRoute: LeaderboardRoute,
@@ -1271,6 +1385,7 @@ const rootRouteChildren: RootRouteChildren = {
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   ApiAppUpdateRoute: ApiAppUpdateRoute,
+  ApiEmailPreferencesRoute: ApiEmailPreferencesRoute,
   ApiFeedbackRoute: ApiFeedbackRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiLeaderboardRoute: ApiLeaderboardRoute,
@@ -1284,6 +1399,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminAuditLogRoute: ApiAdminAuditLogRoute,
   ApiAdminCatalogueRoute: ApiAdminCatalogueRouteWithChildren,
   ApiAdminCertificatesRoute: ApiAdminCertificatesRouteWithChildren,
+  ApiAdminEmailsRoute: ApiAdminEmailsRouteWithChildren,
   ApiAdminFeedbackRoute: ApiAdminFeedbackRouteWithChildren,
   ApiAdminNotificationsRoute: ApiAdminNotificationsRoute,
   ApiAdminSystemRoute: ApiAdminSystemRoute,

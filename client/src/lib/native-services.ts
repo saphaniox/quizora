@@ -8,7 +8,7 @@ import {
   BannerAdSize,
   MaxAdContentRating,
 } from "@capacitor-community/admob";
-import { registerPushDevice } from "@/lib/api";
+import { getPushNotificationPreference, registerPushDevice } from "@/lib/api";
 
 const TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111";
 const TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
@@ -29,6 +29,8 @@ export type AdAgeGroup = "teen" | "adult";
 export type NativeBannerPlacement = "home" | "leaderboard" | "history";
 
 let pushListenersReady = false;
+let pushActionListenerReady = false;
+let pushInitialization: Promise<boolean> | null = null;
 let adsReady = false;
 let adsShouldBeVisible = true;
 let requestedBannerPlacement: NativeBannerPlacement | null = null;
@@ -99,33 +101,72 @@ function ensureAdMobInitialized(ageGroup: AdAgeGroup): Promise<void> {
   return adMobInitialization;
 }
 
-export async function enablePushNotifications(): Promise<void> {
-  if (!Capacitor.isNativePlatform()) return;
+export function enablePushNotifications(requestPermission = false): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return Promise.resolve(false);
+  if (pushInitialization) return pushInitialization;
 
+  pushInitialization = initializePushNotifications(requestPermission)
+    .catch((error: unknown) => {
+      console.warn("Could not enable push notifications", error);
+      return false;
+    })
+    .finally(() => {
+      pushInitialization = null;
+    });
+  return pushInitialization;
+}
+
+export async function syncPushNotifications(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
+  try {
+    const { enabled } = await getPushNotificationPreference();
+    if (enabled) await enablePushNotifications();
+  } catch (error) {
+    console.warn("Could not load push notification preference", error);
+  }
+}
+
+export function initializePushNotificationActions(): void {
+  if (!Capacitor.isNativePlatform() || pushActionListenerReady) return;
+  pushActionListenerReady = true;
+  void PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
+    const url = notification.data?.["url"];
+    if (
+      typeof url === "string" &&
+      url.startsWith("/") &&
+      !url.startsWith("//") &&
+      !url.includes("\\")
+    ) {
+      window.dispatchEvent(new CustomEvent("quitech:push-navigation", { detail: url }));
+    }
+  }).catch((error: unknown) => {
+    pushActionListenerReady = false;
+    console.warn("Could not listen for push notification actions", error);
+  });
+}
+
+async function initializePushNotifications(requestPermission: boolean): Promise<boolean> {
   if (!pushListenersReady) {
-    pushListenersReady = true;
     await PushNotifications.addListener("registration", ({ value }) => {
       const platform = Capacitor.getPlatform();
       if (platform === "android" || platform === "ios") {
-        void registerPushDevice(value, platform).catch(() => undefined);
+        void registerPushDevice(value, platform).catch((error: unknown) => {
+          console.warn("Could not register push device", error);
+        });
       }
     });
     await PushNotifications.addListener("registrationError", (error) => {
       console.warn("Push registration failed", error);
     });
-    await PushNotifications.addListener("pushNotificationActionPerformed", ({ notification }) => {
-      const url = notification.data?.["url"];
-      if (typeof url === "string" && url.startsWith("/") && !url.startsWith("//")) {
-        window.location.assign(url);
-      }
-    });
+    pushListenersReady = true;
   }
 
   let permission = await PushNotifications.checkPermissions();
   if (permission.receive === "prompt") {
+    if (!requestPermission) return false;
     permission = await PushNotifications.requestPermissions();
   }
-  if (permission.receive !== "granted") return;
+  if (permission.receive !== "granted") return false;
 
   if (Capacitor.getPlatform() === "android") {
     await PushNotifications.createChannel({
@@ -138,6 +179,7 @@ export async function enablePushNotifications(): Promise<void> {
     });
   }
   await PushNotifications.register();
+  return true;
 }
 
 export async function initializeNativeAds(): Promise<void> {

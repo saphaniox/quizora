@@ -9,6 +9,114 @@ import type {
   LeaderboardEntry,
 } from "../types.js";
 import type { User } from "./authService.js";
+import { appUrl } from "../email/layout.js";
+import * as emailNotificationModel from "../models/emailNotificationModel.js";
+import { queueTemplateEmail } from "./emailService.js";
+import {
+  cancelPushNotification,
+  sendUserPushNotification,
+} from "./pushService.js";
+
+type QuizPushNotification = {
+  type: string;
+  title: string;
+  body: string;
+  url: string;
+};
+
+function quizPushNotification(input: {
+  quizTitle: string;
+  percentage: number;
+  passed: boolean;
+  fullSection: boolean;
+  certificate: Certificate | null;
+  leaderboardRank: number;
+  leaderboardImproved: boolean;
+  previousPercentage: number | null;
+}): QuizPushNotification {
+  const {
+    quizTitle,
+    percentage,
+    passed,
+    fullSection,
+    certificate,
+    leaderboardRank,
+    leaderboardImproved,
+    previousPercentage,
+  } = input;
+  const improvement =
+    previousPercentage === null ? null : percentage - previousPercentage;
+  const event = (
+    type: string,
+    title: string,
+    body: string,
+    url = "/history",
+  ): QuizPushNotification => ({ type, title, body, url });
+
+  if (certificate) {
+    return event(
+      "certificate-earned",
+      "Certificate earned",
+      `You passed ${quizTitle} with ${percentage}%.`,
+      `/certificate/${certificate.code}`,
+    );
+  }
+  if (percentage === 100) {
+    return event("perfect-score", "Perfect score", `You got every question right in ${quizTitle}.`);
+  }
+  if (previousPercentage === null && passed) {
+    return event("first-quiz-pass", "First quiz pass", `You passed ${quizTitle} on your first recorded result.`);
+  }
+  if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 1) {
+    return event("leaderboard-first", "You reached first place", `${quizTitle}: you now lead the leaderboard.`);
+  }
+  if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 2) {
+    return event("leaderboard-second", "Second place", `${quizTitle}: your new best puts you in second place.`);
+  }
+  if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 3) {
+    return event("leaderboard-third", "On the podium", `${quizTitle}: your new best puts you in third place.`);
+  }
+  if (leaderboardImproved && leaderboardRank > 0 && leaderboardRank <= 10) {
+    return event("leaderboard-top-ten", "Top ten result", `${quizTitle}: your new score is in the top ten.`);
+  }
+  if (leaderboardImproved && leaderboardRank > 10 && leaderboardRank <= 25) {
+    return event("leaderboard-top-twenty-five", "Top 25 result", `${quizTitle}: your new score is in the top 25.`);
+  }
+  if (leaderboardImproved && improvement !== null && improvement >= 20) {
+    return event("major-comeback", "Huge improvement", `You improved your ${quizTitle} score by ${improvement} points.`);
+  }
+  if (leaderboardImproved && improvement !== null && improvement >= 10) {
+    return event("strong-comeback", "Big improvement", `You raised your ${quizTitle} score by ${improvement} points.`);
+  }
+  if (leaderboardImproved && previousPercentage !== null) {
+    return event("personal-best", "New personal best", `You scored ${percentage}% on ${quizTitle}.`);
+  }
+  if (passed && !fullSection) {
+    return event("partial-section-pass", "Section passed", `You passed this part of ${quizTitle}.`);
+  }
+  if (passed && percentage >= 90) {
+    return event("excellent-pass", "Excellent result", `You passed ${quizTitle} with ${percentage}%.`);
+  }
+  if (passed && percentage >= 80) {
+    return event("strong-pass", "Strong result", `You passed ${quizTitle} with ${percentage}%.`);
+  }
+  if (passed) {
+    return event("quiz-passed", "Quiz passed", `You passed ${quizTitle} with ${percentage}%.`);
+  }
+  if (percentage >= PASS_MARK - 5) {
+    return event("near-pass", "So close", `You were within five points of passing ${quizTitle}.`);
+  }
+  if (percentage >= PASS_MARK - 10) {
+    return event("close-to-pass", "Nearly there", `A little more practice could get you through ${quizTitle}.`);
+  }
+  if (fullSection) {
+    return event("full-section-practice", "Keep building", `You finished ${quizTitle}. Review your answers and try again.`);
+  }
+  if (previousPercentage === null) {
+    return event("first-quiz-attempt", "First result recorded", `Your first result for ${quizTitle} is ready to review.`);
+  }
+  return event("section-practice", "Practice saved", `Your ${quizTitle} result is ready. Keep going at your pace.`);
+}
 
 export async function scoreSubmission(
   payload: AnswerPayload,
@@ -40,9 +148,7 @@ export async function scoreSubmission(
       const question = questionById.get(id);
       const answer = payload.answers[id];
       return (
-        answer === undefined ||
-        !question ||
-        answer >= question.options.length
+        answer === undefined || !question || answer >= question.options.length
       );
     })
   ) {
@@ -127,6 +233,93 @@ export async function scoreSubmission(
     certificateMessage = `You need ${PASS_MARK}% or more on the full section to earn a certificate.`;
   }
 
+  const leaderboardRank = leaderboardResult
+    ? await leaderboardModel.rankOf(leaderboardResult.entry.id, {
+        quizId: quiz.id,
+      })
+    : 0;
+  const totalEntries = leaderboardResult
+    ? await leaderboardModel.count({ quizId: quiz.id })
+    : 0;
+
+  if (user) {
+    await cancelPushNotification(`unfinished:${user.id}:${quiz.id}`).catch(
+      (error: unknown) =>
+        console.warn("Could not cancel unfinished-quiz push reminder", error),
+    );
+  }
+
+  if (user?.email) {
+    try {
+      await emailNotificationModel.cancelEmailJob(
+        `unfinished:${user.id}:${quiz.id}`,
+      );
+      const commonData = {
+        displayName: user.displayName,
+        quizTitle: quiz.title,
+        score,
+        maxScore,
+        percentage,
+        rank: leaderboardRank,
+      };
+      if (certificate) {
+        await queueTemplateEmail({
+          to: user.email,
+          userId: user.id,
+          template: "certificateEarned",
+          data: {
+            ...commonData,
+            certificateCode: certificate.code,
+            certificateUrl: appUrl(`/certificates/${certificate.code}`),
+          },
+          dedupeKey: `certificate:${certificate.code}`,
+        });
+      } else if (
+        leaderboardResult?.improved &&
+        leaderboardResult.previousPercentage !== null
+      ) {
+        await queueTemplateEmail({
+          to: user.email,
+          userId: user.id,
+          template: "personalBest",
+          data: {
+            ...commonData,
+            previousPercentage: leaderboardResult.previousPercentage,
+          },
+          dedupeKey: `personal-best:${user.id}:${quiz.id}:${percentage}`,
+        });
+      } else {
+        await queueTemplateEmail({
+          to: user.email,
+          userId: user.id,
+          template: passed ? "quizPassed" : "quizNeedsPractice",
+          data: commonData,
+          dedupeKey: `quiz-result:${user.id}:${quiz.id}:${entry.completedAt}`,
+        });
+      }
+    } catch (error) {
+      console.warn("Could not queue quiz result email", error);
+    }
+  }
+
+  if (user) {
+    try {
+      const notification = quizPushNotification({
+        quizTitle: quiz.title,
+        percentage,
+        passed,
+        fullSection,
+        certificate,
+        leaderboardRank,
+        leaderboardImproved: leaderboardResult?.improved ?? false,
+        previousPercentage: leaderboardResult?.previousPercentage ?? null,
+      });
+      await sendUserPushNotification(user.id, notification);
+    } catch (error) {
+      console.warn("Could not send quiz achievement push notification", error);
+    }
+  }
+
   return {
     playerName,
     countryCode,
@@ -139,10 +332,8 @@ export async function scoreSubmission(
     correctAnswers,
     correctOptionIndices,
     explanations,
-    leaderboardRank: leaderboardResult
-      ? await leaderboardModel.rankOf(leaderboardResult.entry.id, { quizId: quiz.id })
-      : 0,
-    totalEntries: leaderboardResult ? await leaderboardModel.count({ quizId: quiz.id }) : 0,
+    leaderboardRank,
+    totalEntries,
     leaderboardImproved: leaderboardResult?.improved,
     leaderboardBestPercentage: leaderboardResult?.entry.percentage,
     leaderboardVisible,

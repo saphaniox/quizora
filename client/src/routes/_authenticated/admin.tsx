@@ -19,6 +19,8 @@ import {
   Loader2,
   LockKeyhole,
   LogIn,
+  Mail,
+  MailCheck,
   PencilLine,
   Server,
   RefreshCw,
@@ -52,6 +54,8 @@ import {
   saveAppUpdateSettings,
   saveCatalogueDraft,
   sendAdminPushNotification,
+  sendAdminEmail,
+  sendAdminTestEmail,
   updateFeedbackStatus,
   updateAdminUser,
   resetAdminUserPassword,
@@ -60,6 +64,7 @@ import {
   type AdminUser,
   type AdminSystemMetrics,
   type AdminAnalytics,
+  type AdminEmailTemplate,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import type {
@@ -111,6 +116,39 @@ interface CatalogueDraftForm {
   difficulty: Difficulty;
   published: boolean;
 }
+
+type SortDirection = "asc" | "desc";
+
+function sortAdminRows<T>(
+  rows: readonly T[],
+  getValue: (row: T) => string | number,
+  direction: SortDirection,
+): T[] {
+  return [...rows].sort((left, right) => {
+    const leftValue = getValue(left);
+    const rightValue = getValue(right);
+    const comparison =
+      typeof leftValue === "number" && typeof rightValue === "number"
+        ? leftValue - rightValue
+        : String(leftValue).localeCompare(String(rightValue), undefined, {
+            numeric: true,
+            sensitivity: "base",
+          });
+    return direction === "asc" ? comparison : -comparison;
+  });
+}
+
+const adminAreas = [
+  ["Overview", "#admin-overview"],
+  ["Catalogue", "#admin-catalogue"],
+  ["Users", "#admin-users"],
+  ["Certificates", "#admin-certificates"],
+  ["Rankings", "#admin-rankings"],
+  ["Feedback", "#admin-feedback"],
+  ["Messaging", "#admin-messaging"],
+  ["Operations", "#admin-operations"],
+  ["Audit", "#admin-audit"],
+] as const;
 
 const difficultyOrder: Difficulty[] = ["Easy", "Medium", "Hard"];
 
@@ -231,10 +269,35 @@ function AdminPage() {
     message: string;
   } | null>(null);
   const [feedbackFilter, setFeedbackFilter] = useState<FeedbackStatus | "all">("all");
+  const [catalogueSort, setCatalogueSort] = useState("title");
+  const [catalogueLimit, setCatalogueLimit] = useState("12");
+  const [userSort, setUserSort] = useState("newest");
+  const [certificateSort, setCertificateSort] = useState("newest");
+  const [leaderboardSort, setLeaderboardSort] = useState("score");
+  const [feedbackSort, setFeedbackSort] = useState("newest");
   const [analyticsFrom, setAnalyticsFrom] = useState("");
   const [analyticsTo, setAnalyticsTo] = useState("");
   const [pushDraft, setPushDraft] = useState({ title: "", body: "", url: "/" });
   const [pushAction, setPushAction] = useState<{ tone: StatusTone; message: string } | null>(null);
+  const [emailDraft, setEmailDraft] = useState<{
+    template: AdminEmailTemplate;
+    subject: string;
+    title: string;
+    message: string;
+    actionLabel: string;
+    actionUrl: string;
+  }>({
+    template: "adminMessage",
+    subject: "",
+    title: "",
+    message: "",
+    actionLabel: "",
+    actionUrl: "",
+  });
+  const [emailAction, setEmailAction] = useState<{
+    tone: StatusTone;
+    message: string;
+  } | null>(null);
 
   const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
   const account = accountQuery.data?.user ?? null;
@@ -473,6 +536,44 @@ function AdminPage() {
       });
     },
   });
+  const sendEmailMutation = useMutation({
+    mutationFn: sendAdminEmail,
+    onSuccess: (result) => {
+      setEmailDraft((current) => ({
+        ...current,
+        subject: "",
+        title: "",
+        message: "",
+        actionLabel: "",
+        actionUrl: "",
+      }));
+      setEmailAction({
+        tone: "ready",
+        message: `${formatNumber(result.queued)} personalized emails were added to the delivery queue.`,
+      });
+    },
+    onError: (error) => {
+      setEmailAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not queue this email.",
+      });
+    },
+  });
+  const sendEmailTestMutation = useMutation({
+    mutationFn: sendAdminTestEmail,
+    onSuccess: (result) => {
+      setEmailAction({
+        tone: "ready",
+        message: `Test email sent to ${result.sentTo}. Check your inbox and spam folder.`,
+      });
+    },
+    onError: (error) => {
+      setEmailAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Quitech could not send the test email.",
+      });
+    },
+  });
 
   const loadedLevels = levelsQuery.data?.levels;
   const levels = useMemo(() => loadedLevels ?? [], [loadedLevels]);
@@ -510,6 +611,75 @@ function AdminPage() {
       return inLevel && matches;
     });
   }, [query, sectionSource, selectedLevel]);
+  const sortedSections = useMemo(() => {
+    const direction: SortDirection =
+      catalogueSort === "title" || catalogueSort === "difficulty" ? "asc" : "desc";
+    return sortAdminRows(
+      visibleSections,
+      (section) =>
+        catalogueSort === "title"
+          ? section.title
+          : catalogueSort === "difficulty"
+            ? section.difficulty
+            : catalogueSort === "questions"
+              ? section.questionCount
+              : Number(isEditableSection(section) ? section.published : true),
+      direction,
+    );
+  }, [catalogueSort, visibleSections]);
+  const catalogueRows =
+    catalogueLimit === "all" ? sortedSections : sortedSections.slice(0, Number(catalogueLimit));
+  const sortedUsers = useMemo(() => {
+    const users = usersQuery.data?.users ?? [];
+    const direction: SortDirection = userSort === "name" ? "asc" : "desc";
+    return sortAdminRows(
+      users,
+      (user) =>
+        userSort === "name"
+          ? user.displayName
+          : userSort === "online"
+            ? Number(user.isOnline)
+            : userSort === "activity"
+              ? user.progressCount + user.leaderboardCount + user.certificateCount
+              : new Date(user.createdAt).getTime(),
+      direction,
+    );
+  }, [userSort, usersQuery.data?.users]);
+  const sortedCertificates = useMemo(() => {
+    const certificates = certificatesQuery.data?.certificates ?? [];
+    return sortAdminRows(
+      certificates,
+      (certificate) =>
+        certificateSort === "holder"
+          ? certificate.playerName
+          : certificateSort === "score"
+            ? certificate.percentage
+            : new Date(certificate.issuedAt).getTime(),
+      certificateSort === "holder" ? "asc" : certificateSort === "oldest" ? "asc" : "desc",
+    );
+  }, [certificateSort, certificatesQuery.data?.certificates]);
+  const sortedLeaderboard = useMemo(() => {
+    return sortAdminRows(
+      leaderboard,
+      (entry) =>
+        leaderboardSort === "learner"
+          ? entry.playerName
+          : leaderboardSort === "time"
+            ? entry.timeSpentSeconds
+            : leaderboardSort === "completed"
+              ? new Date(entry.completedAt).getTime()
+              : entry.percentage,
+      leaderboardSort === "learner" || leaderboardSort === "time" ? "asc" : "desc",
+    );
+  }, [leaderboard, leaderboardSort]);
+  const sortedFeedback = useMemo(() => {
+    const feedback = feedbackQuery.data?.feedback ?? [];
+    return sortAdminRows(
+      feedback,
+      (item) => (feedbackSort === "type" ? item.type : new Date(item.createdAt).getTime()),
+      feedbackSort === "type" ? "asc" : feedbackSort === "oldest" ? "asc" : "desc",
+    );
+  }, [feedbackQuery.data?.feedback, feedbackSort]);
 
   const totalQuestions = sectionSource.reduce((sum, section) => sum + section.questionCount, 0);
   const totalSections = sectionSource.length;
@@ -806,6 +976,21 @@ function AdminPage() {
       </section>
 
       <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <nav
+          aria-label="Admin pages"
+          className="sticky top-0 z-20 -mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
+        >
+          {adminAreas.map(([label, href]) => (
+            <a
+              key={href}
+              href={href}
+              className="shrink-0 rounded-md px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+            >
+              {label}
+            </a>
+          ))}
+        </nav>
+
         {hasLoadError && (
           <div className="mb-6 rounded-lg border border-destructive/30 bg-destructive/5 p-4">
             <div className="flex items-start gap-3">
@@ -823,13 +1008,16 @@ function AdminPage() {
           </div>
         )}
 
-        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div id="admin-overview" className="scroll-mt-24 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
           {systemStatus.map((status) => (
             <StatusCard key={status.label} {...status} />
           ))}
         </div>
 
-        <section className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
+        <section
+          id="admin-operations"
+          className="mt-4 scroll-mt-24 rounded-lg border border-border bg-card p-5 shadow-sm"
+        >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
               <h2 className="text-base font-semibold text-card-foreground">System telemetry</h2>
@@ -897,7 +1085,10 @@ function AdminPage() {
           )}
         </section>
 
-        <section className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
+        <section
+          id="admin-messaging"
+          className="mt-4 scroll-mt-24 rounded-lg border border-border bg-card p-5 shadow-sm"
+        >
           <div className="flex items-center gap-2">
             <Send className="h-5 w-5 text-primary" />
             <h2 className="text-base font-semibold text-card-foreground">Push notification</h2>
@@ -976,6 +1167,163 @@ function AdminPage() {
               )}
             >
               {pushAction.message}
+            </p>
+          )}
+        </section>
+
+        <section className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
+          <div className="flex items-center gap-2">
+            <Mail className="h-5 w-5 text-primary" />
+            <h2 className="text-base font-semibold text-card-foreground">Email learners</h2>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Send a considered update to eligible learners. Each email uses their name and respects
+            their communication choices.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setEmailAction(null);
+                sendEmailTestMutation.mutate();
+              }}
+              disabled={!account?.email || sendEmailTestMutation.isPending}
+              className="inline-flex min-h-9 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {sendEmailTestMutation.isPending ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <MailCheck className="h-4 w-4" />
+              )}
+              Send test to me
+            </button>
+            <span className="text-xs text-muted-foreground">
+              {account?.email ?? "Your admin account needs an email address first."}
+            </span>
+          </div>
+          <form
+            className="mt-4 grid gap-4 lg:grid-cols-2"
+            onSubmit={(event) => {
+              event.preventDefault();
+              setEmailAction(null);
+              sendEmailMutation.mutate({
+                ...emailDraft,
+                actionLabel: emailDraft.actionLabel || undefined,
+                actionUrl: emailDraft.actionUrl || undefined,
+              });
+            }}
+          >
+            <label className="text-xs font-medium text-muted-foreground">
+              Message type
+              <select
+                value={emailDraft.template}
+                onChange={(event) =>
+                  setEmailDraft((draft) => ({
+                    ...draft,
+                    template: event.target.value as AdminEmailTemplate,
+                  }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              >
+                <option value="adminMessage">Direct team message</option>
+                <option value="newContent">New learning content</option>
+                <option value="appUpdate">App update</option>
+                <option value="maintenanceNotice">Maintenance notice</option>
+                <option value="privacyTermsUpdate">Policy update</option>
+                <option value="securityNotice">Essential security notice</option>
+              </select>
+            </label>
+            <label className="text-xs font-medium text-muted-foreground">
+              Email subject
+              <input
+                required
+                maxLength={160}
+                value={emailDraft.subject}
+                onChange={(event) =>
+                  setEmailDraft((draft) => ({ ...draft, subject: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="A new topic is ready for you"
+              />
+            </label>
+            <label className="text-xs font-medium text-muted-foreground lg:col-span-2">
+              Heading
+              <input
+                required
+                maxLength={160}
+                value={emailDraft.title}
+                onChange={(event) =>
+                  setEmailDraft((draft) => ({ ...draft, title: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="There is something new to explore"
+              />
+            </label>
+            <label className="text-xs font-medium text-muted-foreground lg:col-span-2">
+              Message
+              <textarea
+                required
+                rows={5}
+                maxLength={5000}
+                value={emailDraft.message}
+                onChange={(event) =>
+                  setEmailDraft((draft) => ({ ...draft, message: event.target.value }))
+                }
+                className="mt-1 block w-full resize-y rounded-md border border-input bg-background px-3 py-2 text-sm leading-6 text-foreground"
+                placeholder="Write as you would speak to a learner: clear, warm, and useful."
+              />
+            </label>
+            <label className="text-xs font-medium text-muted-foreground">
+              Button label (optional)
+              <input
+                maxLength={60}
+                value={emailDraft.actionLabel}
+                onChange={(event) =>
+                  setEmailDraft((draft) => ({ ...draft, actionLabel: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="Explore the new topic"
+              />
+            </label>
+            <label className="text-xs font-medium text-muted-foreground">
+              Button URL (optional)
+              <input
+                type="url"
+                maxLength={500}
+                value={emailDraft.actionUrl}
+                onChange={(event) =>
+                  setEmailDraft((draft) => ({ ...draft, actionUrl: event.target.value }))
+                }
+                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                placeholder="https://quitech.online/"
+              />
+            </label>
+            <div className="flex items-center gap-3 lg:col-span-2">
+              <button
+                type="submit"
+                disabled={sendEmailMutation.isPending}
+                className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+              >
+                {sendEmailMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <Send className="h-4 w-4" />
+                )}
+                Queue email
+              </button>
+              <span className="text-xs text-muted-foreground">
+                Security notices reach all email accounts. Other types follow preferences.
+              </span>
+            </div>
+          </form>
+          {emailAction && (
+            <p
+              className={cn(
+                "mt-3 rounded-md border px-3 py-2 text-sm",
+                statusClass(emailAction.tone),
+              )}
+            >
+              {emailAction.message}
             </p>
           )}
         </section>
@@ -1119,7 +1467,10 @@ function AdminPage() {
         )}
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
-          <section className="rounded-lg border border-border bg-card">
+          <section
+            id="admin-catalogue"
+            className="scroll-mt-24 rounded-lg border border-border bg-card"
+          >
             <div className="border-b border-border p-5">
               <div className="flex items-center justify-between gap-3">
                 <div>
@@ -1307,6 +1658,28 @@ function AdminPage() {
                       </option>
                     ))}
                   </select>
+                  <select
+                    aria-label="Sort catalogue sections"
+                    value={catalogueSort}
+                    onChange={(event) => setCatalogueSort(event.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                  >
+                    <option value="title">Title A-Z</option>
+                    <option value="questions">Most questions</option>
+                    <option value="difficulty">Difficulty</option>
+                    <option value="published">Published first</option>
+                  </select>
+                  <select
+                    aria-label="Catalogue rows to show"
+                    value={catalogueLimit}
+                    onChange={(event) => setCatalogueLimit(event.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                  >
+                    <option value="12">12 rows</option>
+                    <option value="25">25 rows</option>
+                    <option value="50">50 rows</option>
+                    <option value="all">All rows</option>
+                  </select>
                 </div>
               </div>
             </div>
@@ -1324,7 +1697,7 @@ function AdminPage() {
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
-                  {visibleSections.slice(0, 12).map((section) => {
+                  {catalogueRows.map((section) => {
                     const editable = isEditableSection(section) ? section : null;
                     const isEditing = editingSectionId === section.id && Boolean(editable);
                     const isSaving =
@@ -1557,7 +1930,7 @@ function AdminPage() {
 
             {visibleSections.length > 0 && (
               <div className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
-                Showing {formatNumber(Math.min(visibleSections.length, 12))} of{" "}
+                Showing {formatNumber(catalogueRows.length)} of{" "}
                 {formatNumber(visibleSections.length)} matching sections.
               </div>
             )}
@@ -1678,7 +2051,10 @@ function AdminPage() {
           </section>
         </div>
 
-        <section className="mt-6 rounded-lg border border-border bg-card">
+        <section
+          id="admin-certificates"
+          className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
+        >
           <div className="flex items-center justify-between border-b border-border p-5">
             <div>
               <div className="flex items-center gap-2">
@@ -1691,9 +2067,22 @@ function AdminPage() {
                 Review and revoke issued certificates.
               </p>
             </div>
-            <span className="text-xs text-muted-foreground">
-              {certificatesQuery.data?.certificates.length ?? 0} recent
-            </span>
+            <div className="flex items-center gap-3">
+              <select
+                aria-label="Sort certificates"
+                value={certificateSort}
+                onChange={(event) => setCertificateSort(event.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="score">Highest score</option>
+                <option value="holder">Holder A-Z</option>
+              </select>
+              <span className="text-xs text-muted-foreground">
+                {certificatesQuery.data?.certificates.length ?? 0} recent
+              </span>
+            </div>
           </div>
           <div className="overflow-x-auto">
             <table className="w-full min-w-190 text-left text-sm">
@@ -1706,7 +2095,7 @@ function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {(certificatesQuery.data?.certificates ?? []).map((certificate) => {
+                {sortedCertificates.map((certificate) => {
                   const confirming = confirmingCertificateCode === certificate.code;
                   const deleting =
                     deleteAdminCertificateMutation.isPending &&
@@ -1749,7 +2138,10 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="mt-6 rounded-lg border border-border bg-card">
+        <section
+          id="admin-users"
+          className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
+        >
           <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -1774,6 +2166,18 @@ function AdminPage() {
                 className="w-full rounded-md border border-input bg-background py-2 pl-9 pr-3 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
               />
             </label>
+            <select
+              aria-label="Sort current user page"
+              value={userSort}
+              onChange={(event) => setUserSort(event.target.value)}
+              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+            >
+              <option value="newest">Newest accounts</option>
+              <option value="oldest">Oldest accounts</option>
+              <option value="name">Name A-Z</option>
+              <option value="online">Online first</option>
+              <option value="activity">Most linked activity</option>
+            </select>
             <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground sm:self-end">
               <button
                 type="button"
@@ -1809,7 +2213,7 @@ function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {(usersQuery.data?.users ?? []).map((adminUser) => {
+                {sortedUsers.map((adminUser) => {
                   const isConfirming = confirmingUserId === adminUser.id;
                   const isDeleting =
                     deleteAdminUserMutation.isPending &&
@@ -1982,7 +2386,10 @@ function AdminPage() {
           )}
         </section>
 
-        <section className="mt-6 rounded-lg border border-border bg-card">
+        <section
+          id="admin-rankings"
+          className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
+        >
           <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -1993,9 +2400,22 @@ function AdminPage() {
                 Review public leaderboard entries and remove test or incorrect records.
               </p>
             </div>
-            <span className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
-              {formatNumber(leaderboard.length)} visible records
-            </span>
+            <div className="flex items-center gap-3">
+              <select
+                aria-label="Sort loaded ranking records"
+                value={leaderboardSort}
+                onChange={(event) => setLeaderboardSort(event.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              >
+                <option value="score">Highest score</option>
+                <option value="completed">Most recent</option>
+                <option value="time">Fastest time</option>
+                <option value="learner">Learner A-Z</option>
+              </select>
+              <span className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
+                {formatNumber(leaderboard.length)} loaded records
+              </span>
+            </div>
           </div>
 
           {leaderboardAction && (
@@ -2024,7 +2444,7 @@ function AdminPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-border">
-                {leaderboard.map((entry) => {
+                {sortedLeaderboard.map((entry) => {
                   const isConfirming = confirmingLeaderboardId === entry.id;
                   const isDeleting =
                     deleteLeaderboardMutation.isPending &&
@@ -2115,7 +2535,10 @@ function AdminPage() {
           )}
         </section>
 
-        <section className="mt-6 rounded-lg border border-border bg-card">
+        <section
+          id="admin-feedback"
+          className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
+        >
           <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <div className="flex items-center gap-2">
@@ -2126,22 +2549,36 @@ function AdminPage() {
                 See what learners want changed, added, or fixed.
               </p>
             </div>
-            <select
-              value={feedbackFilter}
-              onChange={(event) => setFeedbackFilter(event.target.value as FeedbackStatus | "all")}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
-              aria-label="Filter feedback"
-            >
-              <option value="all">All feedback</option>
-              <option value="new">New</option>
-              <option value="reviewing">Reviewing</option>
-              <option value="planned">Planned</option>
-              <option value="resolved">Resolved</option>
-              <option value="dismissed">Dismissed</option>
-            </select>
+            <div className="flex flex-wrap gap-2">
+              <select
+                aria-label="Sort feedback"
+                value={feedbackSort}
+                onChange={(event) => setFeedbackSort(event.target.value)}
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              >
+                <option value="newest">Newest first</option>
+                <option value="oldest">Oldest first</option>
+                <option value="type">Type A-Z</option>
+              </select>
+              <select
+                value={feedbackFilter}
+                onChange={(event) =>
+                  setFeedbackFilter(event.target.value as FeedbackStatus | "all")
+                }
+                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                aria-label="Filter feedback"
+              >
+                <option value="all">All feedback</option>
+                <option value="new">New</option>
+                <option value="reviewing">Reviewing</option>
+                <option value="planned">Planned</option>
+                <option value="resolved">Resolved</option>
+                <option value="dismissed">Dismissed</option>
+              </select>
+            </div>
           </div>
           <div className="divide-y divide-border">
-            {(feedbackQuery.data?.feedback ?? []).map((item) => (
+            {sortedFeedback.map((item) => (
               <article key={item.id} className="p-5">
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                   <div>
@@ -2192,7 +2629,10 @@ function AdminPage() {
           )}
         </section>
 
-        <section className="mt-6 rounded-lg border border-border bg-card p-5">
+        <section
+          id="admin-audit"
+          className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card p-5"
+        >
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-2">
               <History className="h-5 w-5 text-primary" />

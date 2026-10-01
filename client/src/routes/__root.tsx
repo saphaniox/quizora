@@ -34,7 +34,8 @@ import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
 import {
   getNativeAdAgeGroup,
-  enablePushNotifications,
+  initializePushNotificationActions,
+  syncPushNotifications,
   initializeNativeAds,
   setNativeAdAgeGroup,
   setNativeBannerPlacement,
@@ -179,6 +180,7 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const [nativeAgePromptReady, setNativeAgePromptReady] = useState(false);
   const [nativeAdAgeGroup, setNativeAdAgeGroupState] = useState<AdAgeGroup | null>(null);
@@ -192,13 +194,30 @@ function RootComponent() {
   } | null>(null);
 
   useEffect(() => {
+    const handlePushNavigation = (event: Event) => {
+      const url = (event as CustomEvent<unknown>).detail;
+      if (
+        typeof url === "string" &&
+        url.startsWith("/") &&
+        !url.startsWith("//") &&
+        !url.includes("\\")
+      ) {
+        router.history.push(url);
+      }
+    };
+    window.addEventListener("quitech:push-navigation", handlePushNavigation);
+    return () => window.removeEventListener("quitech:push-navigation", handlePushNavigation);
+  }, [router]);
+
+  useEffect(() => {
+    initializePushNotificationActions();
     if (Capacitor.isNativePlatform()) {
       setNativeAdAgeGroupState(getNativeAdAgeGroup());
       setNativeAgePromptReady(true);
     }
     void getCurrentUser()
       .then(({ user }) => {
-        if (user) void enablePushNotifications();
+        if (user) void syncPushNotifications();
       })
       .catch(() => undefined);
   }, []);

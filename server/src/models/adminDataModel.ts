@@ -23,6 +23,35 @@ export interface AdminCertificate {
   issuedAt: string;
 }
 
+export async function listAdminEmails(): Promise<string[]> {
+  const result = await pool.query<{ email: string }>(
+    `SELECT DISTINCT LOWER(BTRIM(email)) AS email
+     FROM users
+     WHERE role = 'admin' AND email IS NOT NULL AND BTRIM(email) <> ''
+     ORDER BY email`,
+  );
+  return result.rows.map((row) => row.email);
+}
+
+export async function findUserContact(userId: string): Promise<{
+  id: string;
+  email: string | null;
+  displayName: string;
+  role: "user" | "admin";
+} | null> {
+  const result = await pool.query<{
+    id: string;
+    email: string | null;
+    displayName: string;
+    role: "user" | "admin";
+  }>(
+    `SELECT id, email, display_name AS "displayName", role
+     FROM users WHERE id = $1`,
+    [userId],
+  );
+  return result.rows[0] ?? null;
+}
+
 export async function listUsers(
   search = "",
   limit = 50,
@@ -30,7 +59,7 @@ export async function listUsers(
 ): Promise<{ users: AdminUser[]; total: number }> {
   const [result, countResult] = await Promise.all([
     pool.query<AdminUser>(
-    `SELECT u.id,
+      `SELECT u.id,
             u.email,
             u.phone_e164 AS "phoneE164",
             u.display_name AS "displayName",
@@ -65,7 +94,9 @@ export async function deleteUserData(userId: string): Promise<boolean> {
     await client.query("BEGIN");
     await client.query("DELETE FROM certificates WHERE user_id = $1", [userId]);
     await client.query("DELETE FROM leaderboard WHERE user_id = $1", [userId]);
-    const result = await client.query("DELETE FROM users WHERE id = $1", [userId]);
+    const result = await client.query("DELETE FROM users WHERE id = $1", [
+      userId,
+    ]);
     await client.query("COMMIT");
     return result.rowCount === 1;
   } catch (error) {
@@ -76,7 +107,10 @@ export async function deleteUserData(userId: string): Promise<boolean> {
   }
 }
 
-export async function updateUserDisplayName(userId: string, displayName: string): Promise<boolean> {
+export async function updateUserDisplayName(
+  userId: string,
+  displayName: string,
+): Promise<boolean> {
   const result = await pool.query(
     "UPDATE users SET display_name = $2 WHERE id = $1",
     [userId, displayName.trim()],
@@ -84,12 +118,20 @@ export async function updateUserDisplayName(userId: string, displayName: string)
   return result.rowCount === 1;
 }
 
-export async function updateUserRole(userId: string, role: "user" | "admin"): Promise<boolean> {
-  const result = await pool.query("UPDATE users SET role = $2 WHERE id = $1", [userId, role]);
+export async function updateUserRole(
+  userId: string,
+  role: "user" | "admin",
+): Promise<boolean> {
+  const result = await pool.query("UPDATE users SET role = $2 WHERE id = $1", [
+    userId,
+    role,
+  ]);
   return result.rowCount === 1;
 }
 
-export async function listCertificates(limit = 100): Promise<AdminCertificate[]> {
+export async function listCertificates(
+  limit = 100,
+): Promise<AdminCertificate[]> {
   const result = await pool.query<AdminCertificate>(
     `SELECT code, player_name AS "playerName", quiz_title AS "quizTitle",
             level_name AS "levelName", percentage, issued_at AS "issuedAt"
@@ -100,6 +142,8 @@ export async function listCertificates(limit = 100): Promise<AdminCertificate[]>
 }
 
 export async function deleteCertificate(code: string): Promise<boolean> {
-  const result = await pool.query("DELETE FROM certificates WHERE code = $1", [code.toUpperCase()]);
+  const result = await pool.query("DELETE FROM certificates WHERE code = $1", [
+    code.toUpperCase(),
+  ]);
   return result.rowCount === 1;
 }

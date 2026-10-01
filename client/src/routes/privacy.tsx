@@ -50,6 +50,10 @@ const collectedData = [
     body: "When you contact support, we use your contact details and the information in your message to understand the problem and reply to you.",
   },
   {
+    title: "Email communications",
+    body: "If your account has an email address, we keep your communication choices and a limited delivery record so we can send account notices, learning updates, and reminders without repeating messages you already received.",
+  },
+  {
     title: "Advertising data",
     body: "If advertising is enabled, advertising partners may receive identifiers, approximate location, device details, and information about ad interactions. What they receive depends on your consent choices and the settings of their software. The native app stores your selected age group on your device to apply appropriate ad settings.",
   },
@@ -59,6 +63,7 @@ const uses = [
   "Provide quizzes, results, progress history, leaderboards, and certificate verification.",
   "Authenticate accounts, keep sessions secure, prevent abuse, and troubleshoot issues.",
   "Respond to support, privacy, and account deletion requests.",
+  "Send account and security notices, plus optional learning reminders and product updates you can turn off at any time.",
   "Measure performance and improve quiz content and product quality.",
   "Show and measure ads when advertising is enabled in the app.",
 ] as const;
@@ -101,7 +106,7 @@ function PrivacyPage() {
           Your progress belongs to you.
         </h1>
         <p className="mt-4 text-sm leading-6 text-muted-foreground">
-          Last updated: August 31, 2026. This policy explains how Quitech ("we", "us", or "our")
+          Last updated: October 1, 2026. This policy explains how Quitech ("we", "us", or "our")
           collects, uses, shares, protects, and deletes information for learners 13 and above.
         </p>
       </div>
