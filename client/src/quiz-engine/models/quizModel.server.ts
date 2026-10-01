@@ -1,5 +1,6 @@
 import type { Level, Quiz, QuizSummary, PublicQuiz } from "../types.server";
 import {
+  expandSectionToQuestionCount,
   finalize,
   makeRng,
   normalizeQuestionText,
@@ -149,10 +150,7 @@ function draftsBySection(): Map<string, Draft[]> {
         uniquePrompts.add(prompt);
         sectionDrafts.push(item);
       }
-      drafts.set(
-        section.id,
-        section.target === undefined ? sectionDrafts : sectionDrafts.slice(0, section.target),
-      );
+      drafts.set(section.id, expandSectionToQuestionCount(section.name, sectionDrafts));
     }
   }
 
