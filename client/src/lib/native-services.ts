@@ -3,6 +3,7 @@ import { PushNotifications } from "@capacitor/push-notifications";
 import {
   AdMob,
   AdmobConsentStatus,
+  BannerAdPluginEvents,
   BannerAdPosition,
   BannerAdSize,
   MaxAdContentRating,
@@ -10,9 +11,93 @@ import {
 import { registerPushDevice } from "@/lib/api";
 
 const TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111";
+const TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
+const PRODUCTION_BANNER_ID = "ca-app-pub-7847110611874114/7228567917";
+const PRODUCTION_BANNER_IDS: Record<NativeBannerPlacement, string> = {
+  home: "ca-app-pub-7847110611874114/6864153133",
+  leaderboard: "ca-app-pub-7847110611874114/3448661465",
+  history: "ca-app-pub-7847110611874114/9769603791",
+};
+const PRODUCTION_INTERSTITIAL_ID = "ca-app-pub-7847110611874114/5029694260";
+const AD_AGE_GROUP_KEY = "quitech_ad_age_group_v1";
+const INTERSTITIAL_COMPLETION_COUNT_KEY = "quitech_interstitial_completion_count_v1";
+const INTERSTITIAL_LAST_SHOWN_KEY = "quitech_interstitial_last_shown_v1";
+const INTERSTITIAL_MIN_INTERVAL_MS = 10 * 60 * 1000;
+const INTERSTITIAL_COMPLETION_INTERVAL = 2;
+
+export type AdAgeGroup = "teen" | "adult";
+export type NativeBannerPlacement = "home" | "leaderboard" | "history";
+
 let pushListenersReady = false;
 let adsReady = false;
 let adsShouldBeVisible = true;
+let requestedBannerPlacement: NativeBannerPlacement | null = null;
+let activeBannerId: string | null = null;
+let adMobInitialization: Promise<void> | null = null;
+let bannerListenersReady = false;
+let bannerHeight = 0;
+let interstitialReady = false;
+let interstitialPreparing: Promise<boolean> | null = null;
+let nativeAdRequestsAllowed = false;
+
+function applyBannerInset(): void {
+  if (typeof document === "undefined") return;
+  document.body.style.paddingBottom =
+    adsShouldBeVisible && bannerHeight > 0 ? `${bannerHeight}px` : "";
+}
+
+function isAdMobTesting(): boolean {
+  return import.meta.env["VITE_ADMOB_TEST_MODE"] === "true";
+}
+
+function getBannerId(placement: NativeBannerPlacement): string {
+  if (isAdMobTesting()) return TEST_BANNER_ID;
+
+  const placementIds: Record<NativeBannerPlacement, string | undefined> = {
+    home: import.meta.env["VITE_ADMOB_BANNER_HOME_ID"] as string | undefined,
+    leaderboard: import.meta.env["VITE_ADMOB_BANNER_LEADERBOARD_ID"] as string | undefined,
+    history: import.meta.env["VITE_ADMOB_BANNER_HISTORY_ID"] as string | undefined,
+  };
+  const legacyId = import.meta.env["VITE_ADMOB_BANNER_ID"] as string | undefined;
+  return (
+    placementIds[placement] || PRODUCTION_BANNER_IDS[placement] || legacyId || PRODUCTION_BANNER_ID
+  );
+}
+
+export function getNativeAdAgeGroup(): AdAgeGroup | null {
+  if (typeof window === "undefined") return null;
+  const value = window.localStorage.getItem(AD_AGE_GROUP_KEY);
+  return value === "teen" || value === "adult" ? value : null;
+}
+
+export function setNativeAdAgeGroup(value: AdAgeGroup): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.setItem(AD_AGE_GROUP_KEY, value);
+}
+
+export function clearNativeAdAgeGroup(): void {
+  if (typeof window === "undefined") return;
+  window.localStorage.removeItem(AD_AGE_GROUP_KEY);
+}
+
+export function canRequestNativeAds(): boolean {
+  return Capacitor.isNativePlatform() && nativeAdRequestsAllowed;
+}
+
+function ensureAdMobInitialized(ageGroup: AdAgeGroup): Promise<void> {
+  if (!adMobInitialization) {
+    adMobInitialization = AdMob.initialize({
+      initializeForTesting: isAdMobTesting(),
+      tagForChildDirectedTreatment: false,
+      tagForUnderAgeOfConsent: ageGroup === "teen",
+      maxAdContentRating: MaxAdContentRating.Teen,
+    }).catch((error) => {
+      adMobInitialization = null;
+      throw error;
+    });
+  }
+  return adMobInitialization;
+}
 
 export async function enablePushNotifications(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
@@ -58,45 +143,186 @@ export async function enablePushNotifications(): Promise<void> {
 export async function initializeNativeAds(): Promise<void> {
   if (!Capacitor.isNativePlatform() || adsReady) return;
 
-  const isTesting = import.meta.env["VITE_ADMOB_TEST_MODE"] === "true";
-  const configuredId = import.meta.env["VITE_ADMOB_BANNER_ID"] as string | undefined;
-  const adId = configuredId || (isTesting ? TEST_BANNER_ID : undefined);
-  if (!adId) return;
+  const ageGroup = getNativeAdAgeGroup();
+  if (!ageGroup) return;
 
   adsReady = true;
   try {
-    await AdMob.initialize({
-      initializeForTesting: isTesting,
-      tagForChildDirectedTreatment: false,
-      tagForUnderAgeOfConsent: false,
-      maxAdContentRating: MaxAdContentRating.Teen,
+    await ensureAdMobInitialized(ageGroup);
+    if (!bannerListenersReady) {
+      bannerListenersReady = true;
+      await AdMob.addListener(BannerAdPluginEvents.SizeChanged, ({ height }) => {
+        bannerHeight = Math.max(0, height);
+        applyBannerInset();
+      });
+      await AdMob.addListener(BannerAdPluginEvents.FailedToLoad, () => {
+        bannerHeight = 0;
+        applyBannerInset();
+      });
+    }
+    let consent = await AdMob.requestConsentInfo({
+      tagForUnderAgeOfConsent: ageGroup === "teen",
     });
-    let consent = await AdMob.requestConsentInfo();
     if (consent.status === AdmobConsentStatus.REQUIRED && consent.isConsentFormAvailable) {
       consent = await AdMob.showConsentForm();
     }
-    if (!consent.canRequestAds) return;
-    await AdMob.showBanner({
-      adId,
-      adSize: BannerAdSize.ADAPTIVE_BANNER,
-      position: BannerAdPosition.BOTTOM_CENTER,
-      isTesting,
-      margin: 0,
-    });
-    if (!adsShouldBeVisible) await AdMob.hideBanner();
+    if (!consent.canRequestAds) {
+      adsReady = false;
+      return;
+    }
+    nativeAdRequestsAllowed = true;
+    window.dispatchEvent(new Event("quitech-native-ads-ready"));
+    await syncNativeBanner();
   } catch (error) {
     adsReady = false;
     console.warn("AdMob initialization failed", error);
   }
 }
 
-export async function setNativeAdsVisible(visible: boolean): Promise<void> {
-  adsShouldBeVisible = visible;
+async function syncNativeBanner(): Promise<void> {
   if (!Capacitor.isNativePlatform() || !adsReady) return;
+
+  if (!requestedBannerPlacement) {
+    adsShouldBeVisible = false;
+    applyBannerInset();
+    if (activeBannerId) await AdMob.hideBanner();
+    return;
+  }
+
+  const ageGroup = getNativeAdAgeGroup();
+  if (!ageGroup) return;
+
+  adsShouldBeVisible = true;
+  const adId = getBannerId(requestedBannerPlacement);
+  if (activeBannerId === adId) {
+    await AdMob.resumeBanner();
+    applyBannerInset();
+    return;
+  }
+
+  if (activeBannerId) {
+    await AdMob.removeBanner();
+    activeBannerId = null;
+    bannerHeight = 0;
+  }
+  await AdMob.showBanner({
+    adId,
+    adSize: BannerAdSize.ADAPTIVE_BANNER,
+    position: BannerAdPosition.BOTTOM_CENTER,
+    isTesting: isAdMobTesting(),
+    npa: ageGroup === "teen",
+    margin: 0,
+  });
+  activeBannerId = adId;
+  applyBannerInset();
+}
+
+export async function openNativePrivacyChoices(): Promise<boolean> {
+  if (!Capacitor.isNativePlatform()) return false;
+
+  const ageGroup = getNativeAdAgeGroup();
+  if (!ageGroup) return false;
+
+  await ensureAdMobInitialized(ageGroup);
+  const consent = await AdMob.requestConsentInfo({
+    tagForUnderAgeOfConsent: ageGroup === "teen",
+  });
+  if (consent.privacyOptionsRequirementStatus !== "REQUIRED") {
+    return false;
+  }
+  await AdMob.showPrivacyOptionsForm();
+  return true;
+}
+
+function getInterstitialId(): string | null {
+  const configuredId = import.meta.env["VITE_ADMOB_INTERSTITIAL_ID"] as string | undefined;
+  return isAdMobTesting() ? TEST_INTERSTITIAL_ID : configuredId || PRODUCTION_INTERSTITIAL_ID;
+}
+
+export function isNativeQuizInterstitialConfigured(): boolean {
+  return Capacitor.isNativePlatform() && Boolean(getInterstitialId());
+}
+
+export async function prepareNativeQuizInterstitial(): Promise<boolean> {
+  if (!isNativeQuizInterstitialConfigured()) return false;
+  if (interstitialReady) return true;
+  if (interstitialPreparing) return interstitialPreparing;
+
+  const ageGroup = getNativeAdAgeGroup();
+  const adId = getInterstitialId();
+  if (!ageGroup || !adId) return false;
+
+  interstitialPreparing = (async () => {
+    try {
+      await ensureAdMobInitialized(ageGroup);
+      const consent = await AdMob.requestConsentInfo({
+        tagForUnderAgeOfConsent: ageGroup === "teen",
+      });
+      if (!consent.canRequestAds) return false;
+      await AdMob.prepareInterstitial({
+        adId,
+        isTesting: isAdMobTesting(),
+        npa: ageGroup === "teen",
+      });
+      interstitialReady = true;
+      return true;
+    } catch (error) {
+      console.warn("Interstitial preparation failed", error);
+      return false;
+    } finally {
+      interstitialPreparing = null;
+    }
+  })();
+
+  return interstitialPreparing;
+}
+
+function readStoredNumber(key: string): number {
+  if (typeof window === "undefined") return 0;
+  const value = Number(window.localStorage.getItem(key));
+  return Number.isFinite(value) && value > 0 ? value : 0;
+}
+
+export async function maybeShowNativeQuizInterstitial(): Promise<boolean> {
+  if (!isNativeQuizInterstitialConfigured() || typeof window === "undefined") return false;
+
+  const completionCount = readStoredNumber(INTERSTITIAL_COMPLETION_COUNT_KEY) + 1;
+  window.localStorage.setItem(INTERSTITIAL_COMPLETION_COUNT_KEY, String(completionCount));
+
+  const lastShownAt = readStoredNumber(INTERSTITIAL_LAST_SHOWN_KEY);
+  const intervalElapsed = Date.now() - lastShownAt >= INTERSTITIAL_MIN_INTERVAL_MS;
+  if (completionCount < INTERSTITIAL_COMPLETION_INTERVAL || !intervalElapsed) {
+    void prepareNativeQuizInterstitial();
+    return false;
+  }
+
+  if (!interstitialReady) {
+    void prepareNativeQuizInterstitial();
+    return false;
+  }
+
+  const adId = getInterstitialId();
+  if (!adId) return false;
+
+  interstitialReady = false;
   try {
-    if (visible) await AdMob.resumeBanner();
-    else await AdMob.hideBanner();
+    await AdMob.showInterstitial({ adId });
+    window.localStorage.setItem(INTERSTITIAL_COMPLETION_COUNT_KEY, "0");
+    window.localStorage.setItem(INTERSTITIAL_LAST_SHOWN_KEY, String(Date.now()));
+    return true;
+  } catch (error) {
+    console.warn("Interstitial display failed", error);
+    return false;
+  }
+}
+
+export async function setNativeBannerPlacement(
+  placement: NativeBannerPlacement | null,
+): Promise<void> {
+  requestedBannerPlacement = placement;
+  try {
+    await syncNativeBanner();
   } catch {
-    // The banner may still be loading; initializeNativeAds applies the latest visibility.
+    // A route can change while an ad is loading. The next route update retries the placement.
   }
 }

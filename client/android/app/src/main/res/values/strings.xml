@@ -4,7 +4,6 @@
     <string name="title_activity_main">Quitech</string>
     <string name="package_name">com.saptechug.quitech</string>
     <string name="custom_url_scheme">com.saptechug.quitech</string>
-    <!-- Replace this Google test App ID with the production AdMob App ID before release. -->
-    <string name="admob_app_id">ca-app-pub-3940256099942544~3347511713</string>
+    <string name="admob_app_id">ca-app-pub-7847110611874114~9395566253</string>
     <string name="default_notification_channel_id">quitech_updates</string>
 </resources>

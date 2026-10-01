@@ -1,5 +1,15 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Database, Mail, ShieldCheck } from "lucide-react";
+import { Capacitor } from "@capacitor/core";
+import { Database, Loader2, Mail, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import {
+  clearNativeAdAgeGroup,
+  getNativeAdAgeGroup,
+  openNativePrivacyChoices,
+  type AdAgeGroup,
+} from "@/lib/native-services";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
@@ -41,7 +51,7 @@ const collectedData = [
   },
   {
     title: "Advertising data",
-    body: "If advertising is enabled, advertising partners may receive identifiers, approximate location, device details, and information about ad interactions. What they receive depends on your consent choices and the settings of their software.",
+    body: "If advertising is enabled, advertising partners may receive identifiers, approximate location, device details, and information about ad interactions. What they receive depends on your consent choices and the settings of their software. The native app stores your selected age group on your device to apply appropriate ad settings.",
   },
 ] as const;
 
@@ -54,6 +64,32 @@ const uses = [
 ] as const;
 
 function PrivacyPage() {
+  const [openingPrivacyChoices, setOpeningPrivacyChoices] = useState(false);
+  const [adAgeGroup] = useState<AdAgeGroup | null>(() => getNativeAdAgeGroup());
+  const isNativeApp = Capacitor.isNativePlatform();
+
+  const handlePrivacyChoices = async () => {
+    if (openingPrivacyChoices) return;
+    setOpeningPrivacyChoices(true);
+    try {
+      const opened = await openNativePrivacyChoices();
+      if (!opened) {
+        toast.info("No additional advertising choices are required for your region.");
+      }
+    } catch (failure) {
+      toast.error("Privacy choices are unavailable right now", {
+        description: failure instanceof Error ? failure.message : "Please try again shortly.",
+      });
+    } finally {
+      setOpeningPrivacyChoices(false);
+    }
+  };
+
+  const handleChangeAgeGroup = () => {
+    clearNativeAdAgeGroup();
+    window.location.reload();
+  };
+
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6 lg:px-8">
       <div className="max-w-3xl">
@@ -122,6 +158,44 @@ function PrivacyPage() {
             phone number connected to your account.
           </p>
         </div>
+
+        {isNativeApp && (
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              Advertising privacy choices
+            </h2>
+            <p className="mt-3 text-sm leading-6 text-muted-foreground">
+              Review or update the advertising consent choices available in your region.
+            </p>
+            {adAgeGroup && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                Age group on this device: {adAgeGroup === "teen" ? "13-17" : "18 or older"}
+              </p>
+            )}
+            <div className="mt-4 flex flex-wrap gap-2">
+              <button
+                type="button"
+                onClick={() => void handlePrivacyChoices()}
+                disabled={openingPrivacyChoices}
+                className="inline-flex items-center gap-2 rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent disabled:opacity-60"
+              >
+                {openingPrivacyChoices ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <SlidersHorizontal className="h-4 w-4" />
+                )}
+                Privacy choices
+              </button>
+              <button
+                type="button"
+                onClick={handleChangeAgeGroup}
+                className="inline-flex items-center rounded-md border border-input bg-background px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-accent"
+              >
+                Change age group
+              </button>
+            </div>
+          </div>
+        )}
 
         <div>
           <h2 className="text-xl font-semibold tracking-tight text-foreground">Contact</h2>

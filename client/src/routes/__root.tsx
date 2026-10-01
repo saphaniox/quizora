@@ -33,9 +33,13 @@ import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
 import {
+  getNativeAdAgeGroup,
   enablePushNotifications,
   initializeNativeAds,
-  setNativeAdsVisible,
+  setNativeAdAgeGroup,
+  setNativeBannerPlacement,
+  type AdAgeGroup,
+  type NativeBannerPlacement,
 } from "@/lib/native-services";
 
 const SITE_URL = "https://quitech.online";
@@ -176,6 +180,8 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
+  const [nativeAgePromptReady, setNativeAgePromptReady] = useState(false);
+  const [nativeAdAgeGroup, setNativeAdAgeGroupState] = useState<AdAgeGroup | null>(null);
   const [updateDialogOpen, setUpdateDialogOpen] = useState(false);
   const [updateDialog, setUpdateDialog] = useState<{
     required: boolean;
@@ -186,7 +192,10 @@ function RootComponent() {
   } | null>(null);
 
   useEffect(() => {
-    void initializeNativeAds();
+    if (Capacitor.isNativePlatform()) {
+      setNativeAdAgeGroupState(getNativeAdAgeGroup());
+      setNativeAgePromptReady(true);
+    }
     void getCurrentUser()
       .then(({ user }) => {
         if (user) void enablePushNotifications();
@@ -195,18 +204,23 @@ function RootComponent() {
   }, []);
 
   useEffect(() => {
-    const hidden = [
-      "/auth",
-      "/forgot-password",
-      "/privacy",
-      "/terms",
-      "/support",
-      "/delete-data",
-      "/delete-account",
-      "/admin",
-    ].some((path) => pathname === path || pathname.startsWith(`${path}/`));
-    void setNativeAdsVisible(!hidden);
+    if (!nativeAdAgeGroup) return;
+    void initializeNativeAds();
+  }, [nativeAdAgeGroup]);
+
+  useEffect(() => {
+    const bannerRoutes: Record<string, NativeBannerPlacement> = {
+      "/": "home",
+      "/leaderboard": "leaderboard",
+      "/history": "history",
+    };
+    void setNativeBannerPlacement(bannerRoutes[pathname] ?? null);
   }, [pathname]);
+
+  const selectNativeAdAgeGroup = (ageGroup: AdAgeGroup) => {
+    setNativeAdAgeGroup(ageGroup);
+    setNativeAdAgeGroupState(ageGroup);
+  };
 
   useEffect(() => {
     let active = true;
@@ -321,6 +335,29 @@ function RootComponent() {
           <Outlet />
         </main>
         <Footer />
+
+        <AlertDialog open={nativeAgePromptReady && !nativeAdAgeGroup}>
+          <AlertDialogContent onEscapeKeyDown={(event) => event.preventDefault()}>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Choose your age group</AlertDialogTitle>
+              <AlertDialogDescription>
+                This helps Quitech apply the right advertising and privacy settings. We only save
+                the age group on this device. Quitech is for learners aged 13 and above.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:space-x-0">
+              <AlertDialogAction
+                className="w-full bg-secondary text-secondary-foreground hover:bg-secondary/80"
+                onClick={() => selectNativeAdAgeGroup("teen")}
+              >
+                13-17
+              </AlertDialogAction>
+              <AlertDialogAction className="w-full" onClick={() => selectNativeAdAgeGroup("adult")}>
+                18 or older
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <AlertDialog
           open={updateDialogOpen}

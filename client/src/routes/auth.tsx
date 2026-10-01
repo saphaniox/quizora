@@ -112,6 +112,7 @@ function AuthPage() {
 
   const googleLogin = async () => {
     const webClientId = import.meta.env["VITE_GOOGLE_WEB_CLIENT_ID"] as string | undefined;
+    const configuredRedirectUrl = import.meta.env["VITE_GOOGLE_REDIRECT_URL"] as string | undefined;
     if (!webClientId) {
       setError("Google sign-in is being configured. Please use email or phone for now.");
       return;
@@ -119,7 +120,8 @@ function AuthPage() {
     setBusy(true);
     setError(null);
     try {
-      await SocialLogin.initialize({ google: { webClientId, mode: "online" } });
+      const redirectUrl = configuredRedirectUrl || `${window.location.origin}/auth`;
+      await SocialLogin.initialize({ google: { webClientId, mode: "online", redirectUrl } });
       const response = await SocialLogin.login({
         provider: "google",
         options: { scopes: ["email", "profile"] },

@@ -22,6 +22,9 @@ build/
 
 # Generated Capacitor web bundle (canonical assets live in client/public/)
 client/capacitor-www/assets/
+client/capacitor-www/app-ads.txt
+client/capacitor-www/favicon.ico
+client/capacitor-www/favicon.svg
 client/capacitor-www/hero-study.png
 client/capacitor-www/robots.txt
 

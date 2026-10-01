@@ -34,6 +34,10 @@ import {
 } from "@/lib/attempt-store";
 import { findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { cn } from "@/lib/utils";
+import {
+  maybeShowNativeQuizInterstitial,
+  prepareNativeQuizInterstitial,
+} from "@/lib/native-services";
 import { toast } from "sonner";
 import {
   AlertDialog,
@@ -169,6 +173,11 @@ function QuizPage() {
     setBookmarked(isBookmarked(id));
   }, [id]);
 
+  useEffect(() => {
+    if (!started || !quiz) return;
+    void prepareNativeQuizInterstitial();
+  }, [quiz, started]);
+
   const handleSubmit = useCallback(async () => {
     if (!quiz || submitting) return;
     setSubmitting(true);
@@ -185,7 +194,6 @@ function QuizPage() {
       timeSpentSeconds,
     };
     const pendingAttempt: Omit<StoredAttempt, "result"> = {
-      visitorId: submissionPayload.visitorId,
       visitorId: submissionPayload.visitorId,
       quizId: quiz.id,
       quizTitle: quiz.title,
@@ -236,6 +244,7 @@ function QuizPage() {
       });
       if (account?.id) await deleteAccountProgress(quiz.id).catch(() => undefined);
 
+      await maybeShowNativeQuizInterstitial();
       void navigate({ to: "/results" });
     } catch (submitFailure) {
       if (isRetryableSubmissionFailure(submitFailure)) {

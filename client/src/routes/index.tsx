@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from "react";
+import { Fragment, useMemo, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import {
@@ -23,6 +23,7 @@ import { QuizCard } from "@/components/QuizCard";
 import { FeedbackForm } from "@/components/FeedbackForm";
 import { cn } from "@/lib/utils";
 import { offlineCatalogue } from "@/lib/offline-catalogue";
+import { NativeCatalogueAd } from "@/components/NativeCatalogueAd";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -221,7 +222,10 @@ function HomePage() {
                       onClick={() => {
                         setActiveLevel(level.id);
                         window.requestAnimationFrame(() => {
-                          quizSectionRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+                          quizSectionRef.current?.scrollIntoView({
+                            behavior: "smooth",
+                            block: "start",
+                          });
                         });
                       }}
                       className={cn(
@@ -289,8 +293,11 @@ function HomePage() {
             )}
 
             <div className="mt-6 grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-              {sections.map((section) => (
-                <QuizCard key={section.id} quiz={section} />
+              {sections.map((section, index) => (
+                <Fragment key={section.id}>
+                  <QuizCard quiz={section} />
+                  {index === 5 && <NativeCatalogueAd />}
+                </Fragment>
               ))}
             </div>
 
