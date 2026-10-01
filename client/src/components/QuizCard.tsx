@@ -60,7 +60,7 @@ export function QuizCard({ quiz }: { quiz: QuizSummary }) {
         </span>
       </div>
 
-      {quiz.questionCount >= 500 && (
+      {quiz.questionCount === 500 && (
         <span className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-amber-600 dark:text-amber-400">
           <Award className="h-3.5 w-3.5" />
           500-question certificate path

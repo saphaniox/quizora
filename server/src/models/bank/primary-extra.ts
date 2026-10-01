@@ -56,7 +56,11 @@ const moneyTimeBank = () =>
       );
     },
     "foundations-money-time",
-  );
+  ).map((item) => ({
+    ...item,
+    text: item.text.replaceAll("shillings", "currency units"),
+    explanation: item.explanation.replaceAll("shillings", "currency units"),
+  }));
 
 const grammarFacts: [string, string][] = [
   ["A word that names a person, place or thing", "A noun"],

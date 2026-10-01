@@ -722,10 +722,11 @@ function AdminPage() {
         tone: shortDescriptions.length ? "warning" : "ready",
       },
       {
-        label: "Certificate length",
+        label: "Certificate-bank coverage",
         value: nonStandardRuns.length,
-        detail: "Full certificate sections should use the 500-question standard.",
-        tone: nonStandardRuns.length ? "warning" : "ready",
+        detail:
+          "Sections require 500 distinct reviewed questions before certificates can be issued.",
+        tone: nonStandardRuns.length ? "blocked" : "ready",
       },
       {
         label: "Repeated titles",

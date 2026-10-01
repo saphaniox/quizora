@@ -1,4 +1,4 @@
-import { findQuiz, PASS_MARK } from "../models/quizModel.server";
+import { CERTIFICATE_QUESTION_COUNT, findQuiz, PASS_MARK } from "../models/quizModel.server";
 import * as leaderboardModel from "../models/leaderboardModel.server";
 import * as certificateModel from "../models/certificateModel.server";
 import type { AnswerPayload, AnswerResult, Certificate, LeaderboardEntry } from "../types.server";
@@ -74,11 +74,13 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   if (!leaderboardVisible) leaderboardModel.hideParticipantEntries(entry);
 
   const fullSection = graded.length === quiz.questions.length;
+  const certificateSection = quiz.questions.length === CERTIFICATE_QUESTION_COUNT;
+  const certificateEligible = fullSection && certificateSection;
   const passed = percentage >= PASS_MARK;
   let certificate: Certificate | null = null;
   let certificateMessage: string;
 
-  if (passed && fullSection) {
+  if (passed && certificateEligible) {
     certificate = certificateModel.issue({
       code: certificateModel.makeCode(quiz.id),
       playerName,
@@ -94,10 +96,12 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
       issuedAt: new Date().toISOString(),
     });
     certificateMessage = `Congratulations! You scored ${percentage}% and earned a certificate in ${quiz.title}.`;
+  } else if (!certificateSection) {
+    certificateMessage = `This ${quiz.questions.length}-question section is available for practice. Certificates are issued after a verified ${CERTIFICATE_QUESTION_COUNT}-question section.`;
   } else if (passed) {
-    certificateMessage = `Great score! Certificates are awarded for the full ${quiz.questions.length}-question section only.`;
+    certificateMessage = `Great score! Certificates are awarded after completing all ${CERTIFICATE_QUESTION_COUNT} questions.`;
   } else {
-    certificateMessage = `You need ${PASS_MARK}% or more on the full section to earn a certificate.`;
+    certificateMessage = `You need ${PASS_MARK}% or more after completing all ${CERTIFICATE_QUESTION_COUNT} questions to earn a certificate.`;
   }
 
   return {

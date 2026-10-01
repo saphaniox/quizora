@@ -165,6 +165,12 @@ function QuizPage() {
   });
 
   const quiz = data?.quiz;
+  const { data: setupData } = useQuery({
+    queryKey: ["quiz-setup", id],
+    queryFn: () => getQuiz(id, 10, "setup"),
+    enabled: !started,
+    staleTime: 60_000,
+  });
   const questions = useMemo(() => quiz?.questions ?? [], [quiz]);
   const current = questions[index];
   const answeredCount = Object.keys(answers).length;
@@ -402,6 +408,8 @@ function QuizPage() {
   };
 
   const savedProgress = resumeState;
+  const setupQuestionCount = setupData?.quiz.totalQuestionsInSection;
+  const certificateReady = setupQuestionCount === 500;
 
   if (!started) {
     return (
@@ -475,8 +483,12 @@ function QuizPage() {
                 },
                 {
                   value: "full",
-                  title: "Full section (certificate eligible)",
-                  copy: "All 500 questions, untimed and self-paced. Pause any time; score 80%+ to earn a certificate.",
+                  title: certificateReady ? "Full section (certificate eligible)" : "Full section",
+                  copy: certificateReady
+                    ? "All 500 questions, self-paced. Score 80%+ to earn a certificate."
+                    : setupQuestionCount
+                      ? `All ${setupQuestionCount} available questions for focused practice.`
+                      : "All available questions for focused practice.",
                 },
               ] as { value: Mode; title: string; copy: string }[]
             ).map((option) => (
@@ -493,7 +505,7 @@ function QuizPage() {
                   </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{option.copy}</span>
                 </span>
-                {option.value === "full" ? (
+                {option.value === "full" && certificateReady ? (
                   <Award className="h-5 w-5 shrink-0 text-primary" />
                 ) : (
                   <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />

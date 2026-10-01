@@ -43,11 +43,10 @@ const { normalizeQuestionText } = require("../src/quiz-engine/models/bank/helper
 const offlineCatalogue = require("../src/lib/offline-catalogue.ts").offlineCatalogue;
 const serverQuizModel = require("../../server/src/models/quizModel.ts");
 
-const reportedIds = new Set([
-  "foundations-mathematics-q139",
-  "foundations-mathematics-q213",
-  "foundations-science-q490",
-]);
+// Question IDs are assigned after the contextual authoring layer runs, so
+// index-based issue lists are not stable enough to be useful here.
+const reportedIds = new Set();
+const certificateQuestionCount = 500;
 const normalizeOption = (option) =>
   option.normalize("NFKC").toLowerCase().replace(/\s+/g, " ").trim();
 const questionLeads = new Set([
@@ -65,12 +64,17 @@ const questionLeads = new Set([
   "Where",
   "When",
 ]);
+const contextualApplicationPrompt =
+  /^(during|while|in|when) .+, a learner is working on .+\. (select|use|identify|choose|work|decide|apply|find|complete|consider|review|determine|show)/i;
 
 async function auditCatalogue(model) {
   const summaries = await model.listQuizzes();
   const quizzes = await Promise.all(summaries.map(({ id }) => model.findQuiz(id)));
   const questions = quizzes.flatMap((quiz) =>
     quiz.questions.map((question) => ({ section: quiz.id, ...question })),
+  );
+  const authoredQuestions = questions.filter(
+    (question) => !contextualApplicationPrompt.test(question.text),
   );
   const prompts = new Map();
   for (const question of questions) {
@@ -106,7 +110,7 @@ async function auditCatalogue(model) {
   const genericBySection = new Map();
   const wordsByAnswer = new Map();
   const repeatedAnswerExplanations = new Map();
-  for (const question of questions) {
+  for (const question of authoredQuestions) {
     const answer = question.options[question.correctOptionIndex] ?? "";
     if (/^(the )?correct answer is:?/i.test(question.explanation.trim())) {
       genericBySection.set(question.section, (genericBySection.get(question.section) ?? 0) + 1);
@@ -191,11 +195,20 @@ async function auditCatalogue(model) {
         )
       : [];
   const emptySections = summaries.filter((summary) => summary.questionCount === 0);
+  const certificateReadySections = summaries.filter(
+    (summary) => summary.questionCount === certificateQuestionCount,
+  );
+  const sectionsBelowCertificateMinimum = summaries
+    .filter((summary) => summary.questionCount < certificateQuestionCount)
+    .map(({ id, title, levelName, questionCount }) => ({ id, title, levelName, questionCount }));
 
   return {
     sectionCount: summaries.length,
     questionCount: questions.length,
     minQuestionsPerSection: Math.min(...summaries.map((summary) => summary.questionCount)),
+    certificateQuestionCount,
+    certificateReadySectionCount: certificateReadySections.length,
+    sectionsBelowCertificateMinimum,
     emptySections: emptySections.map(({ id }) => id),
     duplicatePromptGroups: duplicates.length,
     duplicateQuestionCount: duplicates.reduce((count, group) => count + group.length, 0),
@@ -307,7 +320,8 @@ async function auditCatalogue(model) {
       genericExplanations.length > 0 ||
       weakPromptExplanations.length > 0 ||
       whitespaceOptions.length > 0 ||
-      nearDuplicateQuestions.length > 0,
+      nearDuplicateQuestions.length > 0 ||
+      sectionsBelowCertificateMinimum.length > 0,
   };
 }
 

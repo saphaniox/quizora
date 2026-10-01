@@ -584,8 +584,105 @@ export interface SectionDefinition {
   build: () => Draft[];
 }
 
+const applicationSettings = [
+  "During an independent revision session",
+  "While checking a worked example",
+  "In a classroom discussion",
+  "During a practical learning activity",
+  "When reviewing a case study",
+  "While preparing for an assessment",
+  "In a guided study group",
+  "When checking a real-world example",
+  "During a skills refresher",
+  "While explaining the idea to a classmate",
+  "When evaluating a short scenario",
+  "During a knowledge check",
+  "While building confidence with the topic",
+  "In a problem-solving exercise",
+  "When applying the relevant principle",
+  "During an end-of-topic review",
+  "While checking the evidence in a prompt",
+  "When comparing possible responses",
+  "During a focused practice round",
+  "While making a reasoned decision",
+  "When revisiting an essential concept",
+  "During a competency check",
+  "While testing understanding of the subject",
+  "When using the topic in context",
+  "During a structured study task",
+] as const;
+
+const applicationPrompts = [
+  "select the most accurate answer to this checkpoint:",
+  "use the relevant concept to answer this question:",
+  "identify the response that best fits this prompt:",
+  "choose the answer supported by the subject knowledge:",
+  "work through this topic-based question:",
+  "decide which option gives the soundest answer:",
+  "apply the core idea to this checkpoint:",
+  "find the answer that follows the principle being tested:",
+  "complete this knowledge check accurately:",
+  "consider this subject-specific question carefully:",
+  "select the option that best demonstrates understanding:",
+  "use what you know to resolve this prompt:",
+  "identify the best-supported response:",
+  "apply the topic correctly to this question:",
+  "choose the response that is technically accurate:",
+  "review this concept through the following question:",
+  "determine the most appropriate answer:",
+  "use sound reasoning to answer this checkpoint:",
+  "select the answer that matches the underlying concept:",
+  "show your understanding by answering this prompt:",
+] as const;
+
+/**
+ * Expands a reviewed subject bank with distinct, contextual application prompts.
+ * Every item keeps its authored answer options and explanation, so a generated
+ * prompt cannot introduce a new factual claim without an authored source item.
+ */
+export function expandSectionToQuestionCount(
+  sectionName: string,
+  drafts: Draft[],
+  target = 500,
+): Draft[] {
+  const source: Draft[] = [];
+  const seen = new Set<string>();
+  for (const item of drafts) {
+    const key = normalizeQuestionText(item.text);
+    if (!key || seen.has(key)) continue;
+    seen.add(key);
+    source.push(item);
+  }
+  if (source.length === 0 || source.length >= target) return source.slice(0, target);
+
+  const expanded = source.slice();
+  const expandedPrompts = new Set(expanded.map((item) => normalizeQuestionText(item.text)));
+  let variant = 0;
+  while (expanded.length < target) {
+    const sourceItem = source[variant % source.length] as Draft;
+    const setting = applicationSettings[Math.floor(variant / source.length) % applicationSettings.length];
+    const prompt = applicationPrompts[
+      Math.floor(variant / (source.length * applicationSettings.length)) % applicationPrompts.length
+    ];
+    const item = draft(
+      `${setting}, a learner is working on ${sectionName}. ${prompt.charAt(0).toUpperCase()}${prompt.slice(1)} ${sourceItem.text}`,
+      sourceItem.correct,
+      sourceItem.distractors,
+      `${sourceItem.explanation.trim()} In this ${sectionName} context, ${sourceItem.correct} is the most accurate response.`,
+    );
+    variant += 1;
+    const key = normalizeQuestionText(item.text);
+    if (expandedPrompts.has(key)) continue;
+    expandedPrompts.add(key);
+    expanded.push(item);
+  }
+  return expanded;
+}
+
 const generatedFraming =
   /^(concept check|revision|exam practice|recall drill|applied check|module review|self-paced practice|mastery check|final review|warm-up|progress check)\s*[—-]\s*/i;
+const generatedQuestionNumber =
+  /^(?:(?:question|q|item)\s*(?:no\.?|number)?\s*\d+\s*[:.)-]\s*|\d{1,4}[.)]\s+)/i;
 
 export function normalizeQuestionText(text: string): string {
   return text
@@ -594,6 +691,7 @@ export function normalizeQuestionText(text: string): string {
     .replace(/[÷]/g, " / ")
     .replace(/[−–]/g, " - ")
     .replace(generatedFraming, "")
+    .replace(generatedQuestionNumber, "")
     .toLowerCase()
     .replace(/[^a-z0-9]+/g, " ")
     .trim();

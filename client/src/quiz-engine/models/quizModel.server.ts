@@ -1,5 +1,6 @@
 import type { Level, Quiz, QuizSummary, PublicQuiz } from "../types.server";
 import {
+  expandSectionToQuestionCount,
   finalize,
   makeRng,
   normalizeQuestionText,
@@ -28,6 +29,7 @@ import {
 import { popularTopicSections } from "./bank/popular-topics.server";
 
 export const PASS_MARK = 80;
+export const CERTIFICATE_QUESTION_COUNT = 500;
 
 const descriptionTails: Record<string, string> = {
   foundations: "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
@@ -148,10 +150,7 @@ function draftsBySection(): Map<string, Draft[]> {
         uniquePrompts.add(prompt);
         sectionDrafts.push(item);
       }
-      drafts.set(
-        section.id,
-        section.target === undefined ? sectionDrafts : sectionDrafts.slice(0, section.target),
-      );
+      drafts.set(section.id, expandSectionToQuestionCount(section.name, sectionDrafts));
     }
   }
 
@@ -293,7 +292,8 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
       .map((item) => item.question);
   }
   const questions = pool.slice(0, count).map(({ id, text, options }) => ({ id, text, options }));
-  const certificateEligible = count === total;
+  const fullSection = count === total;
+  const certificateEligible = fullSection && total === CERTIFICATE_QUESTION_COUNT;
   return {
     id: quiz.id,
     title: quiz.title,
@@ -303,7 +303,7 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
     levelName: quiz.levelName,
     sectionId: quiz.sectionId,
     difficulty: quiz.difficulty,
-    timeLimitSeconds: certificateEligible
+    timeLimitSeconds: fullSection
       ? questions.length * FULL_SECONDS_PER_QUESTION
       : questions.length * PRACTICE_SECONDS_PER_QUESTION[quiz.difficulty],
     totalQuestionsInSection: total,

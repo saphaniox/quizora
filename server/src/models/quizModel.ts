@@ -9,6 +9,7 @@ import type {
 import * as catalogueEditModel from "./catalogueEditModel.js";
 import type { CatalogueDraftInput, CatalogueEditRow } from "./catalogueEditModel.js";
 import {
+  expandSectionToQuestionCount,
   finalize,
   makeRng,
   normalizeQuestionText,
@@ -37,6 +38,7 @@ import {
 import { popularTopicSections } from "./bank/popular-topics.js";
 
 export const PASS_MARK = 80;
+export const CERTIFICATE_QUESTION_COUNT = 500;
 
 const descriptionTails: Record<string, string> = {
   foundations: "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
@@ -158,10 +160,7 @@ function buildQuizzes(): Quiz[] {
         uniquePrompts.add(prompt);
         drafts.push(item);
       }
-      const questions = finalize(
-        section.id,
-        section.target === undefined ? drafts : drafts.slice(0, section.target),
-      );
+      const questions = finalize(section.id, expandSectionToQuestionCount(section.name, drafts));
       out.push({
         id: section.id,
         title: section.name,
@@ -381,7 +380,7 @@ export function toPublicQuiz(
     difficulty: quiz.difficulty,
     timeLimitSeconds: count === total ? questions.length * 120 : questions.length * (quiz.difficulty === "Hard" ? 120 : 60),
     totalQuestionsInSection: total,
-    certificateEligible: count === total,
+    certificateEligible: count === total && total === CERTIFICATE_QUESTION_COUNT,
     passMark: PASS_MARK,
     questions,
   };
