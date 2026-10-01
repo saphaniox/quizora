@@ -9,7 +9,6 @@ import type {
 import * as catalogueEditModel from "./catalogueEditModel.js";
 import type { CatalogueDraftInput, CatalogueEditRow } from "./catalogueEditModel.js";
 import {
-  expandSectionToQuestionCount,
   finalize,
   makeRng,
   normalizeQuestionText,
@@ -160,7 +159,10 @@ function buildQuizzes(): Quiz[] {
         uniquePrompts.add(prompt);
         drafts.push(item);
       }
-      const questions = finalize(section.id, expandSectionToQuestionCount(section.name, drafts));
+      const questions = finalize(
+        section.id,
+        section.target === undefined ? drafts : drafts.slice(0, section.target),
+      );
       out.push({
         id: section.id,
         title: section.name,
