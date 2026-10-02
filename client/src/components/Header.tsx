@@ -12,9 +12,10 @@ import {
   X,
 } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCurrentUser } from "@/lib/api";
+import { syncPushNotifications } from "@/lib/native-services";
 
 const links = [
   { to: "/", label: "Quizzes", icon: Home },
@@ -31,6 +32,11 @@ export function Header() {
     retry: false,
   });
   const user = data?.user ?? null;
+  const userId = user?.id;
+
+  useEffect(() => {
+    if (userId) void syncPushNotifications();
+  }, [userId]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">

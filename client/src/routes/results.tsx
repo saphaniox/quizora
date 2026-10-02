@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Award, RotateCcw, Share2, Trophy } from "lucide-react";
 import { ScoreRing } from "@/components/ScoreRing";
 import { QuestionCard } from "@/components/QuestionCard";
+import { NativeCatalogueAd } from "@/components/NativeCatalogueAd";
 import { getLeaderboard } from "@/lib/api";
 import { loadAttempt, type StoredAttempt } from "@/lib/attempt-store";
 import { countryFlag } from "@/lib/countries";
@@ -251,6 +252,10 @@ function ResultsPage() {
             />
           </div>
         ))}
+      </div>
+
+      <div className="mt-8">
+        <NativeCatalogueAd />
       </div>
     </div>
   );

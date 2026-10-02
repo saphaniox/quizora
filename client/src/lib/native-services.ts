@@ -24,6 +24,7 @@ const INTERSTITIAL_COMPLETION_COUNT_KEY = "quitech_interstitial_completion_count
 const INTERSTITIAL_LAST_SHOWN_KEY = "quitech_interstitial_last_shown_v1";
 const INTERSTITIAL_MIN_INTERVAL_MS = 10 * 60 * 1000;
 const INTERSTITIAL_COMPLETION_INTERVAL = 2;
+const PUSH_REGISTRATION_TIMEOUT_MS = 20_000;
 
 export type AdAgeGroup = "teen" | "adult";
 export type NativeBannerPlacement = "home" | "leaderboard" | "history";
@@ -31,6 +32,8 @@ export type NativeBannerPlacement = "home" | "leaderboard" | "history";
 let pushListenersReady = false;
 let pushActionListenerReady = false;
 let pushInitialization: Promise<boolean> | null = null;
+let resolvePushRegistration: (() => void) | null = null;
+let rejectPushRegistration: ((error: unknown) => void) | null = null;
 let adsReady = false;
 let adsShouldBeVisible = true;
 let requestedBannerPlacement: NativeBannerPlacement | null = null;
@@ -108,7 +111,7 @@ export function enablePushNotifications(requestPermission = false): Promise<bool
   pushInitialization = initializePushNotifications(requestPermission)
     .catch((error: unknown) => {
       console.warn("Could not enable push notifications", error);
-      return false;
+      throw error;
     })
     .finally(() => {
       pushInitialization = null;
@@ -150,13 +153,17 @@ async function initializePushNotifications(requestPermission: boolean): Promise<
     await PushNotifications.addListener("registration", ({ value }) => {
       const platform = Capacitor.getPlatform();
       if (platform === "android" || platform === "ios") {
-        void registerPushDevice(value, platform).catch((error: unknown) => {
-          console.warn("Could not register push device", error);
-        });
+        void registerPushDevice(value, platform)
+          .then(() => resolvePushRegistration?.())
+          .catch((error: unknown) => {
+            console.warn("Could not register push device", error);
+            rejectPushRegistration?.(error);
+          });
       }
     });
     await PushNotifications.addListener("registrationError", (error) => {
       console.warn("Push registration failed", error);
+      rejectPushRegistration?.(new Error(error.error));
     });
     pushListenersReady = true;
   }
@@ -178,7 +185,33 @@ async function initializePushNotifications(requestPermission: boolean): Promise<
       vibration: true,
     });
   }
-  await PushNotifications.register();
+
+  const registration = new Promise<void>((resolve, reject) => {
+    const timeout = globalThis.setTimeout(() => {
+      resolvePushRegistration = null;
+      rejectPushRegistration = null;
+      reject(new Error("Timed out waiting for this device to register for push notifications."));
+    }, PUSH_REGISTRATION_TIMEOUT_MS);
+    resolvePushRegistration = () => {
+      globalThis.clearTimeout(timeout);
+      resolvePushRegistration = null;
+      rejectPushRegistration = null;
+      resolve();
+    };
+    rejectPushRegistration = (error: unknown) => {
+      globalThis.clearTimeout(timeout);
+      resolvePushRegistration = null;
+      rejectPushRegistration = null;
+      reject(error);
+    };
+  });
+
+  try {
+    await Promise.all([PushNotifications.register(), registration]);
+  } catch (error) {
+    rejectPushRegistration?.(error);
+    throw error;
+  }
   return true;
 }
 

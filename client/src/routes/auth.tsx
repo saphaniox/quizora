@@ -1,9 +1,20 @@
 import { useState, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, LockKeyhole, Mail, Phone, ShieldCheck, UserRound } from "lucide-react";
+import {
+  ArrowLeft,
+  Eye,
+  EyeOff,
+  Loader2,
+  LockKeyhole,
+  Mail,
+  Phone,
+  ShieldCheck,
+  UserRound,
+} from "lucide-react";
 import { FcGoogle } from "react-icons/fc";
 import { SocialLogin } from "@capgo/capacitor-social-login";
+import { Capacitor } from "@capacitor/core";
 import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, loginWithGoogle, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
@@ -56,6 +67,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -130,7 +142,12 @@ function AuthPage() {
       if (!credential) throw new Error("Google did not return a sign-in credential.");
       finish((await loginWithGoogle(credential)).user);
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "Google sign-in was not completed.");
+      const message = cause instanceof Error ? cause.message : "Google sign-in was not completed.";
+      setError(
+        Capacitor.isNativePlatform() && /Google Sign-In cancelled by user/i.test(message)
+          ? "Google could not finish sign-in. If this happened after selecting an account, check that Google Cloud has an Android OAuth client for com.saptechug.quitech with this build's signing SHA-1, in the same project as the Web client ID. The GoogleProvider Logcat entry shows the SHA-1."
+          : message,
+      );
     } finally {
       setBusy(false);
     }
@@ -178,6 +195,14 @@ function AuthPage() {
           {!method ? (
             <div className="mt-8 space-y-3">
               <AuthChoice
+                icon={<FcGoogle className="h-6 w-6" />}
+                tone="bg-slate-50"
+                title="Continue with Google"
+                copy="Use the Google account on your device"
+                onClick={() => void googleLogin()}
+                disabled={busy}
+              />
+              <AuthChoice
                 icon={<Mail className="h-6 w-6 text-rose-700" />}
                 tone="bg-rose-50"
                 title="Continue with email"
@@ -190,14 +215,6 @@ function AuthPage() {
                 title="Continue with phone number"
                 copy="Use your country code and phone number"
                 onClick={() => setMethod("phone")}
-              />
-              <AuthChoice
-                icon={<FcGoogle className="h-6 w-6" />}
-                tone="bg-slate-50"
-                title="Continue with Google"
-                copy="Use the Google account on your device"
-                onClick={() => void googleLogin()}
-                disabled={busy}
               />
             </div>
           ) : (
@@ -245,16 +262,35 @@ function AuthPage() {
                   </div>
                 </div>
               )}
-              <Field label="Password" icon={<LockKeyhole className="h-4 w-4" />}>
-                <input
-                  type="password"
-                  required
-                  minLength={8}
-                  value={password}
-                  onChange={(event) => setPassword(event.target.value)}
-                  className="w-full rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
-                />
-              </Field>
+              <div>
+                <label
+                  htmlFor="auth-password"
+                  className="flex items-center gap-2 text-sm font-semibold text-foreground"
+                >
+                  <LockKeyhole className="h-4 w-4" />
+                  Password
+                </label>
+                <div className="relative mt-2">
+                  <input
+                    id="auth-password"
+                    type={showPassword ? "text" : "password"}
+                    required
+                    minLength={8}
+                    value={password}
+                    onChange={(event) => setPassword(event.target.value)}
+                    className="w-full rounded-md border border-input bg-background px-3 py-3 pr-12 text-sm text-foreground outline-none transition-shadow focus-visible:ring-2 focus-visible:ring-ring"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((visible) => !visible)}
+                    aria-label={showPassword ? "Hide password" : "Show password"}
+                    aria-pressed={showPassword}
+                    className="absolute inset-y-0 right-0 grid w-12 place-items-center rounded-r-md text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                  >
+                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                  </button>
+                </div>
+              </div>
               {mode === "signin" && (
                 <div className="text-right">
                   <Link

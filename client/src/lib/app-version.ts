@@ -1,4 +1,4 @@
-export const APP_VERSION = "2.8";
+export const APP_VERSION = "2.10";
 
 export function compareVersions(current: string, target: string): number {
   const normalize = (value: string) =>

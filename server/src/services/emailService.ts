@@ -1,4 +1,5 @@
 import nodemailer, { type Transporter } from "nodemailer";
+import type { FastifyBaseLogger } from "fastify";
 import { appUrl } from "../email/layout.js";
 import { buildEmailTemplate } from "../email/templates.js";
 import type { EmailTemplateData, EmailTemplateName } from "../email/types.js";
@@ -7,19 +8,46 @@ import * as emailModel from "../models/emailNotificationModel.js";
 const EMAIL_TIMEOUT_MS = 15_000;
 const WORKER_INTERVAL_MS = 30_000;
 const SCHEDULER_INTERVAL_MS = 60 * 60 * 1000;
-let cachedTransporter: Transporter | null | undefined;
+let cachedTransporter: Transporter | undefined;
 let workerTimer: NodeJS.Timeout | null = null;
 let lastSchedulerRun = 0;
+let emailLogger: FastifyBaseLogger | undefined;
+
+function errorDetails(error: unknown): Record<string, string | number> {
+  if (!(error instanceof Error)) {
+    return { errorMessage: String(error).slice(0, 300) };
+  }
+  const details: Record<string, string | number> = {
+    errorName: error.name,
+    errorMessage: error.message.slice(0, 300),
+  };
+  const smtpError = error as Error & {
+    code?: unknown;
+    responseCode?: unknown;
+    command?: unknown;
+  };
+  if (typeof smtpError.code === "string") details.errorCode = smtpError.code;
+  if (typeof smtpError.responseCode === "number") {
+    details.responseCode = smtpError.responseCode;
+  }
+  if (typeof smtpError.command === "string") details.smtpCommand = smtpError.command;
+  return details;
+}
+
+function logEmailFailure(
+  error: unknown,
+  context: Record<string, string | number>,
+  message: string,
+): void {
+  emailLogger?.error({ event: "email.failed", ...context, ...errorDetails(error) }, message);
+}
 
 function mailer(): Transporter | null {
-  if (cachedTransporter !== undefined) return cachedTransporter;
+  if (cachedTransporter) return cachedTransporter;
   const host = process.env["SMTP_HOST"]?.trim();
   const user = process.env["SMTP_USER"]?.trim();
   const pass = process.env["SMTP_PASS"]?.trim();
-  if (!host || !user || !pass) {
-    cachedTransporter = null;
-    return null;
-  }
+  if (!host || !user || !pass) return null;
   const port = Number(process.env["SMTP_PORT"] ?? 587);
   cachedTransporter = nodemailer.createTransport({
     host,
@@ -46,8 +74,11 @@ async function safelyRecordDelivery(
 ): Promise<void> {
   try {
     await emailModel.recordEmailDelivery(input);
-  } catch (error) {
-    console.warn("Could not record email delivery", error);
+  } catch {
+    emailLogger?.error(
+      { event: "email.delivery_log_failed", template: input.template, status: input.status },
+      "Could not record email delivery",
+    );
   }
 }
 
@@ -69,6 +100,15 @@ export async function sendTemplateEmail(input: {
       !input.ignorePreferences &&
       !emailModel.categoryEnabled(preview.category, stored.preferences)
     ) {
+      emailLogger?.info(
+        {
+          event: "email.skipped",
+          template: input.template,
+          category: preview.category,
+          reason: "disabled_by_user_preference",
+        },
+        "Email skipped by user preference",
+      );
       await safelyRecordDelivery({
         userId: input.userId,
         recipient,
@@ -88,7 +128,19 @@ export async function sendTemplateEmail(input: {
   );
   const transport = mailer();
   if (!transport) {
+    const missingVariables = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].filter(
+      (key) => !process.env[key]?.trim(),
+    );
     const error = new Error("SMTP is not configured");
+    logEmailFailure(
+      error,
+      {
+        template: input.template,
+        category: rendered.category,
+        missingVariables: missingVariables.join(","),
+      },
+      "Email delivery failed because SMTP is not configured",
+    );
     await safelyRecordDelivery({
       userId: input.userId,
       recipient,
@@ -102,8 +154,13 @@ export async function sendTemplateEmail(input: {
 
   try {
     const info = await transport.sendMail({
-      from: process.env["SMTP_FROM"] ?? "Quitech <quitech@saptechug.com>",
-      replyTo: process.env["SUPPORT_EMAIL"] ?? "quitech@saptechug.com",
+      from:
+        process.env["SMTP_FROM"] ??
+        `Quitech <${process.env["SMTP_USER"] ?? "quitechug@gmail.com"}>`,
+      replyTo:
+        process.env["SUPPORT_EMAIL"] ??
+        process.env["SMTP_USER"] ??
+        "quitechug@gmail.com",
       to: recipient,
       subject: rendered.subject,
       text: rendered.text,
@@ -118,8 +175,22 @@ export async function sendTemplateEmail(input: {
       status: "sent",
       providerMessageId: info.messageId,
     });
+    emailLogger?.info(
+      {
+        event: "email.sent",
+        template: input.template,
+        category: rendered.category,
+        messageId: info.messageId,
+      },
+      "Email accepted by SMTP provider",
+    );
     return { sent: true, skipped: false, messageId: info.messageId };
   } catch (error) {
+    logEmailFailure(
+      error,
+      { template: input.template, category: rendered.category },
+      "SMTP provider rejected or failed to send email",
+    );
     await safelyRecordDelivery({
       userId: input.userId,
       recipient,
@@ -141,7 +212,7 @@ export async function queueTemplateEmail(input: {
   scheduledFor?: Date;
 }): Promise<boolean> {
   const rendered = buildEmailTemplate(input.template, input.data);
-  return emailModel.enqueueEmailJob({
+  const queued = await emailModel.enqueueEmailJob({
     userId: input.userId,
     recipient: input.to,
     template: input.template,
@@ -150,6 +221,16 @@ export async function queueTemplateEmail(input: {
     dedupeKey: input.dedupeKey,
     scheduledFor: input.scheduledFor,
   });
+  emailLogger?.info(
+    {
+      event: queued ? "email.queued" : "email.queue_skipped",
+      template: input.template,
+      category: rendered.category,
+      reason: queued ? undefined : "duplicate_or_already_processed",
+    },
+    queued ? "Email queued" : "Email was not queued",
+  );
+  return queued;
 }
 
 export async function queueBulkTemplateEmail(input: {
@@ -169,6 +250,15 @@ export async function queueBulkTemplateEmail(input: {
         dedupeKey: `${input.template}:${recipient.userId}:${campaignId}`,
       }),
     ),
+  );
+  emailLogger?.info(
+    {
+      event: "email.campaign_queued",
+      template: input.template,
+      category: rendered.category,
+      recipientCount: recipients.length,
+    },
+    "Email campaign queued",
   );
   return recipients.length;
 }
@@ -192,10 +282,37 @@ export async function processEmailQueue(limit = 20): Promise<{
       });
       await emailModel.finishEmailJob(job.id, true, job.attempts);
       if (result.sent) sent += 1;
+      else {
+        emailLogger?.info(
+          {
+            event: "email.queue_job_skipped",
+            jobId: job.id,
+            template: job.template,
+            reason: "disabled_by_user_preference",
+          },
+          "Queued email skipped",
+        );
+      }
     } catch (error) {
       failed += 1;
       await emailModel.finishEmailJob(job.id, false, job.attempts, error);
+      logEmailFailure(
+        error,
+        {
+          jobId: job.id,
+          template: job.template,
+          attempt: job.attempts,
+          finalAttempt: job.attempts >= 4 ? 1 : 0,
+        },
+        "Queued email delivery failed",
+      );
     }
+  }
+  if (jobs.length > 0) {
+    emailLogger?.info(
+      { event: "email.queue_batch_completed", processed: jobs.length, sent, failed },
+      "Email queue batch completed",
+    );
   }
   return { processed: jobs.length, sent, failed };
 }
@@ -238,11 +355,15 @@ async function scheduleLifecycleEmails(): Promise<void> {
   );
 }
 
-export function startEmailWorker(log?: {
-  info: (message: string) => void;
-  error: (error: unknown, message: string) => void;
-}): () => void {
+export function startEmailWorker(log?: FastifyBaseLogger): () => void {
   if (workerTimer || process.env["NODE_ENV"] === "test") return () => undefined;
+  emailLogger = log;
+  if (!isEmailConfigured()) {
+    emailLogger?.error(
+      { event: "email.smtp_unconfigured" },
+      "Email worker started without SMTP configuration; queued messages will remain pending",
+    );
+  }
   const run = () => {
     void (async () => {
       if (Date.now() - lastSchedulerRun >= SCHEDULER_INTERVAL_MS) {
@@ -250,12 +371,17 @@ export function startEmailWorker(log?: {
         await scheduleLifecycleEmails();
       }
       await processEmailQueue();
-    })().catch((error) => log?.error(error, "Email queue processing failed"));
+    })().catch((error) => {
+      emailLogger?.error({ event: "email.worker_failed", ...errorDetails(error) }, "Email queue processing failed");
+    });
   };
   workerTimer = setInterval(run, WORKER_INTERVAL_MS);
   workerTimer.unref();
   run();
-  log?.info("Quitech email queue worker started");
+  emailLogger?.info(
+    { event: "email.worker_started", smtpConfigured: isEmailConfigured() },
+    "Quitech email queue worker started",
+  );
   return () => {
     if (workerTimer) clearInterval(workerTimer);
     workerTimer = null;

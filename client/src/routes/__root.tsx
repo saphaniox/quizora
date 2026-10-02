@@ -27,7 +27,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { APP_VERSION, compareVersions, isUpdateRequired } from "@/lib/app-version";
 import { androidAppUrl } from "@/lib/share-links";
-import { getAppUpdateSettings, getCurrentUser, submitAnswers } from "@/lib/api";
+import { getAppUpdateSettings, submitAnswers } from "@/lib/api";
 import { loadPendingSubmissions, removePendingSubmission, saveAttempt } from "@/lib/attempt-store";
 import { toast } from "sonner";
 import { Capacitor } from "@capacitor/core";
@@ -215,11 +215,6 @@ function RootComponent() {
       setNativeAdAgeGroupState(getNativeAdAgeGroup());
       setNativeAgePromptReady(true);
     }
-    void getCurrentUser()
-      .then(({ user }) => {
-        if (user) void syncPushNotifications();
-      })
-      .catch(() => undefined);
   }, []);
 
   useEffect(() => {

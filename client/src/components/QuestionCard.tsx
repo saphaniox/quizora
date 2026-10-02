@@ -49,7 +49,7 @@ export function QuestionCard({
         />
       </div>
       <h2 className="mt-5 wrap-break-word text-lg font-semibold leading-snug text-card-foreground sm:mt-6 sm:text-xl lg:text-2xl">
-        {question.text}
+        {question.text.replace(/\s*-\s*Set\s+\d+:/i, ":")}
       </h2>
       <div className="mt-6 grid gap-3 sm:mt-8">
         {question.options.map((option, index) => {

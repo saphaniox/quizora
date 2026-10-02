@@ -75,7 +75,10 @@ export function renderHtml(
   content: TemplateContent,
   managePreferencesUrl?: string,
 ): string {
-  const supportEmail = process.env["SUPPORT_EMAIL"] ?? "quitech@saptechug.com";
+  const supportEmail =
+    process.env["SUPPORT_EMAIL"] ??
+    process.env["SMTP_USER"] ??
+    "quitechug@gmail.com";
   const logoUrl = appUrl("/logo.png");
   const homeUrl = appUrl("/");
   const privacyUrl = appUrl("/privacy");
