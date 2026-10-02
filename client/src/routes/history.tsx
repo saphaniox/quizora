@@ -130,10 +130,13 @@ function HistoryPage() {
       clearProgress(quizId);
       setProgress((current) => current.filter((item) => item.quizId !== quizId));
       setProgressToDrop(null);
-      toast.success("Progress dropped");
+      toast.success("Saved quiz removed", {
+        description: "You can start it again whenever you’re ready.",
+      });
     } catch (failure) {
-      toast.error("Could not drop progress", {
-        description: failure instanceof Error ? failure.message : "Try again later.",
+      toast.error("We couldn’t remove that saved quiz", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
     }
   };
@@ -148,11 +151,14 @@ function HistoryPage() {
         ),
       );
       toast.success(
-        visible ? "Section shown on the leaderboard" : "Section hidden from the leaderboard",
+        visible
+          ? "Your result is now on the leaderboard"
+          : "Your result is now hidden from the leaderboard",
       );
     } catch (failure) {
-      toast.error("Could not update leaderboard visibility", {
-        description: failure instanceof Error ? failure.message : "Try again later.",
+      toast.error("We couldn’t update that leaderboard setting", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
     }
   };
@@ -346,14 +352,16 @@ function HistoryPage() {
       >
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Drop saved progress?</AlertDialogTitle>
+            <AlertDialogTitle>Remove this saved quiz?</AlertDialogTitle>
             <AlertDialogDescription>
-              This removes the saved quiz from My progress and cannot be undone.
+              This will remove the quiz from My progress. You can’t undo this.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Keep progress</AlertDialogCancel>
-            <AlertDialogAction onClick={() => void dropProgress()}>Drop progress</AlertDialogAction>
+            <AlertDialogAction onClick={() => void dropProgress()}>
+              Remove saved quiz
+            </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>

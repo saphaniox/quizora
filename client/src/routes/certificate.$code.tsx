@@ -105,10 +105,12 @@ function CertificatePage() {
     try {
       const { downloadCertificatePdf } = await import("@/lib/certificate-pdf");
       await downloadCertificatePdf(certificate, verificationUrl);
-      toast.success("Certificate downloaded");
+      toast.success("Your certificate is ready", {
+        description: "It’s been saved to your device.",
+      });
     } catch (error) {
-      toast.error("Could not download the certificate", {
-        description: error instanceof Error ? error.message : "Please try again.",
+      toast.error("We couldn’t download your certificate", {
+        description: error instanceof Error ? error.message : "Please try again in a little while.",
       });
     } finally {
       setDownloading(false);
@@ -127,12 +129,16 @@ function CertificatePage() {
 
       await navigator.clipboard.writeText(text);
       setShareStatus("Certificate link copied");
-      toast.success("Certificate link copied");
+      toast.success("Link copied", {
+        description: "Your certificate is ready to share.",
+      });
       window.setTimeout(() => setShareStatus(""), 2500);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
-      setShareStatus("Share was not completed");
-      toast.error("Share was not completed");
+      setShareStatus("Sharing didn’t go through");
+      toast.error("We couldn’t share it just now", {
+        description: "Please try again, or copy the certificate link instead.",
+      });
       window.setTimeout(() => setShareStatus(""), 2500);
     }
   };

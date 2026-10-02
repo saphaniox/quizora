@@ -46,6 +46,7 @@ import {
   getAdminUsers,
   getAdminCertificates,
   getAdminSystemMetrics,
+  getAdminIntegrationStatus,
   getAdminAnalytics,
   getLeaderboard,
   getLevels,
@@ -63,6 +64,7 @@ import {
   type FeedbackStatus,
   type AdminUser,
   type AdminSystemMetrics,
+  type AdminIntegrationStatus,
   type AdminAnalytics,
   type AdminEmailTemplate,
 } from "@/lib/api";
@@ -140,6 +142,7 @@ function sortAdminRows<T>(
 
 const adminAreas = [
   ["Overview", "#admin-overview"],
+  ["Integrations", "#admin-integrations"],
   ["Catalogue", "#admin-catalogue"],
   ["Users", "#admin-users"],
   ["Certificates", "#admin-certificates"],
@@ -344,6 +347,13 @@ function AdminPage() {
     enabled: isAdmin,
     refetchInterval: 30_000,
   });
+  const integrationStatusQuery = useQuery({
+    queryKey: ["admin", "integrations"],
+    queryFn: () => getAdminIntegrationStatus(),
+    enabled: isAdmin,
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
   const analyticsQuery = useQuery({
     queryKey: ["admin", "analytics", analyticsFrom, analyticsTo],
     queryFn: () =>
@@ -365,13 +375,13 @@ function AdminPage() {
     mutationFn: deleteLeaderboardEntry,
     onSuccess: () => {
       setConfirmingLeaderboardId(null);
-      setLeaderboardAction({ tone: "ready", message: "Ranking record deleted." });
+      setLeaderboardAction({ tone: "ready", message: "The ranking entry has been removed." });
       void leaderboardQuery.refetch();
     },
     onError: (error) => {
       setLeaderboardAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not delete ranking record.",
+        message: error instanceof Error ? error.message : "We couldn’t remove that ranking entry.",
       });
     },
   });
@@ -381,12 +391,15 @@ function AdminPage() {
       setConfirmingUserId(null);
       void usersQuery.refetch();
       void certificatesQuery.refetch();
-      setLeaderboardAction({ tone: "ready", message: "User and linked account data deleted." });
+      setLeaderboardAction({
+        tone: "ready",
+        message: "The user and linked account data have been removed.",
+      });
     },
     onError: (error) => {
       setLeaderboardAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not delete user data.",
+        message: error instanceof Error ? error.message : "We couldn’t remove that user’s data.",
       });
     },
   });
@@ -397,12 +410,12 @@ function AdminPage() {
       setEditingUserId(null);
       setEditingUserName("");
       void usersQuery.refetch();
-      setLeaderboardAction({ tone: "ready", message: "User name updated." });
+      setLeaderboardAction({ tone: "ready", message: "The user’s name has been updated." });
     },
     onError: (error) =>
       setLeaderboardAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not update user.",
+        message: error instanceof Error ? error.message : "We couldn’t update that user.",
       }),
   });
   const resetAdminPasswordMutation = useMutation({
@@ -411,14 +424,14 @@ function AdminPage() {
       setTemporaryPassword({ userId, value: result.temporaryPassword });
       setLeaderboardAction({
         tone: "ready",
-        message: "Temporary password generated. Copy it now; it will not be shown again.",
+        message: "A temporary password is ready. Copy it now; you won’t be able to see it again.",
       });
     },
     onError: (error) =>
       setLeaderboardAction({
         tone: "blocked",
         message:
-          error instanceof Error ? error.message : "Could not generate a temporary password.",
+          error instanceof Error ? error.message : "We couldn’t create a temporary password.",
       }),
   });
   const updateAdminRoleMutation = useMutation({
@@ -426,12 +439,12 @@ function AdminPage() {
       updateAdminUserRole(userId, role),
     onSuccess: () => {
       void usersQuery.refetch();
-      setLeaderboardAction({ tone: "ready", message: "Admin access updated." });
+      setLeaderboardAction({ tone: "ready", message: "Admin access has been updated." });
     },
     onError: (error) =>
       setLeaderboardAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not update admin access.",
+        message: error instanceof Error ? error.message : "We couldn’t update admin access.",
       }),
   });
   const deleteAdminCertificateMutation = useMutation({
@@ -439,12 +452,12 @@ function AdminPage() {
     onSuccess: () => {
       setConfirmingCertificateCode(null);
       void certificatesQuery.refetch();
-      setLeaderboardAction({ tone: "ready", message: "Certificate revoked." });
+      setLeaderboardAction({ tone: "ready", message: "The certificate has been revoked." });
     },
     onError: (error) => {
       setLeaderboardAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not revoke certificate.",
+        message: error instanceof Error ? error.message : "We couldn’t revoke that certificate.",
       });
     },
   });
@@ -453,14 +466,14 @@ function AdminPage() {
       saveCatalogueDraft(sectionId, draft),
     onSuccess: ({ section }) => {
       setCatalogueDraft(draftFromSection(section));
-      setCatalogueAction({ tone: "ready", message: "Draft saved." });
+      setCatalogueAction({ tone: "ready", message: "Your draft is saved." });
       void catalogueQuery.refetch();
       void levelsQuery.refetch();
     },
     onError: (error) => {
       setCatalogueAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not save catalogue draft.",
+        message: error instanceof Error ? error.message : "We couldn’t save your draft.",
       });
     },
   });
@@ -478,14 +491,15 @@ function AdminPage() {
       setAppUpdateAction({
         tone: "ready",
         message:
-          "App update policy saved. Users will see the reminder until the app version matches the latest setting.",
+          "Your update settings are saved. Users will keep seeing the reminder until their app is up to date.",
       });
       void appUpdateQuery.refetch();
     },
     onError: (error) => {
       setAppUpdateAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not save the app update policy.",
+        message:
+          error instanceof Error ? error.message : "We couldn’t save the app update settings.",
       });
     },
   });
@@ -496,14 +510,14 @@ function AdminPage() {
     },
     onSuccess: ({ section }) => {
       setCatalogueDraft(draftFromSection(section));
-      setCatalogueAction({ tone: "ready", message: "Catalogue section published." });
+      setCatalogueAction({ tone: "ready", message: "Your section is now live." });
       void catalogueQuery.refetch();
       void levelsQuery.refetch();
     },
     onError: (error) => {
       setCatalogueAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not publish catalogue section.",
+        message: error instanceof Error ? error.message : "We couldn’t publish that section.",
       });
     },
   });
@@ -512,12 +526,12 @@ function AdminPage() {
       updateFeedbackStatus(id, status),
     onSuccess: () => {
       void feedbackQuery.refetch();
-      setLeaderboardAction({ tone: "ready", message: "Feedback status updated." });
+      setLeaderboardAction({ tone: "ready", message: "The feedback status has been updated." });
     },
     onError: (error) =>
       setLeaderboardAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not update feedback status.",
+        message: error instanceof Error ? error.message : "We couldn’t update the feedback status.",
       }),
   });
   const sendPushMutation = useMutation({
@@ -526,13 +540,13 @@ function AdminPage() {
       setPushDraft({ title: "", body: "", url: "/" });
       setPushAction({
         tone: result.failed ? "warning" : "ready",
-        message: `Sent to ${formatNumber(result.sent)} of ${formatNumber(result.recipients)} registered devices.`,
+        message: `We sent it to ${formatNumber(result.sent)} of ${formatNumber(result.recipients)} registered devices.`,
       });
     },
     onError: (error) => {
       setPushAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not send the notification.",
+        message: error instanceof Error ? error.message : "We couldn’t send that notification.",
       });
     },
   });
@@ -549,13 +563,14 @@ function AdminPage() {
       }));
       setEmailAction({
         tone: "ready",
-        message: `${formatNumber(result.queued)} personalized emails were added to the delivery queue.`,
+        message: `${formatNumber(result.queued)} personalized emails are ready to be sent.`,
       });
     },
     onError: (error) => {
       setEmailAction({
         tone: "blocked",
-        message: error instanceof Error ? error.message : "Could not queue this email.",
+        message:
+          error instanceof Error ? error.message : "We couldn’t prepare that email for sending.",
       });
     },
   });
@@ -564,7 +579,7 @@ function AdminPage() {
     onSuccess: (result) => {
       setEmailAction({
         tone: "ready",
-        message: `Test email sent to ${result.sentTo}. Check your inbox and spam folder.`,
+        message: `Your test email is on its way to ${result.sentTo}. Check your inbox and spam folder.`,
       });
     },
     onError: (error) => {
@@ -903,7 +918,7 @@ function AdminPage() {
   }
 
   return (
-    <div className="bg-background">
+    <div className="w-full min-w-0 max-w-full overflow-x-clip bg-background">
       <section className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
           <div>
@@ -946,6 +961,7 @@ function AdminPage() {
                 void certificatesQuery.refetch();
                 void appUpdateQuery.refetch();
                 void systemMetricsQuery.refetch();
+                void integrationStatusQuery.refetch();
                 void analyticsQuery.refetch();
                 void feedbackQuery.refetch();
               }}
@@ -976,7 +992,7 @@ function AdminPage() {
         </div>
       </section>
 
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto min-w-0 max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
         <nav
           aria-label="Admin pages"
           className="sticky top-0 z-20 -mx-4 mb-6 flex gap-1 overflow-x-auto border-b border-border bg-background/95 px-4 py-2 backdrop-blur sm:-mx-6 sm:px-6 lg:-mx-8 lg:px-8"
@@ -1017,7 +1033,7 @@ function AdminPage() {
 
         <section
           id="admin-operations"
-          className="mt-4 scroll-mt-24 rounded-lg border border-border bg-card p-5 shadow-sm"
+          className="mt-4 min-w-0 scroll-mt-24 rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5"
         >
           <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -1087,8 +1103,61 @@ function AdminPage() {
         </section>
 
         <section
+          id="admin-integrations"
+          className="mt-4 min-w-0 scroll-mt-24 rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5"
+        >
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div className="flex min-w-0 items-start gap-3">
+              <div className="rounded-md bg-primary/10 p-2 text-primary">
+                <Activity className="h-5 w-5" />
+              </div>
+              <div className="min-w-0">
+                <h2 className="text-base font-semibold text-card-foreground">
+                  Email and push health
+                </h2>
+                <p className="mt-1 text-sm leading-5 text-muted-foreground">
+                  Checks SMTP authentication and Firebase service-account access, and summarizes
+                  recent delivery failures without showing credentials.
+                </p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => void integrationStatusQuery.refetch()}
+              disabled={integrationStatusQuery.isFetching}
+              className="inline-flex min-h-10 shrink-0 items-center justify-center gap-2 rounded-md border border-input bg-background px-3 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60"
+            >
+              <RefreshCw
+                className={cn("h-4 w-4", integrationStatusQuery.isFetching && "animate-spin")}
+              />
+              Run checks
+            </button>
+          </div>
+
+          {integrationStatusQuery.isLoading ? (
+            <p className="mt-4 flex items-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Checking integrations and recent delivery activity…
+            </p>
+          ) : integrationStatusQuery.error ? (
+            <p className="mt-4 rounded-md border border-destructive/30 bg-destructive/5 p-3 text-sm text-destructive">
+              Could not load integration diagnostics:{" "}
+              {integrationStatusQuery.error instanceof Error
+                ? integrationStatusQuery.error.message
+                : "Unknown API error"}
+            </p>
+          ) : integrationStatusQuery.data ? (
+            <IntegrationHealth status={integrationStatusQuery.data} />
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">
+              Integration diagnostics have not been loaded yet.
+            </p>
+          )}
+        </section>
+
+        <section
           id="admin-messaging"
-          className="mt-4 scroll-mt-24 rounded-lg border border-border bg-card p-5 shadow-sm"
+          className="mt-4 min-w-0 scroll-mt-24 rounded-lg border border-border bg-card p-4 shadow-sm sm:p-5"
         >
           <div className="flex items-center gap-2">
             <Send className="h-5 w-5 text-primary" />
@@ -2721,6 +2790,160 @@ function AdminAccessState({
           </a>
         )}
       </div>
+    </div>
+  );
+}
+
+function IntegrationHealth({ status }: { status: AdminIntegrationStatus }) {
+  const emailTone: StatusTone = status.email.verified
+    ? "ready"
+    : status.email.configured
+      ? "blocked"
+      : "warning";
+  const pushTone: StatusTone = status.firebase.verified
+    ? status.firebase.devices.enabled
+      ? "ready"
+      : "warning"
+    : status.firebase.configured
+      ? "blocked"
+      : "warning";
+  const emailLabel = status.email.verified
+    ? "Connected"
+    : status.email.configured
+      ? "Check failed"
+      : "Not configured";
+  const pushLabel = status.firebase.verified
+    ? status.firebase.devices.enabled
+      ? "Connected"
+      : "No enabled devices"
+    : status.firebase.configured
+      ? "Check failed"
+      : "Not configured";
+
+  return (
+    <div className="mt-4 min-w-0">
+      <p className="text-xs text-muted-foreground">
+        Checked {new Date(status.collectedAt).toLocaleString()}
+      </p>
+      <div className="mt-3 grid min-w-0 gap-3 lg:grid-cols-2">
+        <IntegrationCard title="Email (SMTP)" icon={Mail} tone={emailTone} label={emailLabel}>
+          <p>
+            {status.email.host
+              ? `${status.email.host}:${status.email.port ?? "invalid port"} · ${status.email.secure ? "implicit TLS" : "STARTTLS"} · certificate verification ${status.email.tlsRejectUnauthorized ? "on" : "off"}`
+              : "SMTP host is not set"}
+          </p>
+          <p className="mt-1">
+            From: {status.email.senderConfigured ? "configured" : "missing"} · Reply-to:{" "}
+            {status.email.replyToConfigured ? "configured" : "missing"}
+          </p>
+          {status.email.missingVariables.length > 0 && (
+            <p className="mt-1 break-words">
+              Missing or invalid: {status.email.missingVariables.join(", ")}
+            </p>
+          )}
+          {status.email.error && (
+            <p className="mt-1 break-words text-destructive">{status.email.error}</p>
+          )}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <MiniStat label="Sent · 24h" value={formatNumber(status.email.activity24Hours.sent)} />
+            <MiniStat
+              label="Failed · 24h"
+              value={formatNumber(status.email.activity24Hours.failed)}
+            />
+            <MiniStat label="Queued" value={formatNumber(status.email.queue.pending)} />
+            <MiniStat label="Failed jobs" value={formatNumber(status.email.queue.failed)} />
+          </div>
+          {status.email.lastFailure && (
+            <IntegrationFailure
+              label={`${status.email.lastFailure.template} · ${new Date(status.email.lastFailure.createdAt).toLocaleString()}`}
+              error={status.email.lastFailure.errorMessage}
+            />
+          )}
+        </IntegrationCard>
+
+        <IntegrationCard
+          title="Firebase Cloud Messaging"
+          icon={Send}
+          tone={pushTone}
+          label={pushLabel}
+        >
+          <p className="break-all">
+            {status.firebase.projectId
+              ? `Project: ${status.firebase.projectId}`
+              : "Firebase project ID is unavailable"}
+          </p>
+          {status.firebase.error && (
+            <p className="mt-1 break-words text-destructive">{status.firebase.error}</p>
+          )}
+          <div className="mt-3 grid grid-cols-2 gap-2 sm:grid-cols-4">
+            <MiniStat
+              label="Enabled devices"
+              value={formatNumber(status.firebase.devices.enabled)}
+            />
+            <MiniStat label="Android" value={formatNumber(status.firebase.devices.android)} />
+            <MiniStat label="iOS" value={formatNumber(status.firebase.devices.ios)} />
+            <MiniStat label="Web" value={formatNumber(status.firebase.devices.web)} />
+          </div>
+          <div className="mt-2 grid grid-cols-2 gap-2">
+            <MiniStat label="Queued" value={formatNumber(status.firebase.queue.pending)} />
+            <MiniStat label="Failed jobs" value={formatNumber(status.firebase.queue.failed)} />
+          </div>
+          {status.firebase.lastFailure && (
+            <IntegrationFailure
+              label={new Date(status.firebase.lastFailure.createdAt).toLocaleString()}
+              error={status.firebase.lastFailure.errorMessage}
+            />
+          )}
+          <p className="mt-3 text-xs leading-5 text-muted-foreground">
+            Credential check confirms Firebase service-account access. Actual delivery requires an
+            enabled device token and notification permission on the device.
+          </p>
+        </IntegrationCard>
+      </div>
+    </div>
+  );
+}
+
+function IntegrationCard({
+  title,
+  icon: Icon,
+  tone,
+  label,
+  children,
+}: {
+  title: string;
+  icon: LucideIcon;
+  tone: StatusTone;
+  label: string;
+  children: ReactNode;
+}) {
+  return (
+    <div className="min-w-0 rounded-md border border-border bg-background p-3 sm:p-4">
+      <div className="flex min-w-0 flex-wrap items-center justify-between gap-2">
+        <h3 className="flex min-w-0 items-center gap-2 text-sm font-semibold text-foreground">
+          <Icon className="h-4 w-4 shrink-0 text-primary" />
+          <span className="break-words">{title}</span>
+        </h3>
+        <span
+          className={cn("rounded-full border px-2 py-1 text-xs font-medium", statusClass(tone))}
+        >
+          {label}
+        </span>
+      </div>
+      <div className="mt-3 min-w-0 break-words text-sm text-muted-foreground">{children}</div>
+    </div>
+  );
+}
+
+function IntegrationFailure({ label, error }: { label: string; error: string | null }) {
+  return (
+    <div className="mt-3 rounded-md border border-amber-500/25 bg-amber-500/5 p-3">
+      <p className="text-xs font-semibold text-amber-800 dark:text-amber-300">
+        Latest recorded failure · {label}
+      </p>
+      <p className="mt-1 break-words text-xs leading-5 text-muted-foreground">
+        {error || "No error details were recorded."}
+      </p>
     </div>
   );
 }

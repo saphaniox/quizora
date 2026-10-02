@@ -123,7 +123,7 @@ export async function syncPushNotifications(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
   try {
     const { enabled } = await getPushNotificationPreference();
-    if (enabled) await enablePushNotifications();
+    if (enabled) await enablePushNotifications(true);
   } catch (error) {
     console.warn("Could not load push notification preference", error);
   }
@@ -169,7 +169,7 @@ async function initializePushNotifications(requestPermission: boolean): Promise<
   }
 
   let permission = await PushNotifications.checkPermissions();
-  if (permission.receive === "prompt") {
+  if (permission.receive === "prompt" || permission.receive === "prompt-with-rationale") {
     if (!requestPermission) return false;
     permission = await PushNotifications.requestPermissions();
   }

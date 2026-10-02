@@ -53,6 +53,10 @@ function mailer(): Transporter | null {
     host,
     port,
     secure: process.env["SMTP_SECURE"] === "true" || port === 465,
+    tls: {
+      rejectUnauthorized:
+        process.env["SMTP_TLS_REJECT_UNAUTHORIZED"]?.trim().toLowerCase() !== "false",
+    },
     auth: { user, pass },
     connectionTimeout: EMAIL_TIMEOUT_MS,
     greetingTimeout: EMAIL_TIMEOUT_MS,
@@ -63,6 +67,105 @@ function mailer(): Transporter | null {
 
 export function isEmailConfigured(): boolean {
   return Boolean(mailer());
+}
+
+export async function verifyEmailTransport(): Promise<{
+  configured: boolean;
+  verified: boolean | null;
+  host: string | null;
+  port: number | null;
+  secure: boolean;
+  tlsRejectUnauthorized: boolean;
+  senderConfigured: boolean;
+  replyToConfigured: boolean;
+  missingVariables: string[];
+  error: string | null;
+}> {
+  const host = process.env["SMTP_HOST"]?.trim() || null;
+  const user = process.env["SMTP_USER"]?.trim();
+  const pass = process.env["SMTP_PASS"]?.trim();
+  const senderConfigured = Boolean(process.env["SMTP_FROM"]?.trim() || user);
+  const replyToConfigured = Boolean(process.env["SUPPORT_EMAIL"]?.trim() || user);
+  const rawPort = process.env["SMTP_PORT"] ?? "587";
+  const parsedPort = Number(rawPort);
+  const port =
+    Number.isInteger(parsedPort) && parsedPort > 0 && parsedPort <= 65535
+      ? parsedPort
+      : null;
+  const secure = process.env["SMTP_SECURE"] === "true" || port === 465;
+  const tlsRejectUnauthorized =
+    process.env["SMTP_TLS_REJECT_UNAUTHORIZED"]?.trim().toLowerCase() !== "false";
+  const missingVariables = [
+    !host ? "SMTP_HOST" : null,
+    !user ? "SMTP_USER" : null,
+    !pass ? "SMTP_PASS" : null,
+    !port ? "SMTP_PORT (must be a valid port)" : null,
+  ].filter((value): value is string => value !== null);
+
+  if (missingVariables.length) {
+    return {
+      configured: false,
+      verified: null,
+      host,
+      port,
+      secure,
+      tlsRejectUnauthorized,
+      senderConfigured,
+      replyToConfigured,
+      missingVariables,
+      error: "Complete the listed SMTP settings and restart the API.",
+    };
+  }
+
+  try {
+    const transport = mailer();
+    if (!transport) {
+      return {
+        configured: false,
+        verified: false,
+        host,
+        port,
+        secure,
+        tlsRejectUnauthorized,
+        senderConfigured,
+        replyToConfigured,
+        missingVariables: [],
+        error: "SMTP transport could not be initialized.",
+      };
+    }
+    await transport.verify();
+    return {
+      configured: true,
+      verified: true,
+      host,
+      port,
+      secure,
+      tlsRejectUnauthorized,
+      senderConfigured,
+      replyToConfigured,
+      missingVariables: [],
+      error: null,
+    };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "SMTP connection verification failed.";
+    emailLogger?.error(
+      { event: "email.smtp_verification_failed", ...errorDetails(error) },
+      "Admin SMTP verification failed",
+    );
+    return {
+      configured: true,
+      verified: false,
+      host,
+      port,
+      secure,
+      tlsRejectUnauthorized,
+      senderConfigured,
+      replyToConfigured,
+      missingVariables: [],
+      error: message.replace(/[\r\n]+/g, " ").slice(0, 300),
+    };
+  }
 }
 
 function preferenceUrl(token: string): string {

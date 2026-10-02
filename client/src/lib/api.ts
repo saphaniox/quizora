@@ -53,6 +53,43 @@ export interface AdminSystemMetrics {
     averageLatencyMs: number;
   };
 }
+export interface AdminIntegrationStatus {
+  collectedAt: string;
+  email: {
+    configured: boolean;
+    verified: boolean | null;
+    host: string | null;
+    port: number | null;
+    secure: boolean;
+    tlsRejectUnauthorized: boolean;
+    senderConfigured: boolean;
+    replyToConfigured: boolean;
+    missingVariables: string[];
+    error: string | null;
+    activity24Hours: { sent: number; failed: number; skipped: number };
+    queue: { pending: number; processing: number; failed: number };
+    lastFailure: {
+      createdAt: string;
+      template: string;
+      errorMessage: string | null;
+    } | null;
+  };
+  firebase: {
+    configured: boolean;
+    verified: boolean | null;
+    projectId: string | null;
+    error: string | null;
+    devices: {
+      total: number;
+      enabled: number;
+      android: number;
+      ios: number;
+      web: number;
+    };
+    queue: { pending: number; processing: number; failed: number };
+    lastFailure: { createdAt: string; errorMessage: string | null } | null;
+  };
+}
 
 export interface AdminAnalytics {
   users: {
@@ -322,6 +359,9 @@ export async function getHealth(): Promise<HealthStatus> {
 }
 export async function getAdminSystemMetrics(): Promise<AdminSystemMetrics> {
   return fetchJson<AdminSystemMetrics>("/admin/system");
+}
+export async function getAdminIntegrationStatus(): Promise<AdminIntegrationStatus> {
+  return fetchJson<AdminIntegrationStatus>("/admin/integrations");
 }
 export async function getAdminAnalytics(filters?: {
   from?: string;

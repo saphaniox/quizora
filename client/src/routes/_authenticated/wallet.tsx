@@ -150,11 +150,12 @@ function WalletPage() {
       const result = await updateCurrentUser(displayName);
       setUser(result.user);
       queryClient.setQueryData(["auth", "me"], { user: result.user });
-      toast.success("Profile updated");
+      toast.success("Your profile is up to date");
     } catch (failure) {
-      const message = failure instanceof Error ? failure.message : "Could not update your profile";
+      const message =
+        failure instanceof Error ? failure.message : "Please try again in a little while.";
       setDeleteError(message);
-      toast.error("Profile update failed", { description: message });
+      toast.error("We couldn’t update your profile", { description: message });
     } finally {
       setSavingProfile(false);
     }
@@ -199,10 +200,13 @@ function WalletPage() {
         link.click();
         URL.revokeObjectURL(url);
       }
-      toast.success("Your account data is ready");
+      toast.success("Your account copy is ready", {
+        description: "You can find the downloaded file on your device.",
+      });
     } catch (failure) {
-      toast.error("Could not export your data", {
-        description: failure instanceof Error ? failure.message : "Try again later.",
+      toast.error("We couldn’t prepare your account copy", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
     } finally {
       setExportingData(false);
@@ -222,9 +226,11 @@ function WalletPage() {
       }
       setCurrentPassword("");
       setNewPassword("");
-      toast.success("Password changed", { description: "Your account is ready to use." });
+      toast.success("Your password has been changed", {
+        description: "You’re all set to keep using your account.",
+      });
     } catch (failure) {
-      toast.error("Could not change your password", {
+      toast.error("We couldn’t change your password", {
         description:
           failure instanceof Error ? failure.message : "Check your current password and try again.",
       });
@@ -239,7 +245,7 @@ function WalletPage() {
     try {
       const result = await saveEmailPreferences(emailPreferences);
       setEmailPreferences(result.preferences);
-      toast.success("Email choices saved");
+      toast.success("Your email choices are saved");
     } catch (failure) {
       toast.error("We could not save your email choices", {
         description: failure instanceof Error ? failure.message : "Please try again shortly.",
@@ -256,18 +262,24 @@ function WalletPage() {
       if (enabled) {
         const permissionGranted = await enablePushNotifications(true);
         if (!permissionGranted) {
-          toast.error("Notifications were not enabled", {
-            description: "Allow notifications in your device settings, then try again.",
+          toast.error("Notifications are still turned off on this device", {
+            description:
+              "You can allow them in your device settings, then switch them on here whenever you like.",
           });
           return;
         }
       }
       const result = await savePushNotificationPreference(enabled);
       setPushNotificationsEnabled(result.enabled);
-      toast.success(enabled ? "Push notifications enabled" : "Push notifications turned off");
+      toast.success(enabled ? "We’ll keep you posted" : "Push notifications are turned off", {
+        description: enabled
+          ? "We’ll send helpful updates to this device."
+          : "You can turn them back on here any time.",
+      });
     } catch (failure) {
-      toast.error("Could not save your notification choice", {
-        description: failure instanceof Error ? failure.message : "Please try again shortly.",
+      toast.error("We couldn’t update your notification choice", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
     } finally {
       setSavingPushPreferences(false);
@@ -292,16 +304,17 @@ function WalletPage() {
       setDeleteOpen(false);
       setConfirmation("");
       setDeleteMessage("Your account has been deleted. You are being signed out.");
-      toast.success("Your account is deleted", {
-        description: "Your Quitech account has been removed.",
+      toast.success("Your account has been deleted", {
+        description: "We’re signing you out now.",
       });
       window.setTimeout(() => {
         void navigate({ to: "/", replace: true });
       }, 900);
     } catch (failure) {
-      const message = failure instanceof Error ? failure.message : "Account deletion failed";
+      const message =
+        failure instanceof Error ? failure.message : "Please try again in a little while.";
       setDeleteError(message);
-      toast.error("We couldn't delete your account", { description: message });
+      toast.error("We couldn’t delete your account", { description: message });
     } finally {
       setDeleting(false);
     }
@@ -316,9 +329,10 @@ function WalletPage() {
       queryClient.setQueryData(["auth", "me"], { user: null });
       void navigate({ to: "/", replace: true });
     } catch (failure) {
-      const message = failure instanceof Error ? failure.message : "Sign out failed";
+      const message =
+        failure instanceof Error ? failure.message : "Please try again in a little while.";
       setDeleteError(message);
-      toast.error("We couldn't sign you out", { description: message });
+      toast.error("We couldn’t sign you out", { description: message });
     } finally {
       setSigningOut(false);
     }
@@ -495,22 +509,23 @@ function WalletPage() {
               <div className="mt-5 max-w-md border-t border-border pt-5">
                 <div className="flex items-center gap-2">
                   <Settings className="h-4 w-4 text-primary" />
-                  <p className="text-sm font-semibold text-foreground">Push notifications</p>
+                  <p className="text-sm font-semibold text-foreground">Helpful updates</p>
                 </div>
                 <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                  Get quiz results and unfinished-quiz reminders on this device.
+                  We’ll let you know about quiz results, unfinished quizzes, and important account
+                  updates. You can turn these off any time.
                 </p>
                 {!Capacitor.isNativePlatform() && (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    Push notifications are available in the Android and iOS app.
+                    Device notifications are available in the Android and iOS app.
                   </p>
                 )}
                 <div className="mt-3">
                   <WalletEmailChoice
                     label={
                       savingPushPreferences
-                        ? "Saving notification choice..."
-                        : "Allow push notifications"
+                        ? "Saving your choice..."
+                        : "Send me helpful notifications"
                     }
                     checked={pushNotificationsEnabled}
                     disabled={

@@ -9,6 +9,13 @@ type ServiceAccountConfig = {
   private_key: string;
 };
 
+export interface FirebaseAdminStatus {
+  configured: boolean;
+  verified: boolean | null;
+  projectId: string | null;
+  error: string | null;
+}
+
 type PushJob = {
   id: string;
   userId: string;
@@ -26,7 +33,26 @@ function firebaseApp(): App | null {
   if (!value) return null;
   if (getApps()[0]) return getApps()[0]!;
 
-  const serviceAccount = JSON.parse(value) as ServiceAccountConfig;
+  const parsed: unknown = JSON.parse(value);
+  if (
+    !parsed ||
+    typeof parsed !== "object" ||
+    !("project_id" in parsed) ||
+    !("client_email" in parsed) ||
+    !("private_key" in parsed) ||
+    typeof parsed.project_id !== "string" ||
+    typeof parsed.client_email !== "string" ||
+    typeof parsed.private_key !== "string"
+  ) {
+    throw new Error(
+      "Firebase service account JSON must include project_id, client_email, and private_key.",
+    );
+  }
+  const serviceAccount: ServiceAccountConfig = {
+    project_id: parsed.project_id,
+    client_email: parsed.client_email,
+    private_key: parsed.private_key,
+  };
   serviceAccount.private_key = serviceAccount.private_key.replace(/\\n/g, "\n");
   return initializeApp({
     credential: cert({
@@ -35,6 +61,79 @@ function firebaseApp(): App | null {
       privateKey: serviceAccount.private_key,
     }),
   });
+}
+
+export async function verifyFirebaseAdmin(): Promise<FirebaseAdminStatus> {
+  const value = process.env["FIREBASE_SERVICE_ACCOUNT_JSON"];
+  if (!value?.trim()) {
+    return {
+      configured: false,
+      verified: null,
+      projectId: null,
+      error: "FIREBASE_SERVICE_ACCOUNT_JSON is not set.",
+    };
+  }
+
+  let projectId: string | null = null;
+  try {
+    const parsed: unknown = JSON.parse(value);
+    if (
+      !parsed ||
+      typeof parsed !== "object" ||
+      !("project_id" in parsed) ||
+      !("client_email" in parsed) ||
+      !("private_key" in parsed) ||
+      typeof parsed.project_id !== "string" ||
+      typeof parsed.client_email !== "string" ||
+      typeof parsed.private_key !== "string" ||
+      !parsed.project_id.trim() ||
+      !parsed.client_email.trim() ||
+      !parsed.private_key.trim()
+    ) {
+      return {
+        configured: true,
+        verified: false,
+        projectId: null,
+        error:
+          "Service account JSON is missing project_id, client_email, or private_key.",
+      };
+    }
+    projectId = parsed.project_id;
+  } catch {
+    return {
+      configured: true,
+      verified: false,
+      projectId: null,
+      error: "FIREBASE_SERVICE_ACCOUNT_JSON is not valid JSON.",
+    };
+  }
+
+  try {
+    const app = firebaseApp();
+    const accessToken = await app?.options.credential?.getAccessToken();
+    if (!accessToken?.access_token) {
+      return {
+        configured: true,
+        verified: false,
+        projectId,
+        error: "Firebase Admin did not return an access token.",
+      };
+    }
+    return { configured: true, verified: true, projectId, error: null };
+  } catch (error) {
+    const message =
+      error instanceof Error ? error.message : "Firebase credential verification failed.";
+    return {
+      configured: true,
+      verified: false,
+      projectId,
+      error: message
+        .replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, "[redacted email]")
+        .replace(/ya29\.[\w-]+/g, "[redacted token]")
+        .replace(/[\r\n]+/g, " ")
+        .slice(0, 300),
+    };
+  }
 }
 
 export async function sendPushNotification(input: {

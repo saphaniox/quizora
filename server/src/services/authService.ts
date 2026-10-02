@@ -281,7 +281,7 @@ export async function getPushNotificationsEnabled(userId: string): Promise<boole
     "SELECT push_notifications_enabled FROM users WHERE id = $1",
     [userId],
   );
-  return result.rows[0]?.push_notifications_enabled ?? false;
+  return result.rows[0]?.push_notifications_enabled ?? true;
 }
 
 export async function setPushNotificationsEnabled(

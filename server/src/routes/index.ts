@@ -82,6 +82,7 @@ const routes: FastifyPluginAsync = async (app) => {
   app.get("/email-preferences", authController.getPublicEmailPreferences);
   app.put("/email-preferences", authController.savePublicEmailPreferences);
   app.get("/admin/system", authController.getAdminSystemMetrics);
+  app.get("/admin/integrations", authController.getAdminIntegrationStatus);
   app.get("/admin/analytics", authController.getAdminAnalytics);
   app.patch("/auth/me", authController.updateMe);
   app.post("/auth/me/password", authController.changePassword);

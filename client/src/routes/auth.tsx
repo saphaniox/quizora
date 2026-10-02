@@ -79,7 +79,7 @@ function AuthPage() {
   const finish = (user: Awaited<ReturnType<typeof loginAccount>>["user"]) => {
     queryClient.setQueryData(["auth", "me"], { user });
     void syncPushNotifications();
-    toast.success(mode === "signup" ? "Welcome to Quitech" : "Welcome back");
+    toast.success(mode === "signup" ? "Welcome to Quitech!" : "Good to have you back!");
     void navigate({ to: user.mustChangePassword ? "/wallet" : next, replace: true });
   };
 
@@ -145,7 +145,7 @@ function AuthPage() {
       const message = cause instanceof Error ? cause.message : "Google sign-in was not completed.";
       setError(
         Capacitor.isNativePlatform() && /Google Sign-In cancelled by user/i.test(message)
-          ? "Google could not finish sign-in. If this happened after selecting an account, check that Google Cloud has an Android OAuth client for com.saptechug.quitech with this build's signing SHA-1, in the same project as the Web client ID. The GoogleProvider Logcat entry shows the SHA-1."
+          ? "We couldn’t finish Google sign-in this time. Please try again, or use your email or phone while we sort this out."
           : message,
       );
     } finally {

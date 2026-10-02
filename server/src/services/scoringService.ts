@@ -60,66 +60,142 @@ function quizPushNotification(input: {
   if (certificate) {
     return event(
       "certificate-earned",
-      "Certificate earned",
-      `You passed ${quizTitle} with ${percentage}%.`,
+      "You earned a certificate!",
+      `Well done on passing ${quizTitle} with ${percentage}%.`,
       `/certificate/${certificate.code}`,
     );
   }
   if (percentage === 100) {
-    return event("perfect-score", "Perfect score", `You got every question right in ${quizTitle}.`);
+    return event(
+      "perfect-score",
+      "A perfect score!",
+      `You got every question right in ${quizTitle}. Brilliant work.`,
+    );
   }
   if (previousPercentage === null && passed) {
-    return event("first-quiz-pass", "First quiz pass", `You passed ${quizTitle} on your first recorded result.`);
+    return event(
+      "first-quiz-pass",
+      "You passed on your first try!",
+      `That’s a great start in ${quizTitle} — you scored ${percentage}%.`,
+    );
   }
   if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 1) {
-    return event("leaderboard-first", "You reached first place", `${quizTitle}: you now lead the leaderboard.`);
+    return event(
+      "leaderboard-first",
+      "You’re in first place!",
+      `Your latest ${quizTitle} score puts you at the top of the leaderboard.`,
+    );
   }
   if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 2) {
-    return event("leaderboard-second", "Second place", `${quizTitle}: your new best puts you in second place.`);
+    return event(
+      "leaderboard-second",
+      "You’ve reached second place!",
+      `Your new best in ${quizTitle} has moved you up the leaderboard.`,
+    );
   }
   if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 3) {
-    return event("leaderboard-third", "On the podium", `${quizTitle}: your new best puts you in third place.`);
+    return event(
+      "leaderboard-third",
+      "You’ve made the top three!",
+      `Your new best in ${quizTitle} has earned you a place on the podium.`,
+    );
   }
   if (leaderboardImproved && leaderboardRank > 0 && leaderboardRank <= 10) {
-    return event("leaderboard-top-ten", "Top ten result", `${quizTitle}: your new score is in the top ten.`);
+    return event(
+      "leaderboard-top-ten",
+      "You’re in the top ten!",
+      `Your latest ${quizTitle} score has moved you into the top ten.`,
+    );
   }
   if (leaderboardImproved && leaderboardRank > 10 && leaderboardRank <= 25) {
-    return event("leaderboard-top-twenty-five", "Top 25 result", `${quizTitle}: your new score is in the top 25.`);
+    return event(
+      "leaderboard-top-twenty-five",
+      "You’ve reached the top 25!",
+      `Your latest ${quizTitle} score has moved you up the leaderboard.`,
+    );
   }
   if (leaderboardImproved && improvement !== null && improvement >= 20) {
-    return event("major-comeback", "Huge improvement", `You improved your ${quizTitle} score by ${improvement} points.`);
+    return event(
+      "major-comeback",
+      "Look how far you’ve come!",
+      `You improved your ${quizTitle} score by ${improvement} points. Keep it up.`,
+    );
   }
   if (leaderboardImproved && improvement !== null && improvement >= 10) {
-    return event("strong-comeback", "Big improvement", `You raised your ${quizTitle} score by ${improvement} points.`);
+    return event(
+      "strong-comeback",
+      "Your hard work is paying off",
+      `You raised your ${quizTitle} score by ${improvement} points. Nice progress.`,
+    );
   }
   if (leaderboardImproved && previousPercentage !== null) {
-    return event("personal-best", "New personal best", `You scored ${percentage}% on ${quizTitle}.`);
+    return event(
+      "personal-best",
+      "A new personal best!",
+      `You scored ${percentage}% in ${quizTitle}. You’re making progress.`,
+    );
   }
   if (passed && !fullSection) {
-    return event("partial-section-pass", "Section passed", `You passed this part of ${quizTitle}.`);
+    return event(
+      "partial-section-pass",
+      "You passed this round!",
+      `You passed this part of ${quizTitle} with ${percentage}%.`,
+    );
   }
   if (passed && percentage >= 90) {
-    return event("excellent-pass", "Excellent result", `You passed ${quizTitle} with ${percentage}%.`);
+    return event(
+      "excellent-pass",
+      "Excellent work!",
+      `You passed ${quizTitle} with ${percentage}%. That’s a strong result.`,
+    );
   }
   if (passed && percentage >= 80) {
-    return event("strong-pass", "Strong result", `You passed ${quizTitle} with ${percentage}%.`);
+    return event(
+      "strong-pass",
+      "You did really well!",
+      `You passed ${quizTitle} with ${percentage}%. Keep that momentum going.`,
+    );
   }
   if (passed) {
-    return event("quiz-passed", "Quiz passed", `You passed ${quizTitle} with ${percentage}%.`);
+    return event(
+      "quiz-passed",
+      "You passed!",
+      `You made it through ${quizTitle} with ${percentage}%. Well done.`,
+    );
   }
   if (percentage >= PASS_MARK - 5) {
-    return event("near-pass", "So close", `You were within five points of passing ${quizTitle}.`);
+    return event(
+      "near-pass",
+      "You were so close",
+      `You were just a few points short in ${quizTitle}. A little more practice can help.`,
+    );
   }
   if (percentage >= PASS_MARK - 10) {
-    return event("close-to-pass", "Nearly there", `A little more practice could get you through ${quizTitle}.`);
+    return event(
+      "close-to-pass",
+      "You’re getting there",
+      `A little more practice in ${quizTitle} could get you over the line. Go at your own pace.`,
+    );
   }
   if (fullSection) {
-    return event("full-section-practice", "Keep building", `You finished ${quizTitle}. Review your answers and try again.`);
+    return event(
+      "full-section-practice",
+      "Thanks for giving it a go",
+      `You finished ${quizTitle}. Review your answers and try again whenever you’re ready.`,
+    );
   }
   if (previousPercentage === null) {
-    return event("first-quiz-attempt", "First result recorded", `Your first result for ${quizTitle} is ready to review.`);
+    return event(
+      "first-quiz-attempt",
+      "Your first result is ready",
+      `Take a look at your answers in ${quizTitle} and see what you’d like to practise next.`,
+    );
   }
-  return event("section-practice", "Practice saved", `Your ${quizTitle} result is ready. Keep going at your pace.`);
+  return event(
+    "section-practice",
+    "Your progress is saved",
+    `Your ${quizTitle} result is ready whenever you want to review it.`,
+  );
 }
 
 export async function scoreSubmission(

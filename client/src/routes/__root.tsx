@@ -252,7 +252,12 @@ function RootComponent() {
         }
       }
       if (recovered > 0) {
-        toast.success(`${recovered} saved result${recovered === 1 ? "" : "s"} synced`);
+        toast.success("You’re back online", {
+          description:
+            recovered === 1
+              ? "Your saved result has synced."
+              : `${recovered} saved results have synced.`,
+        });
       }
     }
     void retryPendingSubmissions();
@@ -319,7 +324,7 @@ function RootComponent() {
       <QueryClientProvider client={queryClient}>
         <div className="flex min-h-screen items-center justify-center bg-background px-4">
           <div className="w-full max-w-md rounded-xl border border-border bg-card p-6 text-center shadow-lg">
-            <h1 className="text-2xl font-semibold text-foreground">Update required</h1>
+            <h1 className="text-2xl font-semibold text-foreground">A quick update is needed</h1>
             <p className="mt-3 text-sm leading-6 text-muted-foreground">
               {updateDialog?.message || "A newer version of Quitech is required before continuing."}
             </p>

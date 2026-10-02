@@ -1,12 +1,6 @@
 ALTER TABLE users
   ADD COLUMN IF NOT EXISTS push_notifications_enabled BOOLEAN NOT NULL DEFAULT FALSE;
 
-UPDATE users
-SET push_notifications_enabled = TRUE
-WHERE id IN (
-  SELECT DISTINCT user_id FROM push_devices WHERE enabled = TRUE
-);
-
 CREATE TABLE IF NOT EXISTS push_jobs (
   id UUID PRIMARY KEY,
   user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,

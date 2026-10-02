@@ -27,8 +27,9 @@ import {
   queueTemplateEmail,
   sendTemplateEmail,
   sendPasswordResetEmail,
+  verifyEmailTransport,
 } from "../services/emailService.js";
-import { sendPushNotification } from "../services/pushService.js";
+import { sendPushNotification, verifyFirebaseAdmin } from "../services/pushService.js";
 import {
   cancelPushNotification,
   cancelUserPushNotifications,
@@ -409,12 +410,14 @@ export async function registerPushDevice(
   const user = await requireUser(
     request,
     reply,
-    "Sign in to enable notifications",
+    "Please sign in to turn on notifications.",
   );
   if (!user) return;
   const parsed = pushDeviceSchema.safeParse(request.body);
   if (!parsed.success) {
-    reply.code(400).send({ error: "Invalid notification device" });
+    reply
+      .code(400)
+      .send({ error: "This device could not be registered for notifications." });
     return;
   }
   await auth.savePushDevice(user.id, parsed.data.token, parsed.data.platform);
@@ -425,7 +428,11 @@ export async function getPushPreference(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const user = await requireUser(request, reply, "Sign in to manage notifications");
+  const user = await requireUser(
+    request,
+    reply,
+    "Please sign in to manage your notifications.",
+  );
   if (!user) return;
   reply.header("cache-control", "no-store").send({
     enabled: await auth.getPushNotificationsEnabled(user.id),
@@ -436,11 +443,17 @@ export async function savePushPreference(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const user = await requireUser(request, reply, "Sign in to manage notifications");
+  const user = await requireUser(
+    request,
+    reply,
+    "Please sign in to manage your notifications.",
+  );
   if (!user) return;
   const parsed = pushPreferenceSchema.safeParse(request.body);
   if (!parsed.success) {
-    reply.code(400).send({ error: "Choose a valid notification setting" });
+    reply
+      .code(400)
+      .send({ error: "Please choose whether you’d like to receive notifications." });
     return;
   }
   await auth.setPushNotificationsEnabled(user.id, parsed.data.enabled);
@@ -456,7 +469,9 @@ export async function sendAdminPushNotification(
   if (!admin) return;
   const parsed = pushNotificationSchema.safeParse(request.body);
   if (!parsed.success) {
-    reply.code(400).send({ error: "Add a notification title and message" });
+    reply
+      .code(400)
+      .send({ error: "Please add a short title and message for the notification." });
     return;
   }
   try {
@@ -468,7 +483,10 @@ export async function sendAdminPushNotification(
     if (!result.configured) {
       reply
         .code(503)
-        .send({ error: "Firebase push notifications are not configured" });
+        .send({
+          error:
+            "Push notifications are temporarily unavailable. Please try again later.",
+        });
       return;
     }
     await adminAuditModel.record(
@@ -488,7 +506,10 @@ export async function sendAdminPushNotification(
     request.log.error(error, "Could not send push notification");
     reply
       .code(502)
-      .send({ error: "Firebase could not send this notification" });
+      .send({
+        error:
+          "We couldn’t send that notification right now. Please check Firebase settings and try again.",
+      });
   }
 }
 
@@ -735,6 +756,135 @@ export async function getAdminSystemMetrics(
   });
 }
 
+function sanitizeDiagnosticError(value: string | null): string | null {
+  return (
+    value
+      ?.replace(/[\w.+-]+@[\w.-]+\.[A-Za-z]{2,}/g, "[redacted email]")
+      .replace(/ya29\.[\w-]+/g, "[redacted token]")
+      .replace(/-----BEGIN [^-]+-----[\s\S]*?-----END [^-]+-----/g, "[redacted key]")
+      .replace(/[\r\n]+/g, " ")
+      .slice(0, 300) ?? null
+  );
+}
+
+export async function getAdminIntegrationStatus(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+
+  const [
+    emailConfiguration,
+    firebase,
+    emailActivityResult,
+    emailQueueResult,
+    latestEmailFailureResult,
+    pushDeviceResult,
+    pushQueueResult,
+    latestPushFailureResult,
+  ] = await Promise.all([
+    verifyEmailTransport(),
+    verifyFirebaseAdmin(),
+    pool.query<{ status: string; count: number }>(
+      `SELECT status, COUNT(*)::int AS count
+       FROM email_delivery_log
+       WHERE created_at >= NOW() - INTERVAL '24 hours'
+       GROUP BY status`,
+    ),
+    pool.query<{ pending: number; processing: number; failed: number }>(
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'pending')::int AS pending,
+         COUNT(*) FILTER (WHERE status = 'processing')::int AS processing,
+         COUNT(*) FILTER (WHERE status = 'failed')::int AS failed
+       FROM email_jobs`,
+    ),
+    pool.query<{
+      createdAt: string;
+      template: string;
+      errorMessage: string | null;
+    }>(
+      `SELECT created_at AS "createdAt", template, error_message AS "errorMessage"
+       FROM email_delivery_log
+       WHERE status = 'failed'
+       ORDER BY created_at DESC
+       LIMIT 1`,
+    ),
+    pool.query<{
+      total: number;
+      enabled: number;
+      android: number;
+      ios: number;
+      web: number;
+    }>(
+      `SELECT
+         COUNT(*)::int AS total,
+         COUNT(*) FILTER (WHERE enabled = TRUE)::int AS enabled,
+         COUNT(*) FILTER (WHERE enabled = TRUE AND platform = 'android')::int AS android,
+         COUNT(*) FILTER (WHERE enabled = TRUE AND platform = 'ios')::int AS ios,
+         COUNT(*) FILTER (WHERE enabled = TRUE AND platform = 'web')::int AS web
+       FROM push_devices`,
+    ),
+    pool.query<{ pending: number; processing: number; failed: number }>(
+      `SELECT
+         COUNT(*) FILTER (WHERE status = 'pending')::int AS pending,
+         COUNT(*) FILTER (WHERE status = 'processing')::int AS processing,
+         COUNT(*) FILTER (WHERE status = 'failed')::int AS failed
+       FROM push_jobs`,
+    ),
+    pool.query<{ createdAt: string; errorMessage: string | null }>(
+      `SELECT created_at AS "createdAt", last_error AS "errorMessage"
+       FROM push_jobs
+       WHERE status = 'failed' AND last_error IS NOT NULL
+       ORDER BY updated_at DESC
+       LIMIT 1`,
+    ),
+  ]);
+
+  const emailActivity = { sent: 0, failed: 0, skipped: 0 };
+  for (const row of emailActivityResult.rows) {
+    if (row.status === "sent" || row.status === "failed" || row.status === "skipped") {
+      emailActivity[row.status] = row.count;
+    }
+  }
+
+  reply.header("cache-control", "no-store").send({
+    collectedAt: new Date().toISOString(),
+    email: {
+      ...emailConfiguration,
+      activity24Hours: emailActivity,
+      queue: emailQueueResult.rows[0] ?? { pending: 0, processing: 0, failed: 0 },
+      lastFailure: latestEmailFailureResult.rows[0]
+        ? {
+            ...latestEmailFailureResult.rows[0],
+            errorMessage: sanitizeDiagnosticError(
+              latestEmailFailureResult.rows[0].errorMessage,
+            ),
+          }
+        : null,
+    },
+    firebase: {
+      ...firebase,
+      devices: pushDeviceResult.rows[0] ?? {
+        total: 0,
+        enabled: 0,
+        android: 0,
+        ios: 0,
+        web: 0,
+      },
+      queue: pushQueueResult.rows[0] ?? { pending: 0, processing: 0, failed: 0 },
+      lastFailure: latestPushFailureResult.rows[0]
+        ? {
+            ...latestPushFailureResult.rows[0],
+            errorMessage: sanitizeDiagnosticError(
+              latestPushFailureResult.rows[0].errorMessage,
+            ),
+          }
+        : null,
+    },
+  });
+}
+
 export async function getAdminAnalytics(
   request: FastifyRequest,
   reply: FastifyReply,
@@ -950,8 +1100,8 @@ export async function saveProgress(
   if (quiz) {
     await schedulePushNotification({
       userId: user.id,
-      title: "Pick up where you left off",
-      body: `Your progress in ${quiz.title} is saved and ready when you are.`,
+      title: "Ready when you are",
+      body: `You’ve got a little more to do in ${quiz.title}. Your progress is saved whenever you want to come back.`,
       url: `/quizzes/${quiz.id}`,
       type: "unfinished-quiz-reminder",
       dedupeKey: `unfinished:${user.id}:${quiz.id}`,

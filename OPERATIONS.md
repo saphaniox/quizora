@@ -41,3 +41,4 @@ Back up PostgreSQL before migrations and on a scheduled basis. A release is not 
 - Verify signed-in profile editing, progress sync, export, sign-out, and deletion.
 - Verify admin feedback status changes and leaderboard moderation.
 - Install the generated APK on a test device before uploading the AAB.
+- After migration `017_push_notifications_default_on`, confirm new accounts start with helpful notifications enabled, test the Android/iOS permission prompt, and verify the account setting turns notifications off.

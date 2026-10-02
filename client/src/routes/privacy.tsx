@@ -79,11 +79,14 @@ function PrivacyPage() {
     try {
       const opened = await openNativePrivacyChoices();
       if (!opened) {
-        toast.info("No additional advertising choices are required for your region.");
+        toast.info("You’re all set", {
+          description: "There aren’t any additional ad choices for your region.",
+        });
       }
     } catch (failure) {
-      toast.error("Privacy choices are unavailable right now", {
-        description: failure instanceof Error ? failure.message : "Please try again shortly.",
+      toast.error("We couldn’t open your privacy choices", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
     } finally {
       setOpeningPrivacyChoices(false);

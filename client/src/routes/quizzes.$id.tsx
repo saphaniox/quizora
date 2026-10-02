@@ -245,8 +245,8 @@ function QuizPage() {
         completedAt: new Date().toISOString(),
       });
       clearProgress(quiz.id);
-      toast.success("Quiz submitted", {
-        description: `You scored ${result.percentage}% and your result is ready.`,
+      toast.success("All done!", {
+        description: `You scored ${result.percentage}%. Your result is ready to see.`,
       });
       if (account?.id) await deleteAccountProgress(quiz.id).catch(() => undefined);
 
@@ -260,14 +260,18 @@ function QuizPage() {
           attempt: pendingAttempt,
         };
         queuePendingSubmission(pending);
-        toast.success("Your result is saved on this device", {
-          description: "We will send it when the connection is back.",
+        toast.success("Your result is safe here", {
+          description: "We’ll send it as soon as your connection is back.",
         });
       }
       const message =
-        submitFailure instanceof Error ? submitFailure.message : "Could not submit quiz";
+        submitFailure instanceof Error
+          ? submitFailure.message
+          : "Please check your connection and try again.";
       setSubmitError(message);
-      toast.error("Your answers weren't submitted", { description: message });
+      toast.error("We couldn’t send your answers", {
+        description: `${message} Your progress is still saved on this device.`,
+      });
       setSubmitting(false);
     }
   }, [quiz, submitting, playerName, attemptCountry, answers, questions, account?.id, navigate]);
@@ -281,10 +285,13 @@ function QuizPage() {
         contact: account?.email ?? account?.phoneE164 ?? undefined,
       });
       setReportedQuestions((previous) => [...previous, current.id]);
-      toast.success("Thanks for flagging this question");
+      toast.success("Thanks for letting us know", {
+        description: "We’ll take a closer look at this question.",
+      });
     } catch (failure) {
-      toast.error("Could not send the report", {
-        description: failure instanceof Error ? failure.message : "Try again later.",
+      toast.error("We couldn’t send your note just now", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
     }
   };
@@ -308,14 +315,17 @@ function QuizPage() {
   const handleSaveAndLeave = async () => {
     try {
       await saveCurrentProgress();
-      toast.success("Progress saved successfully", {
-        description: "You can continue this quiz from My progress anytime.",
+      toast.success("Your progress is saved", {
+        description: "Pick up right where you left off in My progress.",
       });
       if (window.history.length > 1) window.history.back();
       else void navigate({ to: "/" });
     } catch (failure) {
-      toast.error("Could not save your progress", {
-        description: failure instanceof Error ? failure.message : "Try again later.",
+      toast.error("We couldn’t save your progress", {
+        description:
+          failure instanceof Error
+            ? failure.message
+            : "Please check your connection and try again.",
       });
     }
   };
