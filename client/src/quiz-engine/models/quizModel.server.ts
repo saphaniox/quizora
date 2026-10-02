@@ -41,10 +41,6 @@ const descriptionTails: Record<string, string> = {
     "Built for curious learners who want quick recall, challenge, and steady progress.",
 };
 
-function foundationDescription(description: string): string {
-  return description.replace(/^Number work,/, "Core number work,");
-}
-
 function sectionDescription(levelId: string, description: string): string {
   const base = description.trim();
   if (base.length >= 80) return base;
@@ -54,23 +50,101 @@ function sectionDescription(levelId: string, description: string): string {
   return `${base} ${tail}`;
 }
 
-function foundationName(name: string): string {
-  return (
-    {
-      "Basic Science": "Science Fundamentals",
-      "Social Studies": "Civic & World Basics",
-      "ICT Basics": "Digital Basics",
-      "Everyday Problem Solving": "Practical Problem Solving",
-    }[name] ?? name
-  );
-}
+const foundationPresentation: Record<string, Pick<SectionDefinition, "name" | "description">> = {
+  "foundations-mathematics": {
+    name: "Quantitative Reasoning",
+    description: "Arithmetic, fractions, estimation and introductory algebra for secondary entry.",
+  },
+  "foundations-english": {
+    name: "English Language",
+    description: "Vocabulary, grammar, sentence control and precise written communication.",
+  },
+  "foundations-science": {
+    name: "Integrated Science",
+    description: "Scientific reasoning across life science, matter, energy and the environment.",
+  },
+  "foundations-social-studies": {
+    name: "Global Studies & Civics",
+    description: "Geography, citizenship, institutions and evidence-based global awareness.",
+  },
+  "foundations-ict": {
+    name: "Digital Literacy",
+    description: "Computing concepts, online safety, information skills and responsible technology use.",
+  },
+  "foundations-money-time": {
+    name: "Practical Numeracy & Time Management",
+    description: "Financial calculations, time planning, schedules and applied numerical decisions.",
+  },
+  "foundations-reading": {
+    name: "Academic Reading & Grammar",
+    description: "Reading accuracy, grammar, punctuation and editing for secondary-level learning.",
+  },
+  "foundations-health": {
+    name: "Health, Wellbeing & Safety",
+    description: "Health literacy, personal safety, nutrition and responsible everyday decisions.",
+  },
+  "foundations-reasoning": {
+    name: "Critical Thinking & Problem Solving",
+    description: "Patterns, logic, quantitative problems and clear step-by-step reasoning.",
+  },
+  "foundations-arts": {
+    name: "Creative Arts, Design & Music",
+    description: "Visual design, music literacy, cultural arts and creative analysis.",
+  },
+  "foundations-times-tables": {
+    name: "Multiplicative Reasoning",
+    description: "Multiplication, factors, multiples and proportional reasoning for secondary entry.",
+  },
+  "foundations-division": {
+    name: "Division, Ratios & Proportion",
+    description: "Division, remainders, ratios and proportional reasoning in applied contexts.",
+  },
+  "foundations-fractions": {
+    name: "Fractions, Decimals & Percentages",
+    description: "Equivalent forms, operations and percentage reasoning for secondary mathematics.",
+  },
+  "foundations-measures": {
+    name: "Measurement & Applied Geometry",
+    description: "Units, conversion, perimeter, area and measurement-based problem solving.",
+  },
+  "foundations-time": {
+    name: "Time, Schedules & Planning",
+    description: "Durations, timetables, time zones and practical planning calculations.",
+  },
+  "foundations-money": {
+    name: "Personal Finance & Budgeting",
+    description: "Costs, change, discounts, budgets and sound financial decisions.",
+  },
+  "foundations-rounding": {
+    name: "Estimation & Numerical Accuracy",
+    description: "Rounding, significant figures, estimation and checking numerical reasonableness.",
+  },
+  "foundations-spelling": {
+    name: "English Usage & Editing",
+    description: "Spelling, grammar, punctuation and precise word choice in formal writing.",
+  },
+  "foundations-wellbeing": {
+    name: "Wellbeing & Health Literacy",
+    description: "Evidence-based personal wellbeing, prevention, safety and informed choices.",
+  },
+  "foundations-world": {
+    name: "World Geography & Global Awareness",
+    description: "Places, people, environments and global patterns for informed citizenship.",
+  },
+  "foundations-place-value": {
+    name: "Number Sense & Place Value",
+    description: "Whole numbers, decimals, place value and numerical representation.",
+  },
+};
 
 function asFoundationSection(section: SectionDefinition): SectionDefinition {
+  const presentation = foundationPresentation[section.id];
   return {
     ...section,
     id: section.id,
-    name: foundationName(section.name),
-    description: foundationDescription(section.description),
+    name: presentation?.name ?? section.name,
+    description: presentation?.description ?? section.description,
+    difficulty: "Medium",
   };
 }
 
@@ -84,9 +158,9 @@ const foundationSections = [
 const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   {
     id: "foundations",
-    name: "Core Foundations",
-    tagline: "Basic math, English, science, digital skills, and everyday reasoning refreshers.",
-    ageRange: "Ages 13+",
+    name: "Secondary Entry Foundations",
+    tagline: "Academic foundations for learners preparing to enter secondary education.",
+    ageRange: "Secondary-entry preparation",
     order: 1,
     sections: foundationSections,
   },
