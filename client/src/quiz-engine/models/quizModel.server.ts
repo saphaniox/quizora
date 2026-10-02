@@ -158,7 +158,7 @@ const foundationSections = [
 const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   {
     id: "foundations",
-    name: "Secondary Entry Foundations",
+    name: "Core Foundations",
     tagline: "Academic foundations for learners preparing to enter secondary education.",
     ageRange: "Secondary-entry preparation",
     order: 1,
