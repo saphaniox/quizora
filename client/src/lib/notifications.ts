@@ -6,12 +6,14 @@ type ToastOptions = {
 
 const toast = Swal.mixin({
   toast: true,
-  position: "top-end",
+  position: "top",
   showConfirmButton: false,
-  timer: 4500,
+  showCloseButton: false,
+  timer: 4000,
   timerProgressBar: true,
   heightAuto: false,
   customClass: {
+    container: "quitech-swal-container",
     popup: "quitech-swal-popup",
     title: "quitech-swal-title",
     htmlContainer: "quitech-swal-description",
@@ -19,10 +21,12 @@ const toast = Swal.mixin({
 });
 
 function notify(icon: SweetAlertIcon, title: string, options?: ToastOptions): void {
+  const isCompact = window.matchMedia("(max-width: 640px)").matches;
   void toast.fire({
     icon,
     title,
     text: options?.description,
+    position: isCompact ? "top" : "top-end",
   });
 }
 
