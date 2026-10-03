@@ -38,7 +38,7 @@ import {
   maybeShowNativeQuizInterstitial,
   prepareNativeQuizInterstitial,
 } from "@/lib/native-services";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -130,7 +130,6 @@ function QuizPage() {
   const [index, setIndex] = useState(0);
   const [elapsed, setElapsed] = useState(0);
   const [submitting, setSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
   const [reportedQuestions, setReportedQuestions] = useState<string[]>([]);
   const [bookmarked, setBookmarked] = useState(false);
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
@@ -187,7 +186,6 @@ function QuizPage() {
   const handleSubmit = useCallback(async () => {
     if (!quiz || submitting) return;
     setSubmitting(true);
-    setSubmitError(null);
     const timeSpentSeconds = Math.max(1, Math.round((Date.now() - startedAt.current) / 1000));
     const submissionPayload = {
       quizId: quiz.id,
@@ -245,7 +243,7 @@ function QuizPage() {
         completedAt: new Date().toISOString(),
       });
       clearProgress(quiz.id);
-      toast.success("All done!", {
+      notifications.success("All done!", {
         description: `You scored ${result.percentage}%. Your result is ready to see.`,
       });
       if (account?.id) await deleteAccountProgress(quiz.id).catch(() => undefined);
@@ -260,7 +258,7 @@ function QuizPage() {
           attempt: pendingAttempt,
         };
         queuePendingSubmission(pending);
-        toast.success("Your result is safe here", {
+        notifications.success("Your result is safe here", {
           description: "We’ll send it as soon as your connection is back.",
         });
       }
@@ -268,8 +266,7 @@ function QuizPage() {
         submitFailure instanceof Error
           ? submitFailure.message
           : "Please check your connection and try again.";
-      setSubmitError(message);
-      toast.error("We couldn’t send your answers", {
+      notifications.error("We couldn’t send your answers", {
         description: `${message} Your progress is still saved on this device.`,
       });
       setSubmitting(false);
@@ -285,11 +282,11 @@ function QuizPage() {
         contact: account?.email ?? account?.phoneE164 ?? undefined,
       });
       setReportedQuestions((previous) => [...previous, current.id]);
-      toast.success("Thanks for letting us know", {
+      notifications.success("Thanks for letting us know", {
         description: "We’ll take a closer look at this question.",
       });
     } catch (failure) {
-      toast.error("We couldn’t send your note just now", {
+      notifications.error("We couldn’t send your note just now", {
         description:
           failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
@@ -315,13 +312,13 @@ function QuizPage() {
   const handleSaveAndLeave = async () => {
     try {
       await saveCurrentProgress();
-      toast.success("Your progress is saved", {
+      notifications.success("Your progress is saved", {
         description: "Pick up right where you left off in My progress.",
       });
       if (window.history.length > 1) window.history.back();
       else void navigate({ to: "/" });
     } catch (failure) {
-      toast.error("We couldn’t save your progress", {
+      notifications.error("We couldn’t save your progress", {
         description:
           failure instanceof Error
             ? failure.message
@@ -699,8 +696,6 @@ function QuizPage() {
               </button>
             )}
           </div>
-
-          {submitError && <p className="mt-3 text-sm text-destructive">{submitError}</p>}
         </div>
 
         <aside className="rounded-lg border border-border bg-card p-4 shadow-sm lg:sticky lg:top-24 lg:max-h-[calc(100vh-7rem)] lg:overflow-y-auto">

@@ -1,6 +1,7 @@
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
+@import "sweetalert2/dist/sweetalert2.min.css";
 
 @custom-variant dark (&:is(.dark *));
 
@@ -95,6 +96,47 @@
   --sidebar-accent-foreground: oklch(0.3 0.055 220);
   --sidebar-border: oklch(0.88 0.018 220);
   --sidebar-ring: oklch(0.58 0.14 173);
+}
+
+.swal2-popup.quitech-swal-popup {
+  max-width: min(26rem, calc(100vw - 2rem));
+  border: 1px solid var(--border);
+  border-radius: calc(var(--radius) + 0.25rem);
+  background: var(--card);
+  color: var(--foreground);
+  box-shadow: 0 16px 40px oklch(0.15 0.035 230 / 18%);
+}
+
+.swal2-toast.quitech-swal-popup {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  justify-items: start;
+  gap: 0.25rem 0.75rem;
+  padding: 1rem;
+}
+
+.quitech-swal-popup .swal2-title.quitech-swal-title {
+  margin: 0;
+  padding: 0;
+  color: var(--foreground);
+  font-size: 0.925rem;
+  font-weight: 650;
+  text-align: left;
+}
+
+.quitech-swal-popup .swal2-html-container.quitech-swal-description {
+  grid-column: 2;
+  margin: 0;
+  padding: 0;
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+  line-height: 1.45;
+  text-align: left;
+}
+
+.quitech-swal-popup .swal2-icon {
+  grid-row: span 2;
+  margin: 0;
 }
 
 .dark {

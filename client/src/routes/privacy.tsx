@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Capacitor } from "@capacitor/core";
 import { Database, Loader2, Mail, ShieldCheck, SlidersHorizontal } from "lucide-react";
 import { useState } from "react";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 
 import {
   clearNativeAdAgeGroup,
@@ -79,12 +79,12 @@ function PrivacyPage() {
     try {
       const opened = await openNativePrivacyChoices();
       if (!opened) {
-        toast.info("You’re all set", {
+        notifications.info("You’re all set", {
           description: "There aren’t any additional ad choices for your region.",
         });
       }
     } catch (failure) {
-      toast.error("We couldn’t open your privacy choices", {
+      notifications.error("We couldn’t open your privacy choices", {
         description:
           failure instanceof Error ? failure.message : "Please try again in a little while.",
       });

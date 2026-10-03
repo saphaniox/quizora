@@ -2,7 +2,6 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import {
   Award,
-  CheckCircle2,
   Loader2,
   LogOut,
   Mail,
@@ -31,7 +30,7 @@ import {
   type EmailPreferences,
 } from "@/lib/api";
 import type { Certificate } from "@/types/quiz";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -65,8 +64,6 @@ function WalletPage() {
   const [confirmation, setConfirmation] = useState("");
   const [deleting, setDeleting] = useState(false);
   const [signingOut, setSigningOut] = useState(false);
-  const [deleteMessage, setDeleteMessage] = useState<string | null>(null);
-  const [deleteError, setDeleteError] = useState<string | null>(null);
   const [displayName, setDisplayName] = useState("");
   const [savingProfile, setSavingProfile] = useState(false);
   const [exportingData, setExportingData] = useState(false);
@@ -106,7 +103,11 @@ function WalletPage() {
             if (alive) setPushNotificationsEnabled(enabled);
           })
           .catch(() => {
-            if (alive) setDeleteError("We could not load your notification choice right now.");
+            if (alive) {
+              notifications.error("We couldn’t load your notification choice", {
+                description: "Please refresh the page and try again.",
+              });
+            }
           })
           .finally(() => {
             if (alive) setLoadingPushPreferences(false);
@@ -117,7 +118,11 @@ function WalletPage() {
               if (alive) setEmailPreferences(preferences);
             })
             .catch(() => {
-              if (alive) setDeleteError("We could not load your email choices right now.");
+              if (alive) {
+                notifications.error("We couldn’t load your email choices", {
+                  description: "Please refresh the page and try again.",
+                });
+              }
             });
         }
         void getMyActivity()
@@ -125,11 +130,19 @@ function WalletPage() {
             if (alive) setCertificates(mergeCertificates(certificates, localCertificates));
           })
           .catch(() => {
-            if (alive) setDeleteError("We could not load saved account certificates right now.");
+            if (alive) {
+              notifications.error("We couldn’t load your certificates", {
+                description: "Please refresh the page and try again.",
+              });
+            }
           });
       })
       .catch(() => {
-        if (alive) setDeleteError("We could not load your account details right now.");
+        if (alive) {
+          notifications.error("We couldn’t load your account details", {
+            description: "Please refresh the page and try again.",
+          });
+        }
       })
       .finally(() => {
         if (alive) {
@@ -145,17 +158,15 @@ function WalletPage() {
     event.preventDefault();
     if (!displayName.trim() || savingProfile) return;
     setSavingProfile(true);
-    setDeleteError(null);
     try {
       const result = await updateCurrentUser(displayName);
       setUser(result.user);
       queryClient.setQueryData(["auth", "me"], { user: result.user });
-      toast.success("Your profile is up to date");
+      notifications.success("Your profile is up to date");
     } catch (failure) {
       const message =
         failure instanceof Error ? failure.message : "Please try again in a little while.";
-      setDeleteError(message);
-      toast.error("We couldn’t update your profile", { description: message });
+      notifications.error("We couldn’t update your profile", { description: message });
     } finally {
       setSavingProfile(false);
     }
@@ -200,11 +211,11 @@ function WalletPage() {
         link.click();
         URL.revokeObjectURL(url);
       }
-      toast.success("Your account copy is ready", {
+      notifications.success("Your account copy is ready", {
         description: "You can find the downloaded file on your device.",
       });
     } catch (failure) {
-      toast.error("We couldn’t prepare your account copy", {
+      notifications.error("We couldn’t prepare your account copy", {
         description:
           failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
@@ -226,11 +237,11 @@ function WalletPage() {
       }
       setCurrentPassword("");
       setNewPassword("");
-      toast.success("Your password has been changed", {
+      notifications.success("Your password has been changed", {
         description: "You’re all set to keep using your account.",
       });
     } catch (failure) {
-      toast.error("We couldn’t change your password", {
+      notifications.error("We couldn’t change your password", {
         description:
           failure instanceof Error ? failure.message : "Check your current password and try again.",
       });
@@ -245,9 +256,9 @@ function WalletPage() {
     try {
       const result = await saveEmailPreferences(emailPreferences);
       setEmailPreferences(result.preferences);
-      toast.success("Your email choices are saved");
+      notifications.success("Your email choices are saved");
     } catch (failure) {
-      toast.error("We could not save your email choices", {
+      notifications.error("We could not save your email choices", {
         description: failure instanceof Error ? failure.message : "Please try again shortly.",
       });
     } finally {
@@ -262,7 +273,7 @@ function WalletPage() {
       if (enabled) {
         const permissionGranted = await enablePushNotifications(true);
         if (!permissionGranted) {
-          toast.error("Notifications are still turned off on this device", {
+          notifications.error("Notifications are still turned off on this device", {
             description:
               "You can allow them in your device settings, then switch them on here whenever you like.",
           });
@@ -271,13 +282,16 @@ function WalletPage() {
       }
       const result = await savePushNotificationPreference(enabled);
       setPushNotificationsEnabled(result.enabled);
-      toast.success(enabled ? "We’ll keep you posted" : "Push notifications are turned off", {
-        description: enabled
-          ? "We’ll send helpful updates to this device."
-          : "You can turn them back on here any time.",
-      });
+      notifications.success(
+        enabled ? "We’ll keep you posted" : "Push notifications are turned off",
+        {
+          description: enabled
+            ? "We’ll send helpful updates to this device."
+            : "You can turn them back on here any time.",
+        },
+      );
     } catch (failure) {
-      toast.error("We couldn’t update your notification choice", {
+      notifications.error("We couldn’t update your notification choice", {
         description:
           failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
@@ -294,8 +308,6 @@ function WalletPage() {
     event.preventDefault();
     if (!canDelete) return;
     setDeleting(true);
-    setDeleteError(null);
-    setDeleteMessage(null);
     try {
       await deleteCurrentAccount();
       clearAllLocalData();
@@ -303,8 +315,7 @@ function WalletPage() {
       queryClient.setQueryData(["auth", "me"], { user: null });
       setDeleteOpen(false);
       setConfirmation("");
-      setDeleteMessage("Your account has been deleted. You are being signed out.");
-      toast.success("Your account has been deleted", {
+      notifications.success("Your account has been deleted", {
         description: "We’re signing you out now.",
       });
       window.setTimeout(() => {
@@ -313,8 +324,7 @@ function WalletPage() {
     } catch (failure) {
       const message =
         failure instanceof Error ? failure.message : "Please try again in a little while.";
-      setDeleteError(message);
-      toast.error("We couldn’t delete your account", { description: message });
+      notifications.error("We couldn’t delete your account", { description: message });
     } finally {
       setDeleting(false);
     }
@@ -322,7 +332,6 @@ function WalletPage() {
 
   const handleSignOut = async () => {
     setSigningOut(true);
-    setDeleteError(null);
     try {
       await logoutAccount();
       setUser(null);
@@ -331,8 +340,7 @@ function WalletPage() {
     } catch (failure) {
       const message =
         failure instanceof Error ? failure.message : "Please try again in a little while.";
-      setDeleteError(message);
-      toast.error("We couldn’t sign you out", { description: message });
+      notifications.error("We couldn’t sign you out", { description: message });
     } finally {
       setSigningOut(false);
     }
@@ -609,8 +617,6 @@ function WalletPage() {
               type="button"
               onClick={() => {
                 setDeleteOpen((open) => !open);
-                setDeleteError(null);
-                setDeleteMessage(null);
                 setConfirmation("");
               }}
               className="inline-flex items-center justify-center gap-2 rounded-md border border-destructive/30 bg-background px-4 py-2.5 text-sm font-medium text-destructive transition-colors hover:bg-destructive/10"
@@ -673,19 +679,6 @@ function WalletPage() {
                 </div>
               </div>
             </form>
-          )}
-
-          {deleteMessage && (
-            <p className="mt-4 flex items-start gap-2 rounded-md bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300">
-              <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
-              {deleteMessage}
-            </p>
-          )}
-          {deleteError && (
-            <p className="mt-4 flex items-start gap-2 text-sm text-destructive">
-              <ShieldAlert className="mt-0.5 h-4 w-4 shrink-0" />
-              {deleteError}
-            </p>
           )}
         </section>
       )}

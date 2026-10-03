@@ -14,7 +14,6 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
-import { Toaster } from "@/components/ui/sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -29,7 +28,7 @@ import { APP_VERSION, compareVersions, isUpdateRequired } from "@/lib/app-versio
 import { androidAppUrl } from "@/lib/share-links";
 import { getAppUpdateSettings, submitAnswers } from "@/lib/api";
 import { loadPendingSubmissions, removePendingSubmission, saveAttempt } from "@/lib/attempt-store";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
 import {
@@ -252,7 +251,7 @@ function RootComponent() {
         }
       }
       if (recovered > 0) {
-        toast.success("You’re back online", {
+        notifications.success("You’re back online", {
           description:
             recovered === 1
               ? "Your saved result has synced."
@@ -349,7 +348,6 @@ function RootComponent() {
     <QueryClientProvider client={queryClient}>
       <div className="flex min-h-screen flex-col bg-background">
         <Header />
-        <Toaster position="top-right" richColors closeButton />
         <main className="flex-1">
           <Outlet />
         </main>

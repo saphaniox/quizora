@@ -20,7 +20,7 @@ import {
 } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
 import type { Certificate, LeaderboardEntry } from "@/types/quiz";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -130,11 +130,11 @@ function HistoryPage() {
       clearProgress(quizId);
       setProgress((current) => current.filter((item) => item.quizId !== quizId));
       setProgressToDrop(null);
-      toast.success("Saved quiz removed", {
+      notifications.success("Saved quiz removed", {
         description: "You can start it again whenever you’re ready.",
       });
     } catch (failure) {
-      toast.error("We couldn’t remove that saved quiz", {
+      notifications.error("We couldn’t remove that saved quiz", {
         description:
           failure instanceof Error ? failure.message : "Please try again in a little while.",
       });
@@ -150,13 +150,13 @@ function HistoryPage() {
           item.quizId === quizId ? { ...item, leaderboardVisible: visible } : item,
         ),
       );
-      toast.success(
+      notifications.success(
         visible
           ? "Your result is now on the leaderboard"
           : "Your result is now hidden from the leaderboard",
       );
     } catch (failure) {
-      toast.error("We couldn’t update that leaderboard setting", {
+      notifications.error("We couldn’t update that leaderboard setting", {
         description:
           failure instanceof Error ? failure.message : "Please try again in a little while.",
       });

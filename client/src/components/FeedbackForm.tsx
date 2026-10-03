@@ -1,6 +1,7 @@
 import { Mail } from "lucide-react";
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createFeedback, type FeedbackType } from "@/lib/api";
+import { notifications } from "@/lib/notifications";
 
 const feedbackTypes: Record<string, FeedbackType> = {
   "Feature idea": "feature",
@@ -14,6 +15,18 @@ export function FeedbackForm() {
   const [feedback, setFeedback] = useState("");
   const [contact, setContact] = useState("");
   const [feedbackState, setFeedbackState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  useEffect(() => {
+    if (feedbackState === "sent") {
+      notifications.success("Thanks for sharing", {
+        description: "Your feedback has been sent to the Quitech team.",
+      });
+    } else if (feedbackState === "error") {
+      notifications.error("We couldn’t send your feedback", {
+        description: "Please try again in a little while.",
+      });
+    }
+  }, [feedbackState]);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -75,7 +88,8 @@ export function FeedbackForm() {
         </div>
         <div>
           <label htmlFor="feedback-contact" className="block text-sm font-medium text-foreground">
-            Where can we reach you? <span className="font-normal text-muted-foreground">(optional)</span>
+            Where can we reach you?{" "}
+            <span className="font-normal text-muted-foreground">(optional)</span>
           </label>
           <input
             id="feedback-contact"
@@ -93,12 +107,6 @@ export function FeedbackForm() {
           <Mail className="h-4 w-4" />
           {feedbackState === "sending" ? "Sending..." : "Send feedback"}
         </button>
-        {feedbackState === "sent" && (
-          <p className="text-sm text-emerald-700 dark:text-emerald-300">Thanks. Your feedback has been sent to the Quitech team.</p>
-        )}
-        {feedbackState === "error" && (
-          <p className="text-sm text-destructive">We could not send that right now. Please try again later.</p>
-        )}
       </form>
     </section>
   );

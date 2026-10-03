@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowLeft, CheckCircle2, Loader2, LockKeyhole, Mail, ShieldCheck } from "lucide-react";
 import { requestPasswordReset, resetPassword } from "@/lib/api";
+import { notifications } from "@/lib/notifications";
 
 export const Route = createFileRoute("/forgot-password")({
   ssr: false,
@@ -22,14 +23,14 @@ function ForgotPasswordPage() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
   const [complete, setComplete] = useState(false);
 
   const submit = async (event: React.FormEvent) => {
     event.preventDefault();
-    setError(null);
     if (token && password !== confirmPassword) {
-      setError("The passwords do not match.");
+      notifications.warning("Check your passwords", {
+        description: "The passwords do not match.",
+      });
       return;
     }
     setBusy(true);
@@ -44,7 +45,9 @@ function ForgotPasswordPage() {
         setMessage(response.message);
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "We could not complete that request.");
+      notifications.error("We couldn’t complete that request", {
+        description: cause instanceof Error ? cause.message : "Please try again in a little while.",
+      });
     } finally {
       setBusy(false);
     }
@@ -103,11 +106,6 @@ function ForgotPasswordPage() {
                   className="mt-2 w-full rounded-md border border-input bg-background px-3 py-3 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 />
               </label>
-            )}
-            {error && (
-              <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                {error}
-              </p>
             )}
             <button
               type="submit"

@@ -69,6 +69,7 @@ import {
   type AdminEmailTemplate,
 } from "@/lib/api";
 import { cn } from "@/lib/utils";
+import { notifications } from "@/lib/notifications";
 import type {
   AdminAuditEntry,
   AdminCatalogueSection,
@@ -301,6 +302,21 @@ function AdminPage() {
     tone: StatusTone;
     message: string;
   } | null>(null);
+
+  useEffect(() => {
+    for (const action of [
+      catalogueAction,
+      appUpdateAction,
+      leaderboardAction,
+      pushAction,
+      emailAction,
+    ]) {
+      if (!action) continue;
+      const type =
+        action.tone === "blocked" ? "error" : action.tone === "warning" ? "warning" : "success";
+      notifications[type](action.message);
+    }
+  }, [appUpdateAction, catalogueAction, emailAction, leaderboardAction, pushAction]);
 
   const accountQuery = useQuery({ queryKey: ["auth", "me"], queryFn: () => getCurrentUser() });
   const account = accountQuery.data?.user ?? null;
@@ -1229,16 +1245,6 @@ function AdminPage() {
               Send
             </button>
           </form>
-          {pushAction && (
-            <p
-              className={cn(
-                "mt-3 rounded-md border px-3 py-2 text-sm",
-                statusClass(pushAction.tone),
-              )}
-            >
-              {pushAction.message}
-            </p>
-          )}
         </section>
 
         <section className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
@@ -1386,16 +1392,6 @@ function AdminPage() {
               </span>
             </div>
           </form>
-          {emailAction && (
-            <p
-              className={cn(
-                "mt-3 rounded-md border px-3 py-2 text-sm",
-                statusClass(emailAction.tone),
-              )}
-            >
-              {emailAction.message}
-            </p>
-          )}
         </section>
 
         <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
@@ -1655,19 +1651,6 @@ function AdminPage() {
                       className="mt-1 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                     />
                   </label>
-
-                  {appUpdateAction && (
-                    <div
-                      className={cn(
-                        "rounded-md border px-3 py-2 text-sm",
-                        appUpdateAction.tone === "ready"
-                          ? "border-emerald-500/25 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
-                          : "border-destructive/25 bg-destructive/10 text-destructive",
-                      )}
-                    >
-                      {appUpdateAction.message}
-                    </div>
-                  )}
 
                   <div className="flex justify-end">
                     <button
@@ -1984,19 +1967,6 @@ function AdminPage() {
                 </tbody>
               </table>
             </div>
-
-            {catalogueAction && (
-              <div className="border-t border-border px-5 py-3">
-                <div
-                  className={cn(
-                    "rounded-md border px-3 py-2 text-sm",
-                    statusClass(catalogueAction.tone),
-                  )}
-                >
-                  {catalogueAction.message}
-                </div>
-              </div>
-            )}
 
             {visibleSections.length > 0 && (
               <div className="border-t border-border px-5 py-3 text-xs text-muted-foreground">
@@ -2487,19 +2457,6 @@ function AdminPage() {
               </span>
             </div>
           </div>
-
-          {leaderboardAction && (
-            <div className="border-b border-border px-5 py-3">
-              <div
-                className={cn(
-                  "rounded-md border px-3 py-2 text-sm",
-                  statusClass(leaderboardAction.tone),
-                )}
-              >
-                {leaderboardAction.message}
-              </div>
-            </div>
-          )}
 
           <div className="overflow-x-auto">
             <table className="w-full min-w-225 text-left text-sm">

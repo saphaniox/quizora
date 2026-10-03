@@ -336,8 +336,24 @@ export async function googleLogin(
       );
     }
     reply.send({ user: result.user, token: result.token });
-  } catch {
-    reply.code(401).send({ error: "Google sign-in could not be verified" });
+  } catch (error) {
+    const verificationError =
+      error instanceof Error ? error.message.slice(0, 300) : "Unknown verification error";
+    const audienceMismatch = /audience|recipient|client.?id/i.test(verificationError);
+    request.log.warn(
+      {
+        event: "auth.google_verification_failed",
+        errorName: error instanceof Error ? error.name : "UnknownError",
+        errorMessage: verificationError,
+        configuredAudienceCount: audiences.length,
+      },
+      "Google ID token verification failed",
+    );
+    reply.code(audienceMismatch ? 503 : 401).send({
+      error: audienceMismatch
+        ? "Google sign-in is misconfigured. The Web client ID used by the app must be included in GOOGLE_CLIENT_IDS on the API, then the API must be redeployed."
+        : "Google sign-in could not be verified. Please try again.",
+    });
   }
 }
 

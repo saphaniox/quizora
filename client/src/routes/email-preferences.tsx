@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Bell, BookOpenCheck, CheckCircle2, Loader2, Mail, ShieldCheck } from "lucide-react";
+import { Bell, BookOpenCheck, Loader2, Mail, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
+import { notifications } from "@/lib/notifications";
 
 import {
   getPublicEmailPreferences,
@@ -36,7 +37,6 @@ function EmailPreferencesPage() {
   const [loading, setLoading] = useState(true);
   const [ready, setReady] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
   const [error, setError] = useState("");
 
   useEffect(() => {
@@ -72,16 +72,16 @@ function EmailPreferencesPage() {
     event.preventDefault();
     if (!token || saving) return;
     setSaving(true);
-    setSaved(false);
     setError("");
     try {
       const result = await savePublicEmailPreferences(token, preferences);
       setPreferences(result.preferences);
-      setSaved(true);
+      notifications.success("Your email choices are saved");
     } catch (failure) {
-      setError(
-        failure instanceof Error ? failure.message : "We could not save your email choices.",
-      );
+      notifications.error("We couldn’t save your email choices", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
+      });
     } finally {
       setSaving(false);
     }
@@ -148,17 +148,6 @@ function EmailPreferencesPage() {
             </p>
           </div>
 
-          {error && (
-            <p className="mt-4 text-sm text-destructive" role="alert">
-              {error}
-            </p>
-          )}
-          {saved && (
-            <p className="mt-4 flex items-center gap-2 text-sm text-emerald-700 dark:text-emerald-300">
-              <CheckCircle2 className="h-4 w-4" />
-              Your email choices are saved.
-            </p>
-          )}
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <button
               type="submit"

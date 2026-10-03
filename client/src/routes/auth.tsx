@@ -19,7 +19,7 @@ import { CountrySelect } from "@/components/CountrySelect";
 import { loginAccount, loginWithGoogle, registerAccount } from "@/lib/api";
 import { COUNTRIES, findCountryByIso, type CountryDialCode } from "@/lib/countries";
 import { syncPushNotifications } from "@/lib/native-services";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
@@ -70,7 +70,6 @@ function AuthPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
   const next =
     typeof window === "undefined"
       ? "/"
@@ -79,7 +78,7 @@ function AuthPage() {
   const finish = (user: Awaited<ReturnType<typeof loginAccount>>["user"]) => {
     queryClient.setQueryData(["auth", "me"], { user });
     void syncPushNotifications();
-    toast.success(mode === "signup" ? "Welcome to Quitech!" : "Good to have you back!");
+    notifications.success(mode === "signup" ? "Welcome to Quitech!" : "Good to have you back!");
     void navigate({ to: user.mustChangePassword ? "/wallet" : next, replace: true });
   };
 
@@ -88,15 +87,15 @@ function AuthPage() {
     if (!method) return;
     const contact = method === "email" ? email.trim() : phoneE164(country, phone);
     if (!contact) {
-      setError(
-        method === "email"
-          ? "Enter a valid email address."
-          : "Choose a country code and enter a valid phone number.",
-      );
+      notifications.warning("Check your details", {
+        description:
+          method === "email"
+            ? "Enter a valid email address."
+            : "Choose a country code and enter a valid phone number.",
+      });
       return;
     }
     setBusy(true);
-    setError(null);
     try {
       if (mode === "signin") {
         finish((await loginAccount({ identifier: contact, password })).user);
@@ -116,7 +115,9 @@ function AuthPage() {
         );
       }
     } catch (cause) {
-      setError(cause instanceof Error ? cause.message : "We could not complete that request.");
+      notifications.error("We couldn’t complete that request", {
+        description: cause instanceof Error ? cause.message : "Please try again in a little while.",
+      });
     } finally {
       setBusy(false);
     }
@@ -126,11 +127,12 @@ function AuthPage() {
     const webClientId = import.meta.env["VITE_GOOGLE_WEB_CLIENT_ID"] as string | undefined;
     const configuredRedirectUrl = import.meta.env["VITE_GOOGLE_REDIRECT_URL"] as string | undefined;
     if (!webClientId) {
-      setError("Google sign-in is being configured. Please use email or phone for now.");
+      notifications.warning("Google sign-in isn’t ready yet", {
+        description: "Please use your email or phone for now.",
+      });
       return;
     }
     setBusy(true);
-    setError(null);
     try {
       const redirectUrl = configuredRedirectUrl || `${window.location.origin}/auth`;
       await SocialLogin.initialize({ google: { webClientId, mode: "online", redirectUrl } });
@@ -143,11 +145,12 @@ function AuthPage() {
       finish((await loginWithGoogle(credential)).user);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "Google sign-in was not completed.";
-      setError(
-        Capacitor.isNativePlatform() && /Google Sign-In cancelled by user/i.test(message)
-          ? "We couldn’t finish Google sign-in this time. Please try again, or use your email or phone while we sort this out."
-          : message,
-      );
+      notifications.error("We couldn’t finish Google sign-in", {
+        description:
+          Capacitor.isNativePlatform() && /Google Sign-In cancelled by user/i.test(message)
+            ? "Please try again, or use your email or phone while we sort this out."
+            : message,
+      });
     } finally {
       setBusy(false);
     }
@@ -156,7 +159,6 @@ function AuthPage() {
   const switchMode = () => {
     setMode(mode === "signin" ? "signup" : "signin");
     setMethod(null);
-    setError(null);
     setPassword("");
   };
 
@@ -174,7 +176,6 @@ function AuthPage() {
               type="button"
               onClick={() => {
                 setMethod(null);
-                setError(null);
               }}
               className="mb-5 inline-flex items-center gap-1.5 text-sm font-medium text-muted-foreground hover:text-foreground"
             >
@@ -301,11 +302,6 @@ function AuthPage() {
                   </Link>
                 </div>
               )}
-              {error && (
-                <p className="rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-                  {error}
-                </p>
-              )}
               <button
                 disabled={busy}
                 className="flex min-h-12 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
@@ -316,11 +312,6 @@ function AuthPage() {
             </form>
           )}
 
-          {!method && error && (
-            <p className="mt-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
-              {error}
-            </p>
-          )}
           <div className="mt-8 border-t border-border pt-6 text-center text-sm text-muted-foreground">
             {mode === "signin" ? "Don't have an account?" : "Already have an account?"}{" "}
             <button

@@ -7,7 +7,7 @@ import { getCertificate } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
 import { appLinksText, webAppUrl } from "@/lib/share-links";
 import type { Certificate } from "@/types/quiz";
-import { toast } from "sonner";
+import { notifications } from "@/lib/notifications";
 
 /** Look the code up through the client-hosted API. */
 async function verify(code: string): Promise<{ certificate: Certificate }> {
@@ -105,11 +105,11 @@ function CertificatePage() {
     try {
       const { downloadCertificatePdf } = await import("@/lib/certificate-pdf");
       await downloadCertificatePdf(certificate, verificationUrl);
-      toast.success("Your certificate is ready", {
+      notifications.success("Your certificate is ready", {
         description: "It’s been saved to your device.",
       });
     } catch (error) {
-      toast.error("We couldn’t download your certificate", {
+      notifications.error("We couldn’t download your certificate", {
         description: error instanceof Error ? error.message : "Please try again in a little while.",
       });
     } finally {
@@ -129,14 +129,14 @@ function CertificatePage() {
 
       await navigator.clipboard.writeText(text);
       setShareStatus("Certificate link copied");
-      toast.success("Link copied", {
+      notifications.success("Link copied", {
         description: "Your certificate is ready to share.",
       });
       window.setTimeout(() => setShareStatus(""), 2500);
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") return;
       setShareStatus("Sharing didn’t go through");
-      toast.error("We couldn’t share it just now", {
+      notifications.error("We couldn’t share it just now", {
         description: "Please try again, or copy the certificate link instead.",
       });
       window.setTimeout(() => setShareStatus(""), 2500);
