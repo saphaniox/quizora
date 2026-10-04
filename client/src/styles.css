@@ -178,14 +178,19 @@
 
 .swal2-container.quitech-swal-container {
   position: fixed !important;
-  inset: max(0.5rem, env(safe-area-inset-top)) 0 auto !important;
+  top: max(0.5rem, env(safe-area-inset-top)) !important;
+  right: 0 !important;
+  bottom: auto !important;
+  left: 0 !important;
   display: flex !important;
-  width: 100% !important;
+  width: auto !important;
   height: auto !important;
   min-height: 0 !important;
   box-sizing: border-box !important;
   justify-content: center;
   align-items: flex-start;
+  margin: 0 !important;
+  transform: none !important;
   padding: 0 max(0.75rem, env(safe-area-inset-right)) 0.5rem
     max(0.75rem, env(safe-area-inset-left)) !important;
   overflow: visible !important;
@@ -202,6 +207,7 @@
   .swal2-popup.swal2-toast.quitech-swal-popup {
     width: min(20rem, 100%);
     max-width: 100%;
+    margin-inline: auto !important;
     padding: 0.45rem 0.6rem;
   }
 }
