@@ -419,6 +419,10 @@ export async function getCurrentUser(): Promise<{ user: AccountUser | null }> {
   return fetchJson<{ user: AccountUser | null }>("/auth/me");
 }
 
+export async function updatePresence(): Promise<void> {
+  await fetchJson<{ ok: true }>("/auth/me/presence", { method: "POST" });
+}
+
 export async function updateCurrentUser(displayName: string): Promise<{ user: AccountUser }> {
   return fetchJson<{ user: AccountUser }>("/auth/me", {
     method: "PATCH",

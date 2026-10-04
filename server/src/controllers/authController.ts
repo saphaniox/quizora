@@ -633,6 +633,18 @@ export async function me(
   reply.send({ user });
 }
 
+export async function recordPresence(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const updated = await auth.touchSession(readSessionToken(request));
+  if (!updated) {
+    reply.code(401).send({ error: "Sign in to update your online status" });
+    return;
+  }
+  reply.header("cache-control", "no-store").send({ ok: true });
+}
+
 export async function getEmailPreferences(
   request: FastifyRequest,
   reply: FastifyReply,

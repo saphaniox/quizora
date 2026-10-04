@@ -67,9 +67,11 @@ export async function listUsers(
             u.created_at AS "createdAt",
             EXISTS (
               SELECT 1 FROM sessions s
-              WHERE s.user_id = u.id AND s.expires_at > NOW()
+              WHERE s.user_id = u.id
+                AND s.expires_at > NOW()
+                AND s.last_seen_at >= NOW() - INTERVAL '90 seconds'
             ) AS "isOnline",
-            (SELECT MAX(s.created_at) FROM sessions s WHERE s.user_id = u.id) AS "lastSeen",
+            u.last_seen_at AS "lastSeen",
             (SELECT COUNT(*) FROM leaderboard l WHERE l.user_id = u.id)::int AS "leaderboardCount",
             (SELECT COUNT(*) FROM certificates c WHERE c.user_id = u.id)::int AS "certificateCount",
             (SELECT COUNT(*) FROM quiz_progress p WHERE p.user_id = u.id)::int AS "progressCount"

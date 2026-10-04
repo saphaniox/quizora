@@ -346,6 +346,7 @@ function AdminPage() {
     queryKey: ["admin", "users", userQuery, userOffset],
     queryFn: () => getAdminUsers(userQuery, userOffset),
     enabled: isAdmin,
+    refetchInterval: 15_000,
   });
   const certificatesQuery = useQuery({
     queryKey: ["admin", "certificates"],
@@ -375,7 +376,7 @@ function AdminPage() {
     queryFn: () =>
       getAdminAnalytics({ from: analyticsFrom || undefined, to: analyticsTo || undefined }),
     enabled: isAdmin,
-    refetchInterval: 60_000,
+    refetchInterval: 15_000,
   });
   const appUpdateQuery = useQuery({
     queryKey: ["admin", "app-update"],

@@ -77,6 +77,7 @@ const routes: FastifyPluginAsync = async (app) => {
     authController.resetPassword,
   );
   app.get("/auth/me", authController.me);
+  app.post("/auth/me/presence", authController.recordPresence);
   app.get("/auth/me/email-preferences", authController.getEmailPreferences);
   app.put("/auth/me/email-preferences", authController.saveEmailPreferences);
   app.get("/email-preferences", authController.getPublicEmailPreferences);

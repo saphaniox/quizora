@@ -148,6 +148,9 @@ async function createSession(
     "INSERT INTO sessions (token_hash, user_id, expires_at) VALUES ($1, $2, $3)",
     [hashToken(token), user.id, expires],
   );
+  await pool.query("UPDATE users SET last_seen_at = NOW() WHERE id = $1", [
+    user.id,
+  ]);
   return { user, token };
 }
 
@@ -159,6 +162,27 @@ export async function getUser(token: string | undefined): Promise<User | null> {
   );
   const row = result.rows[0];
   return row ? toUser(row) : null;
+}
+
+export async function touchSession(token: string | undefined): Promise<boolean> {
+  if (!token) return false;
+  const result = await pool.query(
+    `WITH touched_session AS (
+       UPDATE sessions
+       SET last_seen_at = NOW()
+       WHERE token_hash = $1 AND expires_at > NOW()
+       RETURNING user_id, last_seen_at
+     )
+     UPDATE users AS u
+     SET last_seen_at = GREATEST(
+       COALESCE(u.last_seen_at, touched_session.last_seen_at),
+       touched_session.last_seen_at
+     )
+     FROM touched_session
+     WHERE u.id = touched_session.user_id`,
+    [hashToken(token)],
+  );
+  return result.rowCount === 1;
 }
 
 export async function updateCurrentUser(
@@ -295,10 +319,22 @@ export async function setPushNotificationsEnabled(
 }
 
 export async function logout(token: string | undefined): Promise<void> {
-  if (token)
-    await pool.query("DELETE FROM sessions WHERE token_hash = $1", [
-      hashToken(token),
-    ]);
+  if (!token) return;
+  await pool.query(
+    `WITH logged_out AS (
+       DELETE FROM sessions
+       WHERE token_hash = $1
+       RETURNING user_id, last_seen_at
+     )
+     UPDATE users AS u
+     SET last_seen_at = GREATEST(
+       COALESCE(u.last_seen_at, logged_out.last_seen_at),
+       logged_out.last_seen_at
+     )
+     FROM logged_out
+     WHERE u.id = logged_out.user_id`,
+    [hashToken(token)],
+  );
 }
 
 export async function deleteCurrentUser(

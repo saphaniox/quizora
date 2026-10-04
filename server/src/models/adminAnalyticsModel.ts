@@ -31,7 +31,9 @@ export async function getAnalytics(filters: { from?: string; to?: string } = {})
          (SELECT COUNT(*) FROM users WHERE created_at >= CURRENT_DATE)::text AS "newToday",
          (SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '7 days')::text AS "newLast7Days",
          (SELECT COUNT(*) FROM users WHERE created_at >= NOW() - INTERVAL '30 days')::text AS "newLast30Days",
-         (SELECT COUNT(DISTINCT user_id) FROM sessions WHERE expires_at > NOW())::text AS "activeNow"`,
+         (SELECT COUNT(DISTINCT user_id) FROM sessions
+          WHERE expires_at > NOW()
+            AND last_seen_at >= NOW() - INTERVAL '90 seconds')::text AS "activeNow"`,
     ),
     pool.query<{ totalAttempts: string; attemptsLast7Days: string; certificatesIssued: string; averageScore: string | null; averageTimeSeconds: string | null }>(
       `SELECT
