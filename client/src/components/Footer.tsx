@@ -1,9 +1,21 @@
 import { Link } from "@tanstack/react-router";
-import { Download, HeartHandshake, LifeBuoy, Music2, ShieldCheck } from "lucide-react";
+import {
+  BookOpen,
+  BookOpenCheck,
+  CalendarDays,
+  Download,
+  HeartHandshake,
+  LifeBuoy,
+  Music2,
+  ShieldCheck,
+} from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa6";
 import { androidAppUrl } from "@/lib/share-links";
 
 const links = [
+  { to: "/daily-challenge", label: "Daily challenge", icon: CalendarDays },
+  { to: "/study-guides", label: "Study guides", icon: BookOpen },
+  { to: "/revision-notes", label: "Revision notes", icon: BookOpenCheck },
   { to: "/privacy", label: "Privacy Policy", icon: ShieldCheck },
   { to: "/terms", label: "Terms of Service", icon: HeartHandshake },
   { to: "/support", label: "Support", icon: LifeBuoy },
@@ -49,8 +61,8 @@ export function Footer() {
         </div>
 
         <nav
-          className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-6"
-          aria-label="Legal, support, and social links"
+          className="grid w-full grid-cols-1 gap-2 sm:grid-cols-2 lg:w-auto lg:grid-cols-3"
+          aria-label="Learning, legal, support, and social links"
         >
           {links.map(({ to, label, icon: Icon }) => (
             <Link

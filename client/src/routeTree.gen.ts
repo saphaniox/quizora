@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as DailyChallengeRouteImport } from './routes/daily-challenge'
 import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as DeleteDataRouteImport } from './routes/delete-data'
 import { Route as EmailPreferencesRouteImport } from './routes/email-preferences'
@@ -20,6 +21,8 @@ import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResultsRouteImport } from './routes/results'
+import { Route as RevisionNotesRouteImport } from './routes/revision-notes'
+import { Route as StudyGuidesRouteImport } from './routes/study-guides'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
@@ -85,6 +88,11 @@ const AuthRoute = AuthRouteImport.update({
   path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DailyChallengeRoute = DailyChallengeRouteImport.update({
+  id: '/daily-challenge',
+  path: '/daily-challenge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DeleteAccountRoute = DeleteAccountRouteImport.update({
   id: '/delete-account',
   path: '/delete-account',
@@ -123,6 +131,16 @@ const PrivacyRoute = PrivacyRouteImport.update({
 const ResultsRoute = ResultsRouteImport.update({
   id: '/results',
   path: '/results',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RevisionNotesRoute = RevisionNotesRouteImport.update({
+  id: '/revision-notes',
+  path: '/revision-notes',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const StudyGuidesRoute = StudyGuidesRouteImport.update({
+  id: '/study-guides',
+  path: '/study-guides',
   getParentRoute: () => rootRouteImport,
 } as any)
 const SupportRoute = SupportRouteImport.update({
@@ -385,6 +403,7 @@ const ApiAuthMeProgressQuizIdRoute = ApiAuthMeProgressQuizIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/daily-challenge': typeof DailyChallengeRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
   '/email-preferences': typeof EmailPreferencesRoute
@@ -393,6 +412,8 @@ export interface FileRoutesByFullPath {
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
+  '/revision-notes': typeof RevisionNotesRoute
+  '/study-guides': typeof StudyGuidesRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -447,6 +468,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/daily-challenge': typeof DailyChallengeRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
   '/email-preferences': typeof EmailPreferencesRoute
@@ -455,6 +477,8 @@ export interface FileRoutesByTo {
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
+  '/revision-notes': typeof RevisionNotesRoute
+  '/study-guides': typeof StudyGuidesRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
@@ -511,6 +535,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/daily-challenge': typeof DailyChallengeRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
   '/email-preferences': typeof EmailPreferencesRoute
@@ -519,6 +544,8 @@ export interface FileRoutesById {
   '/leaderboard': typeof LeaderboardRoute
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
+  '/revision-notes': typeof RevisionNotesRoute
+  '/study-guides': typeof StudyGuidesRoute
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
@@ -575,6 +602,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/daily-challenge'
     | '/delete-account'
     | '/delete-data'
     | '/email-preferences'
@@ -583,6 +611,8 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/privacy'
     | '/results'
+    | '/revision-notes'
+    | '/study-guides'
     | '/support'
     | '/terms'
     | '/admin'
@@ -637,6 +667,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/daily-challenge'
     | '/delete-account'
     | '/delete-data'
     | '/email-preferences'
@@ -645,6 +676,8 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/privacy'
     | '/results'
+    | '/revision-notes'
+    | '/study-guides'
     | '/support'
     | '/terms'
     | '/admin'
@@ -700,6 +733,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/daily-challenge'
     | '/delete-account'
     | '/delete-data'
     | '/email-preferences'
@@ -708,6 +742,8 @@ export interface FileRouteTypes {
     | '/leaderboard'
     | '/privacy'
     | '/results'
+    | '/revision-notes'
+    | '/study-guides'
     | '/support'
     | '/terms'
     | '/_authenticated/admin'
@@ -764,6 +800,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  DailyChallengeRoute: typeof DailyChallengeRoute
   DeleteAccountRoute: typeof DeleteAccountRoute
   DeleteDataRoute: typeof DeleteDataRoute
   EmailPreferencesRoute: typeof EmailPreferencesRoute
@@ -772,6 +809,8 @@ export interface RootRouteChildren {
   LeaderboardRoute: typeof LeaderboardRoute
   PrivacyRoute: typeof PrivacyRoute
   ResultsRoute: typeof ResultsRoute
+  RevisionNotesRoute: typeof RevisionNotesRoute
+  StudyGuidesRoute: typeof StudyGuidesRoute
   SupportRoute: typeof SupportRoute
   TermsRoute: typeof TermsRoute
   ApiAppUpdateRoute: typeof ApiAppUpdateRoute
@@ -830,6 +869,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/daily-challenge': {
+      id: '/daily-challenge'
+      path: '/daily-challenge'
+      fullPath: '/daily-challenge'
+      preLoaderRoute: typeof DailyChallengeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/delete-account': {
       id: '/delete-account'
       path: '/delete-account'
@@ -884,6 +930,20 @@ declare module '@tanstack/react-router' {
       path: '/results'
       fullPath: '/results'
       preLoaderRoute: typeof ResultsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/revision-notes': {
+      id: '/revision-notes'
+      path: '/revision-notes'
+      fullPath: '/revision-notes'
+      preLoaderRoute: typeof RevisionNotesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/study-guides': {
+      id: '/study-guides'
+      path: '/study-guides'
+      fullPath: '/study-guides'
+      preLoaderRoute: typeof StudyGuidesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/support': {
@@ -1374,6 +1434,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  DailyChallengeRoute: DailyChallengeRoute,
   DeleteAccountRoute: DeleteAccountRoute,
   DeleteDataRoute: DeleteDataRoute,
   EmailPreferencesRoute: EmailPreferencesRoute,
@@ -1382,6 +1443,8 @@ const rootRouteChildren: RootRouteChildren = {
   LeaderboardRoute: LeaderboardRoute,
   PrivacyRoute: PrivacyRoute,
   ResultsRoute: ResultsRoute,
+  RevisionNotesRoute: RevisionNotesRoute,
+  StudyGuidesRoute: StudyGuidesRoute,
   SupportRoute: SupportRoute,
   TermsRoute: TermsRoute,
   ApiAppUpdateRoute: ApiAppUpdateRoute,

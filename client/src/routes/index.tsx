@@ -17,6 +17,8 @@ import {
   LogIn,
   RefreshCw,
   UserPlus,
+  CalendarDays,
+  BookOpenCheck,
 } from "lucide-react";
 import { getCurrentUser, getLevels } from "@/lib/api";
 import { QuizCard } from "@/components/QuizCard";
@@ -176,6 +178,46 @@ function HomePage() {
             ))}
           </dl>
         </div>
+      </section>
+
+      <section
+        className="mx-auto grid max-w-7xl gap-3 px-4 py-6 sm:grid-cols-3 sm:px-6 lg:px-8"
+        aria-label="Learning tools"
+      >
+        {[
+          {
+            to: "/daily-challenge",
+            icon: CalendarDays,
+            title: "Daily challenge",
+            copy: "Try a focused quiz round for today.",
+          },
+          {
+            to: "/study-guides",
+            icon: BookOpen,
+            title: "Study guides",
+            copy: "Build a steady, effective study routine.",
+          },
+          {
+            to: "/revision-notes",
+            icon: BookOpenCheck,
+            title: "Revision notes",
+            copy: "Refresh key ideas before you practise.",
+          },
+        ].map(({ to, icon: Icon, title, copy }) => (
+          <Link
+            key={to}
+            to={to}
+            className="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+              <Icon className="h-5 w-5" />
+            </span>
+            <span className="min-w-0">
+              <span className="block font-semibold text-foreground">{title}</span>
+              <span className="mt-1 block text-sm text-muted-foreground">{copy}</span>
+            </span>
+          </Link>
+        ))}
       </section>
 
       <section className="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
