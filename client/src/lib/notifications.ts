@@ -7,6 +7,8 @@ type ToastOptions = {
 const toast = Swal.mixin({
   toast: true,
   position: "top",
+  backdrop: false,
+  grow: false,
   showConfirmButton: false,
   showCloseButton: false,
   timer: 4000,
