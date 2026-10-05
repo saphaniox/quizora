@@ -122,14 +122,14 @@
 .swal2-toast.quitech-swal-popup {
   display: grid !important;
   grid-template-columns: 0.9rem minmax(0, 1fr) !important;
-  grid-template-rows: auto auto !important;
-  grid-auto-rows: auto !important;
-  align-content: center !important;
+  grid-template-rows: min-content min-content !important;
+  grid-auto-rows: min-content !important;
+  align-content: start !important;
   align-items: center;
   justify-items: start;
   gap: 0.1rem 0.5rem;
   width: min(18rem, 100%);
-  height: fit-content !important;
+  height: auto !important;
   min-height: 0 !important;
   max-height: 5rem !important;
   overflow: hidden !important;
@@ -147,9 +147,8 @@
   line-height: 1.25;
   text-align: left;
   overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block !important;
+  max-height: 2em;
   overflow: hidden;
 }
 
@@ -163,9 +162,8 @@
   line-height: 1.3;
   text-align: left;
   overflow-wrap: anywhere;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 2;
+  display: block !important;
+  max-height: 2.6em;
   overflow: hidden;
 }
 
