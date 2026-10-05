@@ -57,6 +57,7 @@ import {
   sendAdminPushNotification,
   sendAdminEmail,
   sendAdminTestEmail,
+  saveAdminEmailProvider,
   updateFeedbackStatus,
   updateAdminUser,
   resetAdminUserPassword,
@@ -302,6 +303,7 @@ function AdminPage() {
     tone: StatusTone;
     message: string;
   } | null>(null);
+  const [emailProviderDraft, setEmailProviderDraft] = useState<"smtp" | "resend">("smtp");
 
   useEffect(() => {
     for (const action of [
@@ -606,6 +608,23 @@ function AdminPage() {
       });
     },
   });
+  const saveEmailProviderMutation = useMutation({
+    mutationFn: saveAdminEmailProvider,
+    onSuccess: ({ provider }) => {
+      setEmailProviderDraft(provider);
+      setEmailAction({
+        tone: "ready",
+        message: `Email delivery is now using ${provider === "resend" ? "Resend" : "SMTP"}.`,
+      });
+      void integrationStatusQuery.refetch();
+    },
+    onError: (error) => {
+      setEmailAction({
+        tone: "blocked",
+        message: error instanceof Error ? error.message : "Could not save the email provider.",
+      });
+    },
+  });
 
   const loadedLevels = levelsQuery.data?.levels;
   const levels = useMemo(() => loadedLevels ?? [], [loadedLevels]);
@@ -627,6 +646,11 @@ function AdminPage() {
       message: settings.message,
     });
   }, [appUpdateQuery.data]);
+  useEffect(() => {
+    if (integrationStatusQuery.data) {
+      setEmailProviderDraft(integrationStatusQuery.data.email.provider);
+    }
+  }, [integrationStatusQuery.data]);
 
   const loadedLeaderboard = leaderboardQuery.data?.leaderboard;
   const leaderboard = useMemo(() => loadedLeaderboard ?? [], [loadedLeaderboard]);
@@ -1133,8 +1157,8 @@ function AdminPage() {
                   Email and push health
                 </h2>
                 <p className="mt-1 text-sm leading-5 text-muted-foreground">
-                  Checks SMTP authentication and Firebase service-account access, and summarizes
-                  recent delivery failures without showing credentials.
+                  Check SMTP, Resend, and Firebase connectivity; choose the active email sender
+                  without exposing API keys or passwords.
                 </p>
               </div>
             </div>
@@ -1164,7 +1188,54 @@ function AdminPage() {
                 : "Unknown API error"}
             </p>
           ) : integrationStatusQuery.data ? (
-            <IntegrationHealth status={integrationStatusQuery.data} />
+            <>
+              <div className="mt-4 grid gap-3 rounded-md border border-border bg-background p-3 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+                <label className="text-xs font-medium text-muted-foreground">
+                  Active email provider
+                  <select
+                    value={emailProviderDraft}
+                    onChange={(event) =>
+                      setEmailProviderDraft(event.target.value as "smtp" | "resend")
+                    }
+                    className="mt-1 block min-h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+                  >
+                    <option value="smtp">Gmail / SMTP</option>
+                    <option value="resend">Resend</option>
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={() => saveEmailProviderMutation.mutate(emailProviderDraft)}
+                  disabled={
+                    saveEmailProviderMutation.isPending ||
+                    emailProviderDraft === integrationStatusQuery.data.email.provider
+                  }
+                  className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                >
+                  {saveEmailProviderMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Save className="h-4 w-4" />
+                  )}
+                  Save provider
+                </button>
+                <div className="text-xs leading-5 text-muted-foreground sm:col-span-2">
+                  <p>
+                    SMTP: {integrationStatusQuery.data.email.providers.smtp.verified
+                      ? "ready"
+                      : integrationStatusQuery.data.email.providers.smtp.error ||
+                        "not verified"}
+                  </p>
+                  <p>
+                    Resend: {integrationStatusQuery.data.email.providers.resend.verified
+                      ? `ready · ${integrationStatusQuery.data.email.providers.resend.from}`
+                      : integrationStatusQuery.data.email.providers.resend.error ||
+                        `not configured · missing ${integrationStatusQuery.data.email.providers.resend.missingVariables.join(", ")}`}
+                  </p>
+                </div>
+              </div>
+              <IntegrationHealth status={integrationStatusQuery.data} />
+            </>
           ) : (
             <p className="mt-4 text-sm text-muted-foreground">
               Integration diagnostics have not been loaded yet.
@@ -2784,11 +2855,20 @@ function IntegrationHealth({ status }: { status: AdminIntegrationStatus }) {
         Checked {new Date(status.collectedAt).toLocaleString()}
       </p>
       <div className="mt-3 grid min-w-0 gap-3 lg:grid-cols-2">
-        <IntegrationCard title="Email (SMTP)" icon={Mail} tone={emailTone} label={emailLabel}>
+        <IntegrationCard
+          title={`Email (${status.email.provider === "resend" ? "Resend" : "SMTP"})`}
+          icon={Mail}
+          tone={emailTone}
+          label={emailLabel}
+        >
           <p>
-            {status.email.host
-              ? `${status.email.host}:${status.email.port ?? "invalid port"} · ${status.email.secure ? "implicit TLS" : "STARTTLS"} · certificate verification ${status.email.tlsRejectUnauthorized ? "on" : "off"}`
-              : "SMTP host is not set"}
+            {status.email.provider === "resend"
+              ? status.email.from
+                ? `From: ${status.email.from}`
+                : "Resend sender is not set"
+              : status.email.host
+                ? `${status.email.host}:${status.email.port ?? "invalid port"} · ${status.email.secure ? "implicit TLS" : "STARTTLS"} · certificate verification ${status.email.tlsRejectUnauthorized ? "on" : "off"}`
+                : "SMTP host is not set"}
           </p>
           <p className="mt-1">
             From: {status.email.senderConfigured ? "configured" : "missing"} · Reply-to:{" "}

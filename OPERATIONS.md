@@ -10,6 +10,16 @@ npm --prefix server run migrate
 
 Migrations are ordered SQL files in `server/migrations`. Take a database backup before production migrations and confirm the API health endpoint after deployment.
 
+## Resend email provider
+
+To add Resend while retaining SMTP as a fallback choice:
+
+1. Verify `quitech.online` (or the domain used for your sender) in Resend and publish the DNS records Resend provides, including DKIM and SPF records.
+2. Add `RESEND_API_KEY` and `RESEND_FROM` to the API service's Coolify environment. Use a verified sender, for example `Quitech <notifications@quitech.online>`. Keep `SUPPORT_EMAIL` set for reply-to.
+3. Deploy the API and apply pending database migrations with `npm --prefix server run migrate`.
+4. Open Admin → Email and push health, run checks, select Resend as the active email provider, and save. The admin checks the Resend API key and verifies the sender domain before allowing the switch.
+5. Send an admin test email and confirm delivery before relying on the provider. Switching providers changes future deliveries; queued emails are sent using the provider active when each job is processed.
+
 ## Web release
 
 ```powershell

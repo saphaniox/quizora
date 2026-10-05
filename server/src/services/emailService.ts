@@ -3,6 +3,7 @@ import type { FastifyBaseLogger } from "fastify";
 import { appUrl } from "../email/layout.js";
 import { buildEmailTemplate } from "../email/templates.js";
 import type { EmailTemplateData, EmailTemplateName } from "../email/types.js";
+import * as emailProviderModel from "../models/emailProviderModel.js";
 import * as emailModel from "../models/emailNotificationModel.js";
 
 const EMAIL_TIMEOUT_MS = 15_000;
@@ -74,12 +75,14 @@ export function getSmtpFromAddress(): string {
 }
 
 export function isEmailConfigured(): boolean {
-  return Boolean(mailer());
+  return Boolean(mailer() || (process.env["RESEND_API_KEY"]?.trim() && process.env["RESEND_FROM"]?.trim()));
 }
 
-export async function verifyEmailTransport(): Promise<{
+export interface EmailTransportStatus {
+  provider: emailProviderModel.EmailProvider;
   configured: boolean;
   verified: boolean | null;
+  from: string | null;
   host: string | null;
   port: number | null;
   secure: boolean;
@@ -88,7 +91,96 @@ export async function verifyEmailTransport(): Promise<{
   replyToConfigured: boolean;
   missingVariables: string[];
   error: string | null;
-}> {
+}
+
+function resendFromAddress(): string {
+  return process.env["RESEND_FROM"]?.trim() ?? "";
+}
+
+function resendFromDomain(from: string): string | null {
+  const address = from.match(/<\s*([^<>\s]+@[^<>\s]+)\s*>/)?.[1] ?? from;
+  const domain = address.trim().match(/^[^@\s]+@([^@\s]+)$/)?.[1];
+  return domain?.toLowerCase() ?? null;
+}
+
+export async function verifyEmailTransport(
+  provider: emailProviderModel.EmailProvider = "smtp",
+): Promise<EmailTransportStatus> {
+  if (provider === "resend") {
+    const apiKey = process.env["RESEND_API_KEY"]?.trim();
+    const from = resendFromAddress();
+    const domain = resendFromDomain(from);
+    const missingVariables = [
+      !apiKey ? "RESEND_API_KEY" : null,
+      !from ? "RESEND_FROM" : null,
+      from && !domain ? "RESEND_FROM (must contain a valid email address)" : null,
+    ].filter((key): key is string => key !== null);
+    const base = {
+      provider,
+      configured: missingVariables.length === 0,
+      verified: null as boolean | null,
+      from: from || null,
+      host: null,
+      port: null,
+      secure: false,
+      tlsRejectUnauthorized: true,
+      senderConfigured: Boolean(from),
+      replyToConfigured: Boolean(process.env["SUPPORT_EMAIL"]?.trim()),
+      missingVariables,
+      error: null as string | null,
+    };
+    if (missingVariables.length > 0 || !apiKey || !domain) return base;
+
+    try {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), EMAIL_TIMEOUT_MS);
+      let response: Response;
+      try {
+        response = await fetch("https://api.resend.com/domains", {
+          headers: { Authorization: `Bearer ${apiKey}` },
+          signal: controller.signal,
+        });
+      } finally {
+        clearTimeout(timeout);
+      }
+      const body = (await response.json().catch(() => ({}))) as {
+        data?: Array<{ name?: string; status?: string }>;
+        message?: string;
+      };
+      if (!response.ok) {
+        throw new Error(body.message || `Resend domain check failed (${response.status}).`);
+      }
+      const senderDomain = body.data?.find(
+        (item) => item.name?.toLowerCase() === domain,
+      );
+      if (!senderDomain) {
+        return {
+          ...base,
+          verified: false,
+          error: `The sender domain ${domain} is not registered in Resend.`,
+        };
+      }
+      const verified = senderDomain.status === "verified";
+      return {
+        ...base,
+        verified,
+        error: verified ? null : `The sender domain ${domain} is not verified in Resend.`,
+      };
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : "Resend verification failed.";
+      emailLogger?.error(
+        { event: "email.resend_verification_failed", ...errorDetails(error) },
+        "Admin Resend verification failed",
+      );
+      return {
+        ...base,
+        verified: false,
+        error: message.replace(/[\r\n]+/g, " ").slice(0, 300),
+      };
+    }
+  }
+
   const host = process.env["SMTP_HOST"]?.trim() || null;
   const user = process.env["SMTP_USER"]?.trim();
   const pass = process.env["SMTP_PASS"]?.trim();
@@ -112,8 +204,10 @@ export async function verifyEmailTransport(): Promise<{
 
   if (missingVariables.length) {
     return {
+      provider,
       configured: false,
       verified: null,
+      from: process.env["SMTP_FROM"]?.trim() || process.env["SMTP_USER"]?.trim() || null,
       host,
       port,
       secure,
@@ -129,8 +223,10 @@ export async function verifyEmailTransport(): Promise<{
     const transport = mailer();
     if (!transport) {
       return {
+        provider,
         configured: false,
         verified: false,
+        from: process.env["SMTP_FROM"]?.trim() || process.env["SMTP_USER"]?.trim() || null,
         host,
         port,
         secure,
@@ -143,8 +239,10 @@ export async function verifyEmailTransport(): Promise<{
     }
     await transport.verify();
     return {
+      provider,
       configured: true,
       verified: true,
+      from: process.env["SMTP_FROM"]?.trim() || process.env["SMTP_USER"]?.trim() || null,
       host,
       port,
       secure,
@@ -162,8 +260,10 @@ export async function verifyEmailTransport(): Promise<{
       "Admin SMTP verification failed",
     );
     return {
+      provider,
       configured: true,
       verified: false,
+      from: process.env["SMTP_FROM"]?.trim() || process.env["SMTP_USER"]?.trim() || null,
       host,
       port,
       secure,
@@ -174,6 +274,54 @@ export async function verifyEmailTransport(): Promise<{
       error: message.replace(/[\r\n]+/g, " ").slice(0, 300),
     };
   }
+}
+
+export async function sendWithResend(input: {
+  to: string;
+  from: string;
+  replyTo: string;
+  subject: string;
+  text: string;
+  html: string;
+  headers?: Record<string, string>;
+}): Promise<string> {
+  const apiKey = process.env["RESEND_API_KEY"]?.trim();
+  if (!apiKey || !input.from) {
+    throw new Error("Resend is not configured. Set RESEND_API_KEY and RESEND_FROM.");
+  }
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), EMAIL_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        from: input.from,
+        to: [input.to],
+        reply_to: input.replyTo,
+        subject: input.subject,
+        text: input.text,
+        html: input.html,
+        ...(input.headers ? { headers: input.headers } : {}),
+      }),
+      signal: controller.signal,
+    });
+  } finally {
+    clearTimeout(timeout);
+  }
+  const body = (await response.json().catch(() => ({}))) as {
+    id?: string;
+    message?: string;
+    name?: string;
+  };
+  if (!response.ok || !body.id) {
+    throw new Error(body.message || `Resend rejected the email (${response.status}).`);
+  }
+  return body.id;
 }
 
 function preferenceUrl(token: string): string {
@@ -237,20 +385,28 @@ export async function sendTemplateEmail(input: {
     input.data,
     managePreferencesUrl,
   );
-  const transport = mailer();
-  if (!transport) {
-    const missingVariables = ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].filter(
-      (key) => !process.env[key]?.trim(),
-    );
-    const error = new Error("SMTP is not configured");
+  const provider = await emailProviderModel.getEmailProvider();
+  const transport = provider === "smtp" ? mailer() : null;
+  const resendReady = Boolean(
+    process.env["RESEND_API_KEY"]?.trim() && resendFromAddress(),
+  );
+  if ((provider === "smtp" && !transport) || (provider === "resend" && !resendReady)) {
+    const missingVariables =
+      provider === "smtp"
+        ? ["SMTP_HOST", "SMTP_USER", "SMTP_PASS"].filter(
+            (key) => !process.env[key]?.trim(),
+          )
+        : ["RESEND_API_KEY", "RESEND_FROM"].filter((key) => !process.env[key]?.trim());
+    const error = new Error(`${provider === "smtp" ? "SMTP" : "Resend"} is not configured`);
     logEmailFailure(
       error,
       {
         template: input.template,
         category: rendered.category,
+        provider,
         missingVariables: missingVariables.join(","),
       },
-      "Email delivery failed because SMTP is not configured",
+      `Email delivery failed because ${provider} is not configured`,
     );
     await safelyRecordDelivery({
       userId: input.userId,
@@ -264,41 +420,56 @@ export async function sendTemplateEmail(input: {
   }
 
   try {
-    const info = await transport.sendMail({
-      from: getSmtpFromAddress(),
-      replyTo:
-        process.env["SUPPORT_EMAIL"] ??
-        process.env["SMTP_USER"] ??
-        "quitechug@gmail.com",
-      to: recipient,
-      subject: rendered.subject,
-      text: rendered.text,
-      html: rendered.html,
-      headers: rendered.headers,
-    });
+    const replyTo =
+      process.env["SUPPORT_EMAIL"]?.trim() ||
+      process.env["SMTP_USER"]?.trim() ||
+      "quitechug@gmail.com";
+    const messageId =
+      provider === "resend"
+        ? await sendWithResend({
+            from: resendFromAddress(),
+            replyTo,
+            to: recipient,
+            subject: rendered.subject,
+            text: rendered.text,
+            html: rendered.html,
+            headers: rendered.headers,
+          })
+        : (
+            await transport!.sendMail({
+              from: getSmtpFromAddress(),
+              replyTo,
+              to: recipient,
+              subject: rendered.subject,
+              text: rendered.text,
+              html: rendered.html,
+              headers: rendered.headers,
+            })
+          ).messageId;
     await safelyRecordDelivery({
       userId: input.userId,
       recipient,
       template: input.template,
       category: rendered.category,
       status: "sent",
-      providerMessageId: info.messageId,
+      providerMessageId: messageId,
     });
     emailLogger?.info(
       {
         event: "email.sent",
         template: input.template,
         category: rendered.category,
-        messageId: info.messageId,
+        provider,
+        messageId,
       },
-      "Email accepted by SMTP provider",
+      `Email accepted by ${provider} provider`,
     );
-    return { sent: true, skipped: false, messageId: info.messageId };
+    return { sent: true, skipped: false, messageId };
   } catch (error) {
     logEmailFailure(
       error,
-      { template: input.template, category: rendered.category },
-      "SMTP provider rejected or failed to send email",
+      { template: input.template, category: rendered.category, provider },
+      `${provider} provider rejected or failed to send email`,
     );
     await safelyRecordDelivery({
       userId: input.userId,

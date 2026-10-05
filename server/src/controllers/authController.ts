@@ -14,6 +14,7 @@ import * as adminDataModel from "../models/adminDataModel.js";
 import * as appUpdateModel from "../models/appUpdateModel.js";
 import * as adminAnalyticsModel from "../models/adminAnalyticsModel.js";
 import * as adminAuditModel from "../models/adminAuditModel.js";
+import * as emailProviderModel from "../models/emailProviderModel.js";
 import { getRuntimeMetrics } from "../runtimeMetrics.js";
 import {
   clearSessionCookie,
@@ -22,7 +23,6 @@ import {
 } from "../sessionCookie.js";
 import { pool } from "../db.js";
 import {
-  isEmailConfigured,
   queueBulkTemplateEmail,
   queueTemplateEmail,
   sendTemplateEmail,
@@ -167,6 +167,9 @@ const adminEmailSchema = z.object({
   message: z.string().trim().min(10).max(5000),
   actionLabel: z.string().trim().max(60).optional().or(z.literal("")),
   actionUrl: secureEmailActionUrl.optional().or(z.literal("")),
+});
+const emailProviderSchema = z.object({
+  provider: z.enum(["smtp", "resend"]),
 });
 
 async function requireUser(
@@ -580,10 +583,12 @@ export async function sendAdminTestEmail(
     });
     return;
   }
-  if (!isEmailConfigured()) {
+  const provider = await emailProviderModel.getEmailProvider();
+  const providerStatus = await verifyEmailTransport(provider);
+  if (!providerStatus.configured || providerStatus.verified !== true) {
     reply.code(503).send({
-      error:
-        "SMTP is not configured. Add the SMTP values in Coolify and deploy again.",
+      error: providerStatus.error ||
+        `${provider === "smtp" ? "SMTP" : "Resend"} is not configured or verified.`,
     });
     return;
   }
@@ -609,14 +614,14 @@ export async function sendAdminTestEmail(
       "email.test_sent",
       "email",
       randomAuditId(),
-      { recipient: admin.email, messageId: result.messageId ?? null },
+      { provider, recipient: admin.email, messageId: result.messageId ?? null },
     );
     reply.send({ sentTo: admin.email, messageId: result.messageId ?? null });
   } catch (error) {
     request.log.error(error, "Could not send test email");
     reply.code(502).send({
       error:
-        "Quitech could not send the test email. Check your SMTP host, port, username, and app password in Coolify.",
+        "Quitech could not send the test email. Check the selected email provider configuration in Coolify.",
     });
   }
 }
@@ -802,8 +807,10 @@ export async function getAdminIntegrationStatus(
   const admin = await requireAdmin(request, reply);
   if (!admin) return;
 
+  const selectedEmailProvider = await emailProviderModel.getEmailProvider();
   const [
-    emailConfiguration,
+    smtpConfiguration,
+    resendConfiguration,
     firebase,
     emailActivityResult,
     emailQueueResult,
@@ -812,7 +819,8 @@ export async function getAdminIntegrationStatus(
     pushQueueResult,
     latestPushFailureResult,
   ] = await Promise.all([
-    verifyEmailTransport(),
+    verifyEmailTransport("smtp"),
+    verifyEmailTransport("resend"),
     verifyFirebaseAdmin(),
     pool.query<{ status: string; count: number }>(
       `SELECT status, COUNT(*)::int AS count
@@ -879,7 +887,16 @@ export async function getAdminIntegrationStatus(
   reply.header("cache-control", "no-store").send({
     collectedAt: new Date().toISOString(),
     email: {
-      ...emailConfiguration,
+      ...(
+        selectedEmailProvider === "resend"
+          ? resendConfiguration
+          : smtpConfiguration
+      ),
+      provider: selectedEmailProvider,
+      providers: {
+        smtp: smtpConfiguration,
+        resend: resendConfiguration,
+      },
       activity24Hours: emailActivity,
       queue: emailQueueResult.rows[0] ?? { pending: 0, processing: 0, failed: 0 },
       lastFailure: latestEmailFailureResult.rows[0]
@@ -911,6 +928,43 @@ export async function getAdminIntegrationStatus(
         : null,
     },
   });
+}
+
+export async function saveAdminEmailProvider(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const admin = await requireAdmin(request, reply);
+  if (!admin) return;
+  const parsed = emailProviderSchema.safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Choose a supported email provider." });
+    return;
+  }
+
+  const status = await verifyEmailTransport(parsed.data.provider);
+  if (!status.configured || status.verified !== true) {
+    reply.code(400).send({
+      error:
+        status.error ||
+        `Configure and verify ${parsed.data.provider === "resend" ? "Resend" : "SMTP"} before selecting it.`,
+      provider: parsed.data.provider,
+    });
+    return;
+  }
+
+  const provider = await emailProviderModel.setEmailProvider(
+    parsed.data.provider,
+    admin.id,
+  );
+  await adminAuditModel.record(
+    admin.id,
+    "email.provider_changed",
+    "email_provider",
+    provider,
+    { provider },
+  );
+  reply.send({ provider });
 }
 
 export async function getAdminAnalytics(

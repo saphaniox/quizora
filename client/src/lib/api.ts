@@ -56,6 +56,11 @@ export interface AdminSystemMetrics {
 export interface AdminIntegrationStatus {
   collectedAt: string;
   email: {
+    provider: "smtp" | "resend";
+    providers: {
+      smtp: EmailProviderStatus;
+      resend: EmailProviderStatus;
+    };
     configured: boolean;
     verified: boolean | null;
     host: string | null;
@@ -89,6 +94,21 @@ export interface AdminIntegrationStatus {
     queue: { pending: number; processing: number; failed: number };
     lastFailure: { createdAt: string; errorMessage: string | null } | null;
   };
+}
+
+export interface EmailProviderStatus {
+  provider: "smtp" | "resend";
+  configured: boolean;
+  verified: boolean | null;
+  from: string | null;
+  host: string | null;
+  port: number | null;
+  secure: boolean;
+  tlsRejectUnauthorized: boolean;
+  senderConfigured: boolean;
+  replyToConfigured: boolean;
+  missingVariables: string[];
+  error: string | null;
 }
 
 export interface AdminAnalytics {
@@ -362,6 +382,14 @@ export async function getAdminSystemMetrics(): Promise<AdminSystemMetrics> {
 }
 export async function getAdminIntegrationStatus(): Promise<AdminIntegrationStatus> {
   return fetchJson<AdminIntegrationStatus>("/admin/integrations");
+}
+export async function saveAdminEmailProvider(
+  provider: "smtp" | "resend",
+): Promise<{ provider: "smtp" | "resend" }> {
+  return fetchJson<{ provider: "smtp" | "resend" }>("/admin/integrations/email-provider", {
+    method: "PUT",
+    body: JSON.stringify({ provider }),
+  });
 }
 export async function getAdminAnalytics(filters?: {
   from?: string;
