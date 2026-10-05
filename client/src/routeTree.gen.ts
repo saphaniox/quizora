@@ -44,6 +44,7 @@ import { Route as ApiAdminCatalogueRouteImport } from './routes/api/admin/catalo
 import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/certificates'
 import { Route as ApiAdminEmailsRouteImport } from './routes/api/admin/emails'
 import { Route as ApiAdminFeedbackRouteImport } from './routes/api/admin/feedback'
+import { Route as ApiAdminIntegrationsRouteImport } from './routes/api/admin/integrations'
 import { Route as ApiAdminNotificationsRouteImport } from './routes/api/admin/notifications'
 import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
@@ -61,6 +62,7 @@ import { Route as ApiAdminCatalogueSectionIdRouteImport } from './routes/api/adm
 import { Route as ApiAdminCertificatesCodeRouteImport } from './routes/api/admin/certificates.$code'
 import { Route as ApiAdminEmailsTestRouteImport } from './routes/api/admin/emails.test'
 import { Route as ApiAdminFeedbackIdRouteImport } from './routes/api/admin/feedback.$id'
+import { Route as ApiAdminIntegrationsEmailProviderRouteImport } from './routes/api/admin/integrations.email-provider'
 import { Route as ApiAdminLeaderboardIdRouteImport } from './routes/api/admin/leaderboard.$id'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users.$userId'
 import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
@@ -248,6 +250,11 @@ const ApiAdminFeedbackRoute = ApiAdminFeedbackRouteImport.update({
   path: '/api/admin/feedback',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminIntegrationsRoute = ApiAdminIntegrationsRouteImport.update({
+  id: '/api/admin/integrations',
+  path: '/api/admin/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiAdminNotificationsRoute = ApiAdminNotificationsRouteImport.update({
   id: '/api/admin/notifications',
   path: '/api/admin/notifications',
@@ -335,6 +342,12 @@ const ApiAdminFeedbackIdRoute = ApiAdminFeedbackIdRouteImport.update({
   path: '/$id',
   getParentRoute: () => ApiAdminFeedbackRoute,
 } as any)
+const ApiAdminIntegrationsEmailProviderRoute =
+  ApiAdminIntegrationsEmailProviderRouteImport.update({
+    id: '/email-provider',
+    path: '/email-provider',
+    getParentRoute: () => ApiAdminIntegrationsRoute,
+  } as any)
 const ApiAdminLeaderboardIdRoute = ApiAdminLeaderboardIdRouteImport.update({
   id: '/api/admin/leaderboard/$id',
   path: '/api/admin/leaderboard/$id',
@@ -435,6 +448,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/integrations': typeof ApiAdminIntegrationsRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
@@ -452,6 +466,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
   '/api/admin/emails/test': typeof ApiAdminEmailsTestRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
+  '/api/admin/integrations/email-provider': typeof ApiAdminIntegrationsEmailProviderRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
@@ -500,6 +515,7 @@ export interface FileRoutesByTo {
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/integrations': typeof ApiAdminIntegrationsRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
@@ -517,6 +533,7 @@ export interface FileRoutesByTo {
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
   '/api/admin/emails/test': typeof ApiAdminEmailsTestRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
+  '/api/admin/integrations/email-provider': typeof ApiAdminIntegrationsEmailProviderRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
@@ -567,6 +584,7 @@ export interface FileRoutesById {
   '/api/admin/certificates': typeof ApiAdminCertificatesRouteWithChildren
   '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
+  '/api/admin/integrations': typeof ApiAdminIntegrationsRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
@@ -584,6 +602,7 @@ export interface FileRoutesById {
   '/api/admin/certificates/$code': typeof ApiAdminCertificatesCodeRoute
   '/api/admin/emails/test': typeof ApiAdminEmailsTestRoute
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
+  '/api/admin/integrations/email-provider': typeof ApiAdminIntegrationsEmailProviderRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
@@ -634,6 +653,7 @@ export interface FileRouteTypes {
     | '/api/admin/certificates'
     | '/api/admin/emails'
     | '/api/admin/feedback'
+    | '/api/admin/integrations'
     | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
@@ -651,6 +671,7 @@ export interface FileRouteTypes {
     | '/api/admin/certificates/$code'
     | '/api/admin/emails/test'
     | '/api/admin/feedback/$id'
+    | '/api/admin/integrations/email-provider'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
@@ -699,6 +720,7 @@ export interface FileRouteTypes {
     | '/api/admin/certificates'
     | '/api/admin/emails'
     | '/api/admin/feedback'
+    | '/api/admin/integrations'
     | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
@@ -716,6 +738,7 @@ export interface FileRouteTypes {
     | '/api/admin/certificates/$code'
     | '/api/admin/emails/test'
     | '/api/admin/feedback/$id'
+    | '/api/admin/integrations/email-provider'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
@@ -765,6 +788,7 @@ export interface FileRouteTypes {
     | '/api/admin/certificates'
     | '/api/admin/emails'
     | '/api/admin/feedback'
+    | '/api/admin/integrations'
     | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
@@ -782,6 +806,7 @@ export interface FileRouteTypes {
     | '/api/admin/certificates/$code'
     | '/api/admin/emails/test'
     | '/api/admin/feedback/$id'
+    | '/api/admin/integrations/email-provider'
     | '/api/admin/leaderboard/$id'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
@@ -830,6 +855,7 @@ export interface RootRouteChildren {
   ApiAdminCertificatesRoute: typeof ApiAdminCertificatesRouteWithChildren
   ApiAdminEmailsRoute: typeof ApiAdminEmailsRouteWithChildren
   ApiAdminFeedbackRoute: typeof ApiAdminFeedbackRouteWithChildren
+  ApiAdminIntegrationsRoute: typeof ApiAdminIntegrationsRouteWithChildren
   ApiAdminNotificationsRoute: typeof ApiAdminNotificationsRoute
   ApiAdminSystemRoute: typeof ApiAdminSystemRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
@@ -1093,6 +1119,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminFeedbackRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/integrations': {
+      id: '/api/admin/integrations'
+      path: '/api/admin/integrations'
+      fullPath: '/api/admin/integrations'
+      preLoaderRoute: typeof ApiAdminIntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/admin/notifications': {
       id: '/api/admin/notifications'
       path: '/api/admin/notifications'
@@ -1211,6 +1244,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/admin/feedback/$id'
       preLoaderRoute: typeof ApiAdminFeedbackIdRouteImport
       parentRoute: typeof ApiAdminFeedbackRoute
+    }
+    '/api/admin/integrations/email-provider': {
+      id: '/api/admin/integrations/email-provider'
+      path: '/email-provider'
+      fullPath: '/api/admin/integrations/email-provider'
+      preLoaderRoute: typeof ApiAdminIntegrationsEmailProviderRouteImport
+      parentRoute: typeof ApiAdminIntegrationsRoute
     }
     '/api/admin/leaderboard/$id': {
       id: '/api/admin/leaderboard/$id'
@@ -1372,6 +1412,18 @@ const ApiAdminFeedbackRouteChildren: ApiAdminFeedbackRouteChildren = {
 const ApiAdminFeedbackRouteWithChildren =
   ApiAdminFeedbackRoute._addFileChildren(ApiAdminFeedbackRouteChildren)
 
+interface ApiAdminIntegrationsRouteChildren {
+  ApiAdminIntegrationsEmailProviderRoute: typeof ApiAdminIntegrationsEmailProviderRoute
+}
+
+const ApiAdminIntegrationsRouteChildren: ApiAdminIntegrationsRouteChildren = {
+  ApiAdminIntegrationsEmailProviderRoute:
+    ApiAdminIntegrationsEmailProviderRoute,
+}
+
+const ApiAdminIntegrationsRouteWithChildren =
+  ApiAdminIntegrationsRoute._addFileChildren(ApiAdminIntegrationsRouteChildren)
+
 interface ApiAdminUsersUserIdRouteChildren {
   ApiAdminUsersUserIdResetPasswordRoute: typeof ApiAdminUsersUserIdResetPasswordRoute
   ApiAdminUsersUserIdRoleRoute: typeof ApiAdminUsersUserIdRoleRoute
@@ -1464,6 +1516,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminCertificatesRoute: ApiAdminCertificatesRouteWithChildren,
   ApiAdminEmailsRoute: ApiAdminEmailsRouteWithChildren,
   ApiAdminFeedbackRoute: ApiAdminFeedbackRouteWithChildren,
+  ApiAdminIntegrationsRoute: ApiAdminIntegrationsRouteWithChildren,
   ApiAdminNotificationsRoute: ApiAdminNotificationsRoute,
   ApiAdminSystemRoute: ApiAdminSystemRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,
