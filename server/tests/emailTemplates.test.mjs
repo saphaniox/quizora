@@ -88,6 +88,6 @@ test("optional messages include standards-based unsubscribe metadata", () => {
   );
   assert.equal(
     email.headers?.["List-Unsubscribe"],
-    "<https://quitech.online/email-preferences?token=sample>",
+    "<mailto:quitechug@gmail.com?subject=Unsubscribe%20from%20Quitech%20emails>, <https://quitech.online/email-preferences?token=sample>",
   );
 });

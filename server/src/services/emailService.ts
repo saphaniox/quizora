@@ -65,6 +65,14 @@ function mailer(): Transporter | null {
   return cachedTransporter;
 }
 
+export function getSmtpFromAddress(): string {
+  const user = process.env["SMTP_USER"]?.trim() || "quitechug@gmail.com";
+  const host = process.env["SMTP_HOST"]?.trim().toLowerCase();
+
+  if (host === "smtp.gmail.com") return `Quitech <${user}>`;
+  return process.env["SMTP_FROM"]?.trim() || `Quitech <${user}>`;
+}
+
 export function isEmailConfigured(): boolean {
   return Boolean(mailer());
 }
@@ -257,9 +265,7 @@ export async function sendTemplateEmail(input: {
 
   try {
     const info = await transport.sendMail({
-      from:
-        process.env["SMTP_FROM"] ??
-        `Quitech <${process.env["SMTP_USER"] ?? "quitechug@gmail.com"}>`,
+      from: getSmtpFromAddress(),
       replyTo:
         process.env["SUPPORT_EMAIL"] ??
         process.env["SMTP_USER"] ??

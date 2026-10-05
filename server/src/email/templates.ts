@@ -731,7 +731,12 @@ export function buildEmailTemplate(
     "Auto-Submitted": "auto-generated",
   };
   if (content.showUnsubscribe && managePreferencesUrl) {
-    headers["List-Unsubscribe"] = `<${managePreferencesUrl}>`;
+    const supportEmail =
+      process.env["SUPPORT_EMAIL"]?.trim() ||
+      process.env["SMTP_USER"]?.trim() ||
+      "quitechug@gmail.com";
+    const mailto = `mailto:${supportEmail}?subject=Unsubscribe%20from%20Quitech%20emails`;
+    headers["List-Unsubscribe"] = `<${mailto}>, <${managePreferencesUrl}>`;
   }
   return {
     subject: content.subject,
