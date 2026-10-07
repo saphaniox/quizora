@@ -962,7 +962,7 @@ function AdminPage() {
     <div className="w-full min-w-0 max-w-full overflow-x-clip bg-background">
       <section className="border-b border-border bg-card">
         <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-8 sm:px-6 lg:flex-row lg:items-end lg:justify-between lg:px-8">
-          <div>
+          <div className="min-w-0">
             <div className="inline-flex items-center gap-2 rounded-md border border-border bg-background px-3 py-1 text-xs font-medium text-muted-foreground">
               <ShieldCheck className="h-3.5 w-3.5 text-primary" />
               Operator console
@@ -1066,7 +1066,10 @@ function AdminPage() {
           </div>
         )}
 
-        <div id="admin-overview" className="scroll-mt-24 grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <div
+          id="admin-overview"
+          className="scroll-mt-24 grid min-w-0 gap-4 md:grid-cols-2 xl:grid-cols-4"
+        >
           {systemStatus.map((status) => (
             <StatusCard key={status.label} {...status} />
           ))}
@@ -1090,7 +1093,7 @@ function AdminPage() {
             )}
           </div>
           {systemMetrics ? (
-            <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+            <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2 xl:grid-cols-4">
               <MetricCard
                 icon={Gauge}
                 label="Process CPU"
@@ -1255,7 +1258,7 @@ function AdminPage() {
             Send a concise update to learners who enabled notifications in the mobile app.
           </p>
           <form
-            className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.5fr)_minmax(0,0.7fr)_auto] lg:items-end"
+            className="mt-4 grid min-w-0 gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.5fr)_minmax(0,0.7fr)_auto] lg:items-end"
             onSubmit={(event) => {
               event.preventDefault();
               setPushAction(null);
@@ -1266,7 +1269,7 @@ function AdminPage() {
               });
             }}
           >
-            <label className="text-xs font-medium text-muted-foreground">
+            <label className="min-w-0 text-xs font-medium text-muted-foreground">
               Title
               <input
                 required
@@ -1275,11 +1278,11 @@ function AdminPage() {
                 onChange={(event) =>
                   setPushDraft((draft) => ({ ...draft, title: event.target.value }))
                 }
-                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="mt-1 block w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 placeholder="New challenge available"
               />
             </label>
-            <label className="text-xs font-medium text-muted-foreground">
+            <label className="min-w-0 text-xs font-medium text-muted-foreground">
               Message
               <input
                 required
@@ -1288,11 +1291,11 @@ function AdminPage() {
                 onChange={(event) =>
                   setPushDraft((draft) => ({ ...draft, body: event.target.value }))
                 }
-                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="mt-1 block w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 placeholder="A fresh practice round is ready when you are."
               />
             </label>
-            <label className="text-xs font-medium text-muted-foreground">
+            <label className="min-w-0 text-xs font-medium text-muted-foreground">
               In-app path
               <input
                 maxLength={500}
@@ -1300,14 +1303,14 @@ function AdminPage() {
                 onChange={(event) =>
                   setPushDraft((draft) => ({ ...draft, url: event.target.value }))
                 }
-                className="mt-1 block w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="mt-1 block w-full min-w-0 rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 placeholder="/"
               />
             </label>
             <button
               type="submit"
               disabled={sendPushMutation.isPending}
-              className="inline-flex min-h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
+              className="inline-flex min-h-10 w-full items-center justify-center gap-2 rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60 lg:w-auto"
             >
               {sendPushMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -1466,7 +1469,7 @@ function AdminPage() {
           </form>
         </section>
 
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="mt-4 grid min-w-0 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <MetricCard
             icon={Layers3}
             label="Learning levels"
@@ -1604,14 +1607,14 @@ function AdminPage() {
           </section>
         )}
 
-        <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+        <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
           <section
             id="admin-catalogue"
-            className="scroll-mt-24 rounded-lg border border-border bg-card"
+            className="min-w-0 scroll-mt-24 rounded-lg border border-border bg-card"
           >
             <div className="border-b border-border p-5">
-              <div className="flex items-center justify-between gap-3">
-                <div>
+              <div className="flex min-w-0 items-start justify-between gap-3">
+                <div className="min-w-0">
                   <h2 className="text-base font-semibold text-card-foreground">
                     App update controls
                   </h2>
@@ -1636,8 +1639,8 @@ function AdminPage() {
               )}
               {appUpdateDraft && !appUpdateQuery.isError && (
                 <div className="space-y-4">
-                  <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
-                    <div>
+                  <label className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground">Enable reminder</p>
                       <p className="text-xs text-muted-foreground">
                         Display update prompts on every open while the app is behind the target
@@ -1650,11 +1653,11 @@ function AdminPage() {
                       onChange={(event) =>
                         setAppUpdateDraft({ ...appUpdateDraft, enabled: event.target.checked })
                       }
-                      className="h-4 w-4 rounded border-input"
+                      className="h-4 w-4 shrink-0 rounded border-input"
                     />
                   </label>
 
-                  <div className="grid gap-4 sm:grid-cols-2">
+                  <div className="grid min-w-0 gap-4 sm:grid-cols-2">
                     <label className="block text-sm font-medium text-foreground">
                       Minimum allowed version
                       <input
@@ -1683,8 +1686,8 @@ function AdminPage() {
                     </label>
                   </div>
 
-                  <label className="flex items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
-                    <div>
+                  <label className="flex min-w-0 items-center justify-between gap-3 rounded-md border border-border bg-background p-3">
+                    <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground">Block use until update</p>
                       <p className="text-xs text-muted-foreground">
                         If on, the dialog is required and can only be dismissed by updating the app.
@@ -1696,7 +1699,7 @@ function AdminPage() {
                       onChange={(event) =>
                         setAppUpdateDraft({ ...appUpdateDraft, required: event.target.checked })
                       }
-                      className="h-4 w-4 rounded border-input"
+                      className="h-4 w-4 shrink-0 rounded border-input"
                     />
                   </label>
 
@@ -1760,8 +1763,8 @@ function AdminPage() {
                     Live section inventory grouped by level and difficulty.
                   </p>
                 </div>
-                <div className="flex flex-col gap-2 sm:flex-row">
-                  <label className="relative block w-full sm:w-64">
+                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                  <label className="relative block w-full min-w-0 sm:w-64">
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="search"
@@ -1774,7 +1777,7 @@ function AdminPage() {
                   <select
                     value={selectedLevel}
                     onChange={(event) => setSelectedLevel(event.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
                   >
                     <option value="all">All levels</option>
                     {levels.map((level) => (
@@ -1787,7 +1790,7 @@ function AdminPage() {
                     aria-label="Sort catalogue sections"
                     value={catalogueSort}
                     onChange={(event) => setCatalogueSort(event.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
                   >
                     <option value="title">Title A-Z</option>
                     <option value="questions">Most questions</option>
@@ -1798,7 +1801,7 @@ function AdminPage() {
                     aria-label="Catalogue rows to show"
                     value={catalogueLimit}
                     onChange={(event) => setCatalogueLimit(event.target.value)}
-                    className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
                   >
                     <option value="12">12 rows</option>
                     <option value="25">25 rows</option>
@@ -2167,8 +2170,8 @@ function AdminPage() {
           id="admin-certificates"
           className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
         >
-          <div className="flex items-center justify-between border-b border-border p-5">
-            <div>
+          <div className="flex flex-col gap-3 border-b border-border p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <ShieldCheck className="h-5 w-5 text-primary" />
                 <h2 className="text-base font-semibold text-card-foreground">
@@ -2179,12 +2182,12 @@ function AdminPage() {
                 Review and revoke issued certificates.
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <select
                 aria-label="Sort certificates"
                 value={certificateSort}
                 onChange={(event) => setCertificateSort(event.target.value)}
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               >
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>
@@ -2254,8 +2257,8 @@ function AdminPage() {
           id="admin-users"
           className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
         >
-          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="grid min-w-0 gap-4 border-b border-border p-4 sm:p-5 xl:grid-cols-[minmax(0,1fr)_18rem_14rem_auto] xl:items-end">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <UsersRound className="h-5 w-5 text-primary" />
                 <h2 className="text-base font-semibold text-card-foreground">User management</h2>
@@ -2265,7 +2268,7 @@ function AdminPage() {
                 certificates.
               </p>
             </div>
-            <label className="relative block w-full sm:w-72">
+            <label className="relative block w-full min-w-0 xl:w-72">
               <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="search"
@@ -2282,7 +2285,7 @@ function AdminPage() {
               aria-label="Sort current user page"
               value={userSort}
               onChange={(event) => setUserSort(event.target.value)}
-              className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+              className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
             >
               <option value="newest">Newest accounts</option>
               <option value="oldest">Oldest accounts</option>
@@ -2290,7 +2293,7 @@ function AdminPage() {
               <option value="online">Online first</option>
               <option value="activity">Most linked activity</option>
             </select>
-            <div className="flex items-center justify-end gap-2 text-xs text-muted-foreground sm:self-end">
+            <div className="flex flex-wrap items-center justify-start gap-2 text-xs text-muted-foreground sm:self-end">
               <button
                 type="button"
                 onClick={() => setUserOffset((offset) => Math.max(0, offset - 50))}
@@ -2502,8 +2505,8 @@ function AdminPage() {
           id="admin-rankings"
           className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
         >
-          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
-            <div>
+          <div className="grid min-w-0 gap-4 border-b border-border p-4 sm:p-5 xl:grid-cols-[minmax(0,1fr)_auto] xl:items-center">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <Trophy className="h-5 w-5 text-primary" />
                 <h2 className="text-base font-semibold text-card-foreground">Ranking records</h2>
@@ -2512,19 +2515,19 @@ function AdminPage() {
                 Review public leaderboard entries and remove test or incorrect records.
               </p>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
               <select
                 aria-label="Sort loaded ranking records"
                 value={leaderboardSort}
                 onChange={(event) => setLeaderboardSort(event.target.value)}
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               >
                 <option value="score">Highest score</option>
                 <option value="completed">Most recent</option>
                 <option value="time">Fastest time</option>
                 <option value="learner">Learner A-Z</option>
               </select>
-              <span className="rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
+              <span className="max-w-full break-words rounded-md border border-border bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground">
                 {formatNumber(leaderboard.length)} loaded records
               </span>
             </div>
@@ -2638,7 +2641,7 @@ function AdminPage() {
           id="admin-feedback"
           className="mt-6 scroll-mt-24 rounded-lg border border-border bg-card"
         >
-          <div className="flex flex-col gap-4 border-b border-border p-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-4 border-b border-border p-4 sm:p-5 lg:flex-row lg:items-center lg:justify-between">
             <div>
               <div className="flex items-center gap-2">
                 <Send className="h-5 w-5 text-primary" />
@@ -2653,7 +2656,7 @@ function AdminPage() {
                 aria-label="Sort feedback"
                 value={feedbackSort}
                 onChange={(event) => setFeedbackSort(event.target.value)}
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
               >
                 <option value="newest">Newest first</option>
                 <option value="oldest">Oldest first</option>
@@ -2664,7 +2667,7 @@ function AdminPage() {
                 onChange={(event) =>
                   setFeedbackFilter(event.target.value as FeedbackStatus | "all")
                 }
-                className="rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
+                className="max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground"
                 aria-label="Filter feedback"
               >
                 <option value="all">All feedback</option>
@@ -3000,11 +3003,11 @@ function StatusCard({
   tone: StatusTone;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-4 shadow-sm">
+    <div className="min-w-0 rounded-lg border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-3">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-medium uppercase text-muted-foreground">{label}</p>
-          <p className="mt-2 text-base font-semibold text-card-foreground">{value}</p>
+          <p className="mt-2 break-words text-base font-semibold text-card-foreground">{value}</p>
         </div>
         <span className={cn("rounded-md border p-2", statusClass(tone))}>
           <Icon className="h-4 w-4" />
@@ -3048,15 +3051,17 @@ function MetricCard({
   detail: string;
 }) {
   return (
-    <div className="rounded-lg border border-border bg-card p-5">
+    <div className="min-w-0 rounded-lg border border-border bg-card p-5">
       <div className="flex items-center justify-between gap-3">
-        <p className="text-sm font-medium text-muted-foreground">{label}</p>
+        <p className="min-w-0 text-sm font-medium text-muted-foreground">{label}</p>
         <span className="flex h-9 w-9 items-center justify-center rounded-md bg-secondary text-secondary-foreground">
           <Icon className="h-4 w-4" />
         </span>
       </div>
-      <p className="mt-4 text-3xl font-semibold tracking-tight text-card-foreground">{value}</p>
-      <p className="mt-1 text-sm text-muted-foreground">{detail}</p>
+      <p className="mt-4 break-words text-3xl font-semibold tracking-tight text-card-foreground">
+        {value}
+      </p>
+      <p className="mt-1 break-words text-sm text-muted-foreground">{detail}</p>
     </div>
   );
 }
