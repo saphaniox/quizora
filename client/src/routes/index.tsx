@@ -338,7 +338,7 @@ function HomePage() {
               {sections.map((section, index) => (
                 <Fragment key={section.id}>
                   <QuizCard quiz={section} />
-                  {index === 5 && <NativeCatalogueAd />}
+                  {(index + 1) % 5 === 0 && <NativeCatalogueAd />}
                 </Fragment>
               ))}
             </div>
