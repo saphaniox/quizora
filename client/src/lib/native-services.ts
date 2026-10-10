@@ -52,7 +52,7 @@ function applyBannerInset(): void {
 }
 
 function isAdMobTesting(): boolean {
-  return import.meta.env["VITE_ADMOB_TEST_MODE"] === "true";
+  return import.meta.env.DEV && import.meta.env["VITE_ADMOB_TEST_MODE"] === "true";
 }
 
 function getBannerId(placement: NativeBannerPlacement): string {

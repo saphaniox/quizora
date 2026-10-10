@@ -1,11 +1,14 @@
 package com.saptechug.quitech;
 
 import android.app.Activity;
+import android.content.Context;
 import android.graphics.Color;
 import android.graphics.drawable.GradientDrawable;
 import android.os.Bundle;
 import android.view.Gravity;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.ViewConfiguration;
 import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.Button;
@@ -34,6 +37,7 @@ public class NativeCatalogueAdPlugin extends Plugin {
 
     private NativeAd nativeAd;
     private NativeAdView nativeAdView;
+    private ScrollableNativeAdOverlay nativeAdOverlay;
     private boolean darkMode;
 
     @PluginMethod
@@ -99,12 +103,12 @@ public class NativeCatalogueAdPlugin extends Plugin {
             if (nativeAdView == null || darkMode != requestedDarkMode) {
                 removeAdView();
                 darkMode = requestedDarkMode;
-                nativeAdView = createNativeAdView(nativeAd, darkMode);
+                nativeAdOverlay = createNativeAdView(nativeAd, darkMode, getBridge().getWebView());
             }
 
             FrameLayout root = activity().findViewById(android.R.id.content);
-            if (nativeAdView.getParent() == null) {
-                root.addView(nativeAdView);
+            if (nativeAdOverlay.getParent() == null) {
+                root.addView(nativeAdOverlay);
             }
 
             float density = getContext().getResources().getDisplayMetrics().density;
@@ -120,9 +124,9 @@ public class NativeCatalogueAdPlugin extends Plugin {
             );
             layout.leftMargin = webViewLocation[0] - rootLocation[0] + (int) Math.round(x * density);
             layout.topMargin = webViewLocation[1] - rootLocation[1] + (int) Math.round(y * density);
-            nativeAdView.setLayoutParams(layout);
-            nativeAdView.setVisibility(View.VISIBLE);
-            nativeAdView.bringToFront();
+            nativeAdOverlay.setLayoutParams(layout);
+            nativeAdOverlay.setVisibility(View.VISIBLE);
+            nativeAdOverlay.bringToFront();
             call.resolve();
         });
     }
@@ -130,7 +134,7 @@ public class NativeCatalogueAdPlugin extends Plugin {
     @PluginMethod
     public void hide(PluginCall call) {
         activity().runOnUiThread(() -> {
-            if (nativeAdView != null) nativeAdView.setVisibility(View.GONE);
+            if (nativeAdOverlay != null) nativeAdOverlay.setVisibility(View.GONE);
             call.resolve();
         });
     }
@@ -149,13 +153,14 @@ public class NativeCatalogueAdPlugin extends Plugin {
         super.handleOnDestroy();
     }
 
-    private NativeAdView createNativeAdView(NativeAd ad, boolean dark) {
+    private ScrollableNativeAdOverlay createNativeAdView(NativeAd ad, boolean dark, WebView webView) {
         int background = dark ? Color.rgb(15, 23, 42) : Color.WHITE;
         int foreground = dark ? Color.rgb(241, 245, 249) : Color.rgb(15, 23, 42);
         int secondary = dark ? Color.rgb(148, 163, 184) : Color.rgb(71, 85, 105);
         int border = dark ? Color.rgb(51, 65, 85) : Color.rgb(226, 232, 240);
         int accent = Color.rgb(13, 148, 136);
 
+        ScrollableNativeAdOverlay overlay = new ScrollableNativeAdOverlay(getContext(), webView);
         NativeAdView adView = new NativeAdView(getContext());
         GradientDrawable backgroundDrawable = new GradientDrawable();
         backgroundDrawable.setColor(background);
@@ -260,7 +265,12 @@ public class NativeCatalogueAdPlugin extends Plugin {
         if (ad.getCallToAction() == null) action.setVisibility(View.GONE);
 
         adView.setNativeAd(ad);
-        return adView;
+        overlay.addView(adView, new FrameLayout.LayoutParams(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.MATCH_PARENT
+        ));
+        nativeAdView = adView;
+        return overlay;
     }
 
     private TextView textView(String value, int size, int color) {
@@ -294,11 +304,11 @@ public class NativeCatalogueAdPlugin extends Plugin {
     }
 
     private void removeAdView() {
-        if (nativeAdView == null) return;
-        if (nativeAdView.getParent() instanceof ViewGroup) {
-            ((ViewGroup) nativeAdView.getParent()).removeView(nativeAdView);
+        if (nativeAdOverlay != null && nativeAdOverlay.getParent() instanceof ViewGroup) {
+            ((ViewGroup) nativeAdOverlay.getParent()).removeView(nativeAdOverlay);
         }
-        nativeAdView.destroy();
+        if (nativeAdView != null) nativeAdView.destroy();
+        nativeAdOverlay = null;
         nativeAdView = null;
     }
 
@@ -307,6 +317,87 @@ public class NativeCatalogueAdPlugin extends Plugin {
         if (nativeAd != null) {
             nativeAd.destroy();
             nativeAd = null;
+        }
+    }
+
+    private static final class ScrollableNativeAdOverlay extends FrameLayout {
+        private final WebView webView;
+        private final int touchSlop;
+        private MotionEvent downEvent;
+        private float downX;
+        private float downY;
+        private boolean forwardingScroll;
+
+        ScrollableNativeAdOverlay(Context context, WebView webView) {
+            super(context);
+            this.webView = webView;
+            touchSlop = ViewConfiguration.get(context).getScaledTouchSlop();
+        }
+
+        @Override
+        public boolean onInterceptTouchEvent(MotionEvent event) {
+            int action = event.getActionMasked();
+            if (action == MotionEvent.ACTION_DOWN) {
+                finishGesture();
+                downX = event.getX();
+                downY = event.getY();
+                downEvent = MotionEvent.obtain(event);
+                return false;
+            }
+
+            if (forwardingScroll) {
+                return true;
+            }
+
+            if (action == MotionEvent.ACTION_MOVE && downEvent != null) {
+                float deltaX = event.getX() - downX;
+                float deltaY = event.getY() - downY;
+                if (Math.abs(deltaY) > touchSlop && Math.abs(deltaY) > Math.abs(deltaX)) {
+                    forwardingScroll = true;
+                    return true;
+                }
+            }
+
+            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                finishGesture();
+            }
+            return false;
+        }
+
+        @Override
+        public boolean onTouchEvent(MotionEvent event) {
+            if (!forwardingScroll) return false;
+            if (event.getActionMasked() == MotionEvent.ACTION_MOVE && downEvent != null) {
+                dispatchToWebView(downEvent);
+                downEvent.recycle();
+                downEvent = null;
+            }
+            dispatchToWebView(event);
+            int action = event.getActionMasked();
+            if (action == MotionEvent.ACTION_UP || action == MotionEvent.ACTION_CANCEL) {
+                finishGesture();
+            }
+            return true;
+        }
+
+        private void dispatchToWebView(MotionEvent event) {
+            int[] webViewLocation = new int[2];
+            webView.getLocationOnScreen(webViewLocation);
+            MotionEvent forwarded = MotionEvent.obtain(event);
+            forwarded.setLocation(
+                event.getRawX() - webViewLocation[0],
+                event.getRawY() - webViewLocation[1]
+            );
+            webView.dispatchTouchEvent(forwarded);
+            forwarded.recycle();
+        }
+
+        private void finishGesture() {
+            if (downEvent != null) {
+                downEvent.recycle();
+                downEvent = null;
+            }
+            forwardingScroll = false;
         }
     }
 }

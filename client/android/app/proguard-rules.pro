@@ -19,3 +19,11 @@
 # If you keep the line number information, uncomment this to
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
+
+# Let R8 move optimized app classes to reduce package metadata.
+-repackageclasses
+
+# Capacitor registers this plugin by class and discovers @PluginMethod methods at runtime.
+-keep,allowoptimization class com.saptechug.quitech.NativeCatalogueAdPlugin {
+    *;
+}

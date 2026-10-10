@@ -1,6 +1,10 @@
-import { Link } from "@tanstack/react-router";
+import { Link, useRouter } from "@tanstack/react-router";
 import {
+  ArrowLeft,
   BadgeCheck,
+  BookOpen,
+  BookOpenCheck,
+  CalendarDays,
   History,
   Home,
   LogIn,
@@ -19,6 +23,9 @@ import { syncPushNotifications } from "@/lib/native-services";
 
 const links = [
   { to: "/", label: "Quizzes", icon: Home },
+  { to: "/daily-challenge", label: "Daily challenge", icon: CalendarDays },
+  { to: "/study-guides", label: "Study guides", icon: BookOpen },
+  { to: "/revision-notes", label: "Revision notes", icon: BookOpenCheck },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/history", label: "My progress", icon: History },
   { to: "/certificate", label: "Verify", icon: BadgeCheck },
@@ -26,6 +33,7 @@ const links = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  const router = useRouter();
   const { data } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: () => getCurrentUser(),
@@ -41,6 +49,18 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <button
+          type="button"
+          aria-label="Go back"
+          title="Go back"
+          onClick={() => {
+            if (router.history.canGoBack()) router.history.back();
+            else void router.navigate({ to: "/" });
+          }}
+          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
         <Link
           to="/"
           className="flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-foreground"
@@ -53,7 +73,7 @@ export function Header() {
           <span className="truncate">Quitech</span>
         </Link>
 
-        <nav className="hidden items-center gap-1 lg:flex" aria-label="Main">
+        <nav className="hidden items-center gap-1 2xl:flex" aria-label="Main">
           {links.map(({ to, label, icon: Icon }) => (
             <Link
               key={to}
@@ -105,7 +125,7 @@ export function Header() {
           <ThemeToggle />
         </nav>
 
-        <div className="flex items-center gap-1 lg:hidden">
+        <div className="flex items-center gap-1 2xl:hidden">
           <ThemeToggle />
           <button
             type="button"
@@ -121,7 +141,7 @@ export function Header() {
 
       {open && (
         <nav
-          className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-border bg-background px-4 py-2 lg:hidden"
+          className="max-h-[calc(100vh-4rem)] overflow-y-auto border-t border-border bg-background px-4 py-2 2xl:hidden"
           aria-label="Mobile"
         >
           {links.map(({ to, label, icon: Icon }) => (

@@ -1224,13 +1224,14 @@ function AdminPage() {
                 </button>
                 <div className="text-xs leading-5 text-muted-foreground sm:col-span-2">
                   <p>
-                    SMTP: {integrationStatusQuery.data.email.providers.smtp.verified
+                    SMTP:{" "}
+                    {integrationStatusQuery.data.email.providers.smtp.verified
                       ? "ready"
-                      : integrationStatusQuery.data.email.providers.smtp.error ||
-                        "not verified"}
+                      : integrationStatusQuery.data.email.providers.smtp.error || "not verified"}
                   </p>
                   <p>
-                    Resend: {integrationStatusQuery.data.email.providers.resend.verified
+                    Resend:{" "}
+                    {integrationStatusQuery.data.email.providers.resend.verified
                       ? `ready · ${integrationStatusQuery.data.email.providers.resend.from}`
                       : integrationStatusQuery.data.email.providers.resend.error ||
                         `not configured · missing ${integrationStatusQuery.data.email.providers.resend.missingVariables.join(", ")}`}
@@ -1607,9 +1608,9 @@ function AdminPage() {
           </section>
         )}
 
-        <div className="mt-6 grid min-w-0 gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(360px,0.65fr)]">
+        <div className="mt-6 grid min-w-0 gap-6">
           <section
-            id="admin-catalogue"
+            id="admin-app-update"
             className="min-w-0 scroll-mt-24 rounded-lg border border-border bg-card"
           >
             <div className="border-b border-border p-5">
@@ -1657,7 +1658,7 @@ function AdminPage() {
                     />
                   </label>
 
-                  <div className="grid min-w-0 gap-4 sm:grid-cols-2">
+                  <div className="grid min-w-0 gap-4 md:grid-cols-2">
                     <label className="block text-sm font-medium text-foreground">
                       Minimum allowed version
                       <input
@@ -1727,7 +1728,7 @@ function AdminPage() {
                     />
                   </label>
 
-                  <div className="flex justify-end">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:justify-end">
                     <button
                       type="button"
                       onClick={() => {
@@ -1742,7 +1743,7 @@ function AdminPage() {
                         });
                       }}
                       disabled={saveAppUpdateMutation.isPending}
-                      className="inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60"
+                      className="inline-flex w-full items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-60 sm:w-auto"
                     >
                       {saveAppUpdateMutation.isPending ? "Saving..." : "Save update policy"}
                     </button>
@@ -1752,10 +1753,13 @@ function AdminPage() {
             </div>
           </section>
 
-          <section className="rounded-lg border border-border bg-card">
+          <section
+            id="admin-catalogue"
+            className="min-w-0 scroll-mt-24 rounded-lg border border-border bg-card"
+          >
             <div className="border-b border-border p-5">
-              <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-                <div>
+              <div className="flex min-w-0 flex-col gap-4 2xl:flex-row 2xl:items-center 2xl:justify-between">
+                <div className="min-w-0">
                   <h2 className="text-base font-semibold text-card-foreground">
                     Catalogue coverage
                   </h2>
@@ -1763,8 +1767,8 @@ function AdminPage() {
                     Live section inventory grouped by level and difficulty.
                   </p>
                 </div>
-                <div className="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
-                  <label className="relative block w-full min-w-0 sm:w-64">
+                <div className="grid min-w-0 grid-cols-1 gap-2 sm:grid-cols-2 2xl:flex 2xl:flex-wrap 2xl:items-center">
+                  <label className="relative block w-full min-w-0 2xl:w-64">
                     <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                     <input
                       type="search"
@@ -1777,7 +1781,7 @@ function AdminPage() {
                   <select
                     value={selectedLevel}
                     onChange={(event) => setSelectedLevel(event.target.value)}
-                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 2xl:w-auto"
                   >
                     <option value="all">All levels</option>
                     {levels.map((level) => (
@@ -1790,7 +1794,7 @@ function AdminPage() {
                     aria-label="Sort catalogue sections"
                     value={catalogueSort}
                     onChange={(event) => setCatalogueSort(event.target.value)}
-                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 2xl:w-auto"
                   >
                     <option value="title">Title A-Z</option>
                     <option value="questions">Most questions</option>
@@ -1801,7 +1805,7 @@ function AdminPage() {
                     aria-label="Catalogue rows to show"
                     value={catalogueLimit}
                     onChange={(event) => setCatalogueLimit(event.target.value)}
-                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring sm:w-auto"
+                    className="w-full min-w-0 max-w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring 2xl:w-auto"
                   >
                     <option value="12">12 rows</option>
                     <option value="25">25 rows</option>
@@ -1812,16 +1816,20 @@ function AdminPage() {
               </div>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="w-full min-w-190 text-left text-sm">
+            <div className="min-w-0 overflow-x-auto">
+              <table className="w-full min-w-0 table-fixed text-left text-sm sm:min-w-190 sm:table-auto">
                 <thead className="border-b border-border bg-muted/40 text-xs uppercase text-muted-foreground">
                   <tr>
-                    <th className="px-5 py-3 font-medium">Section</th>
-                    <th className="px-5 py-3 font-medium">Level</th>
-                    <th className="px-5 py-3 font-medium">Difficulty</th>
-                    <th className="px-5 py-3 text-right font-medium">Questions</th>
-                    <th className="px-5 py-3 font-medium">Status</th>
-                    <th className="px-5 py-3 text-right font-medium">Action</th>
+                    <th className="px-2 py-3 font-medium sm:px-5">Section</th>
+                    <th className="hidden px-5 py-3 font-medium sm:table-cell">Level</th>
+                    <th className="hidden px-5 py-3 font-medium sm:table-cell">Difficulty</th>
+                    <th className="hidden px-5 py-3 text-right font-medium sm:table-cell">
+                      Questions
+                    </th>
+                    <th className="w-28 px-2 py-3 font-medium sm:w-auto sm:px-5">Status</th>
+                    <th className="w-16 px-2 py-3 text-right font-medium sm:w-auto sm:px-5">
+                      Action
+                    </th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border">
@@ -1839,10 +1847,14 @@ function AdminPage() {
                     return (
                       <Fragment key={section.id}>
                         <tr>
-                          <td className="px-5 py-4">
+                          <td className="min-w-0 break-words px-2 py-4 sm:px-5">
                             <p className="font-medium text-card-foreground">{section.title}</p>
-                            <p className="mt-1 line-clamp-1 max-w-md text-xs text-muted-foreground">
+                            <p className="mt-1 line-clamp-1 text-xs text-muted-foreground sm:max-w-md">
                               {section.description}
+                            </p>
+                            <p className="mt-1 text-xs text-muted-foreground sm:hidden">
+                              {section.levelName} · {section.difficulty} ·{" "}
+                              {formatNumber(section.questionCount)} questions
                             </p>
                             {editable?.hasDraftChanges && (
                               <p className="mt-1 text-xs font-medium text-amber-700 dark:text-amber-300">
@@ -1850,20 +1862,22 @@ function AdminPage() {
                               </p>
                             )}
                           </td>
-                          <td className="px-5 py-4 text-muted-foreground">{section.levelName}</td>
-                          <td className="px-5 py-4">
+                          <td className="hidden px-5 py-4 text-muted-foreground sm:table-cell">
+                            {section.levelName}
+                          </td>
+                          <td className="hidden px-5 py-4 sm:table-cell">
                             <span className="rounded-md border border-border bg-background px-2 py-1 text-xs font-medium text-foreground">
                               {section.difficulty}
                             </span>
                           </td>
-                          <td className="px-5 py-4 text-right font-medium text-foreground">
+                          <td className="hidden px-5 py-4 text-right font-medium text-foreground sm:table-cell">
                             {formatNumber(section.questionCount)}
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-2 py-4 sm:px-5">
                             <div className="flex flex-wrap gap-1.5">
                               <span
                                 className={cn(
-                                  "inline-flex items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium",
+                                  "flex w-fit max-w-full flex-wrap items-center gap-1.5 rounded-md border px-2 py-1 text-xs font-medium",
                                   editable?.published === false
                                     ? statusClass("warning")
                                     : statusClass("ready"),
@@ -1888,7 +1902,7 @@ function AdminPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-5 py-4">
+                          <td className="px-2 py-4 sm:px-5">
                             <div className="flex justify-end">
                               <button
                                 type="button"
@@ -1899,10 +1913,10 @@ function AdminPage() {
                                   setCatalogueAction(null);
                                 }}
                                 disabled={!editable}
-                                className="inline-flex items-center justify-center gap-2 rounded-md border border-input bg-background px-3 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60"
+                                className="inline-flex items-center justify-center gap-1 rounded-md border border-input bg-background px-2 py-2 text-xs font-semibold text-foreground hover:bg-accent disabled:cursor-not-allowed disabled:opacity-60 sm:gap-2 sm:px-3"
                               >
                                 <PencilLine className="h-3.5 w-3.5" />
-                                Edit
+                                <span className="hidden sm:inline">Edit</span>
                               </button>
                             </div>
                           </td>
@@ -2060,17 +2074,17 @@ function AdminPage() {
             )}
           </section>
 
-          <div className="space-y-6">
+          <div className="grid min-w-0 gap-6 xl:grid-cols-2">
             <section className="rounded-lg border border-border bg-card p-5">
               <h2 className="text-base font-semibold text-card-foreground">Difficulty mix</h2>
               <div className="mt-5 space-y-4">
                 {difficultyCounts.map(({ difficulty, count }) => (
-                  <div key={difficulty}>
-                    <div className="flex items-center justify-between text-sm">
+                  <div key={difficulty} className="min-w-0">
+                    <div className="flex min-w-0 flex-wrap items-center justify-between gap-x-3 gap-y-1 text-sm">
                       <span className="font-medium text-foreground">{difficulty}</span>
-                      <span className="text-muted-foreground">{count} sections</span>
+                      <span className="shrink-0 text-muted-foreground">{count} sections</span>
                     </div>
-                    <div className="mt-2 h-2 rounded-full bg-muted">
+                    <div className="mt-2 h-2 min-w-0 overflow-hidden rounded-full bg-muted">
                       <div
                         className="h-2 rounded-full bg-primary"
                         style={{ width: `${percent(count, totalSections)}%` }}
@@ -2087,10 +2101,10 @@ function AdminPage() {
                 {readiness.map((item) => (
                   <div
                     key={item.label}
-                    className={cn("rounded-lg border p-3", statusClass(item.tone))}
+                    className={cn("min-w-0 rounded-lg border p-3", statusClass(item.tone))}
                   >
-                    <p className="text-sm font-semibold">{item.label}</p>
-                    <p className="mt-1 text-xs leading-5 opacity-90">{item.detail}</p>
+                    <p className="break-words text-sm font-semibold">{item.label}</p>
+                    <p className="mt-1 break-words text-xs leading-5 opacity-90">{item.detail}</p>
                   </div>
                 ))}
               </div>

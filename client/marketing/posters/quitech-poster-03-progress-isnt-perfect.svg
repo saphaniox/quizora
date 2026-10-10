@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" role="img" aria-labelledby="title desc">
+  <title id="title">Quitech poster: Progress isn't always perfect.</title>
+  <desc id="desc">A supportive Quitech poster encouraging learners to review missed quiz questions and keep going at their own pace.</desc>
+  <defs>
+    <pattern id="dots" width="30" height="30" patternUnits="userSpaceOnUse">
+      <circle cx="2" cy="2" r="2" fill="#4e4471" opacity=".12"/>
+    </pattern>
+  </defs>
+  <rect width="1080" height="1350" fill="#f1eff8"/>
+  <path d="M0 0h1080v326c-178 70-328 45-510-8C365 264 180 264 0 340z" fill="#e0d9f2"/>
+  <path d="M0 0h1080v326c-178 70-328 45-510-8C365 264 180 264 0 340z" fill="url(#dots)"/>
+  <circle cx="900" cy="410" r="154" fill="#f4c4b9"/>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="86" y="104" fill="#111827" font-size="38" font-weight="800" letter-spacing="1">QUI<tspan fill="#ef4444">TECH</tspan></text>
+    <rect x="86" y="130" width="78" height="7" rx="3.5" fill="#ef4444"/>
+    <text x="86" y="222" fill="#574c75" font-size="21" font-weight="700" letter-spacing="4">A GENTLER WAY TO KEEP LEARNING</text>
+
+    <text x="80" y="382" fill="#211a35" font-size="86" font-weight="800" letter-spacing="-4">PROGRESS</text>
+    <text x="80" y="477" fill="#211a35" font-size="86" font-weight="800" letter-spacing="-4">ISN'T ALWAYS</text>
+    <text x="80" y="572" fill="#ef4444" font-size="86" font-weight="800" letter-spacing="-4">PERFECT.</text>
+
+    <text x="88" y="642" fill="#554f64" font-size="28">Missed one? That's not failure.</text>
+    <text x="88" y="684" fill="#554f64" font-size="28">It's a chance to understand a little more.</text>
+
+    <rect x="86" y="742" width="908" height="278" rx="30" fill="#fff" stroke="#ded9e9" stroke-width="2"/>
+    <text x="128" y="803" fill="#766d89" font-size="19" font-weight="700" letter-spacing="3">KEEP YOUR MOMENTUM, YOUR WAY</text>
+    <g>
+      <rect x="130" y="844" width="56" height="56" rx="18" fill="#ef4444"/>
+      <path d="m146 872 10 10 17-20" fill="none" stroke="#fff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="215" y="881" fill="#211a35" font-size="27" font-weight="700">Get feedback as you practise</text>
+      <rect x="130" y="925" width="56" height="56" rx="18" fill="#e9e5f3"/>
+      <path d="M158 938v14l10 7" fill="none" stroke="#51456e" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+      <text x="215" y="962" fill="#211a35" font-size="27" font-weight="700">Review what you missed, then try again</text>
+    </g>
+
+    <text x="91" y="1090" fill="#554f64" font-size="22" font-weight="700">A short round counts. Showing up counts.</text>
+    <rect x="86" y="1130" width="908" height="130" rx="24" fill="#211a35"/>
+    <text x="128" y="1185" fill="#c9c1db" font-size="19" font-weight="700" letter-spacing="2">TAKE YOUR NEXT STEP</text>
+    <text x="128" y="1230" fill="#fff" font-size="36" font-weight="800">quitech.online</text>
+    <text x="88" y="1310" fill="#716b7e" font-size="18">Quitech — Learn, challenge &amp; progress. For learners 13+.</text>
+  </g>
+</svg>

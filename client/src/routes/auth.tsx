@@ -124,8 +124,8 @@ function AuthPage() {
   };
 
   const googleLogin = async () => {
-    const webClientId = import.meta.env["VITE_GOOGLE_WEB_CLIENT_ID"] as string | undefined;
-    const configuredRedirectUrl = import.meta.env["VITE_GOOGLE_REDIRECT_URL"] as string | undefined;
+    const webClientId = import.meta.env.VITE_GOOGLE_WEB_CLIENT_ID;
+    const configuredRedirectUrl = import.meta.env.VITE_GOOGLE_REDIRECT_URL;
     if (!webClientId) {
       notifications.warning("Google sign-in isn’t ready yet", {
         description: "Please use your email or phone for now.",

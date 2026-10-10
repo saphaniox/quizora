@@ -20,7 +20,7 @@ interface NativeCatalogueAdPlugin {
 const NativeCatalogueAd = registerPlugin<NativeCatalogueAdPlugin>("NativeCatalogueAd");
 
 function isTesting(): boolean {
-  return import.meta.env["VITE_ADMOB_TEST_MODE"] === "true";
+  return import.meta.env.DEV && import.meta.env["VITE_ADMOB_TEST_MODE"] === "true";
 }
 
 export function getNativeCatalogueAdId(): string | null {

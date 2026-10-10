@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1350" viewBox="0 0 1080 1350" role="img" aria-labelledby="title desc">
+  <title id="title">Quitech poster: Find your next topic.</title>
+  <desc id="desc">A bold Quitech learning poster highlighting 111 quiz sections and 55,500 questions.</desc>
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0H0V40" fill="none" stroke="#fff" stroke-opacity=".05" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1080" height="1350" fill="#111827"/>
+  <rect width="1080" height="1350" fill="url(#grid)"/>
+  <circle cx="1010" cy="170" r="225" fill="#ef4444"/>
+  <circle cx="1010" cy="170" r="155" fill="#111827"/>
+  <circle cx="1010" cy="170" r="100" fill="none" stroke="#f6b2a7" stroke-width="3" opacity=".7"/>
+  <path d="M960 173h100m-35-35 35 35-35 35" fill="none" stroke="#f6b2a7" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>
+
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="86" y="104" fill="#fff" font-size="38" font-weight="800" letter-spacing="1">QUI<tspan fill="#ff7464">TECH</tspan></text>
+    <rect x="86" y="130" width="78" height="7" rx="3.5" fill="#ff7464"/>
+    <text x="86" y="218" fill="#bac3d1" font-size="21" font-weight="700" letter-spacing="4">CURIOSITY, MEET YOUR MATCH</text>
+
+    <text x="78" y="370" fill="#fff" font-size="88" font-weight="800" letter-spacing="-3">THERE'S A LOT</text>
+    <text x="78" y="469" fill="#fff" font-size="88" font-weight="800" letter-spacing="-3">TO LEARN.</text>
+    <text x="78" y="568" fill="#ff7464" font-size="88" font-weight="800" letter-spacing="-3">PICK YOUR</text>
+    <text x="78" y="667" fill="#ff7464" font-size="88" font-weight="800" letter-spacing="-3">NEXT THING.</text>
+    <text x="86" y="730" fill="#c3cad5" font-size="27">From school subjects to practical skills,</text>
+    <text x="86" y="770" fill="#c3cad5" font-size="27">follow what you're curious about.</text>
+
+    <rect x="86" y="840" width="432" height="205" rx="24" fill="#1e293b" stroke="#374151" stroke-width="2"/>
+    <text x="124" y="933" fill="#fff" font-size="78" font-weight="800">111</text>
+    <text x="127" y="983" fill="#b8c2d1" font-size="23" font-weight="700" letter-spacing="2">QUIZ SECTIONS</text>
+
+    <rect x="562" y="840" width="432" height="205" rx="24" fill="#e8f16a"/>
+    <text x="600" y="933" fill="#111827" font-size="78" font-weight="800">55,500</text>
+    <text x="603" y="983" fill="#354014" font-size="23" font-weight="700" letter-spacing="2">PRACTICE QUESTIONS</text>
+
+    <text x="89" y="1110" fill="#d6dbe4" font-size="23">Browse, choose a section, and take it one question at a time.</text>
+    <rect x="86" y="1160" width="908" height="105" rx="20" fill="#ef4444"/>
+    <text x="124" y="1227" fill="#fff" font-size="35" font-weight="800">Find your next topic at quitech.online</text>
+    <text x="88" y="1310" fill="#8993a3" font-size="18">Quitech — Learn, challenge &amp; progress. For learners 13+.</text>
+  </g>
+</svg>
