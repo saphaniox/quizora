@@ -269,6 +269,8 @@ function RootComponent() {
     let active = true;
 
     async function checkForAppUpdate() {
+      if (Capacitor.getPlatform() !== "android") return;
+
       try {
         const { settings } = await getAppUpdateSettings();
         if (!active || !settings.enabled) return;
