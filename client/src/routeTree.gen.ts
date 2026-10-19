@@ -40,6 +40,7 @@ import { Route as ApiLevelsRouteImport } from './routes/api/levels'
 import { Route as ApiSubmitRouteImport } from './routes/api/submit'
 import { Route as CertificateIndexRouteImport } from './routes/certificate.index'
 import { Route as CertificateCodeRouteImport } from './routes/certificate.$code'
+import { Route as LearnIndexRouteImport } from './routes/learn.index'
 import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as QuizzesIdRouteImport } from './routes/quizzes.$id'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
@@ -240,6 +241,11 @@ const CertificateCodeRoute = CertificateCodeRouteImport.update({
   id: '/certificate/$code',
   path: '/certificate/$code',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LearnIndexRoute = LearnIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => LearnRoute,
 } as any)
 const LearnSlugRoute = LearnSlugRouteImport.update({
   id: '/$slug',
@@ -510,6 +516,7 @@ export interface FileRoutesByFullPath {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
+  '/learn/': typeof LearnIndexRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
@@ -564,7 +571,6 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
-  '/learn': typeof LearnRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/revision-notes': typeof RevisionNotesRoute
@@ -587,6 +593,7 @@ export interface FileRoutesByTo {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api': typeof ApiIndexRoute
   '/certificate': typeof CertificateIndexRoute
+  '/learn': typeof LearnIndexRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
@@ -666,6 +673,7 @@ export interface FileRoutesById {
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
+  '/learn/': typeof LearnIndexRoute
   '/api/admin/analytics': typeof ApiAdminAnalyticsRoute
   '/api/admin/audit-log': typeof ApiAdminAuditLogRoute
   '/api/admin/catalogue': typeof ApiAdminCatalogueRouteWithChildren
@@ -745,6 +753,7 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
+    | '/learn/'
     | '/api/admin/analytics'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
@@ -799,7 +808,6 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
-    | '/learn'
     | '/privacy'
     | '/results'
     | '/revision-notes'
@@ -822,6 +830,7 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api'
     | '/certificate'
+    | '/learn'
     | '/api/admin/analytics'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
@@ -900,6 +909,7 @@ export interface FileRouteTypes {
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
+    | '/learn/'
     | '/api/admin/analytics'
     | '/api/admin/audit-log'
     | '/api/admin/catalogue'
@@ -1217,6 +1227,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/certificate/$code'
       preLoaderRoute: typeof CertificateCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/learn/': {
+      id: '/learn/'
+      path: '/'
+      fullPath: '/learn/'
+      preLoaderRoute: typeof LearnIndexRouteImport
+      parentRoute: typeof LearnRoute
     }
     '/learn/$slug': {
       id: '/learn/$slug'
@@ -1553,10 +1570,12 @@ const AuthenticatedRouteRouteWithChildren =
 
 interface LearnRouteChildren {
   LearnSlugRoute: typeof LearnSlugRoute
+  LearnIndexRoute: typeof LearnIndexRoute
 }
 
 const LearnRouteChildren: LearnRouteChildren = {
   LearnSlugRoute: LearnSlugRoute,
+  LearnIndexRoute: LearnIndexRoute,
 }
 
 const LearnRouteWithChildren = LearnRoute._addFileChildren(LearnRouteChildren)
