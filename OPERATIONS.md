@@ -10,6 +10,26 @@ npm --prefix server run migrate
 
 Migrations are ordered SQL files in `server/migrations`. Take a database backup before production migrations and confirm the API health endpoint after deployment.
 
+## Learning content
+
+The study library is available from **Learn**. Studying is optional: quizzes remain accessible
+directly, and lesson completion never gates quiz access. Learners can browse and filter lessons by
+course and subject; signed-in learners can save lesson progress.
+
+Migration `020_learning_platform.sql` adds lesson drafts, published lesson snapshots, and learner
+progress. Apply it before deploying the API code that serves `/learning` and `/admin/learning`.
+Every built-in quiz section across Foundations, Secondary, College & University, Professional, and
+Popular Topics has a linked study guide. Guides use the section description and worked examples from
+its question bank, alongside relevant external references. Guides without a review date are marked
+**Expert review pending**; they provide coverage of the existing quiz catalogue, not a claim of
+complete syllabus coverage.
+
+Admins can open **Admin → Learning content** to create or edit lessons. Save drafts first, confirm
+course and optional quiz-section links, provide learning objectives and HTTPS references, and set
+the date the sources were actually reviewed before publishing. Draft edits do not replace live
+content until published. Have subject experts review content against the applicable syllabus
+before treating it as exam preparation.
+
 ## Resend email provider
 
 To add Resend while retaining SMTP as a fallback choice:

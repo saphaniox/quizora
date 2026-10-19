@@ -3,6 +3,7 @@ import * as quizController from "../controllers/quizController.js";
 import * as resultController from "../controllers/resultController.js";
 import * as authController from "../controllers/authController.js";
 import * as feedbackController from "../controllers/feedbackController.js";
+import * as learningController from "../controllers/learningController.js";
 
 const routes: FastifyPluginAsync = async (app) => {
   const submissionTimes = new Map<string, number[]>();
@@ -108,6 +109,19 @@ const routes: FastifyPluginAsync = async (app) => {
   app.post("/feedback", feedbackController.createFeedback);
   app.get("/app-update", authController.getAppUpdateSettings);
   app.put("/app-update", authController.saveAppUpdateSettings);
+  app.get("/learning", learningController.listLessons);
+  app.get("/learning/:slug", learningController.getLesson);
+  app.get("/auth/me/learning-progress", learningController.getLearningProgress);
+  app.put(
+    "/auth/me/learning-progress/:slug",
+    learningController.saveLearningProgress,
+  );
+  app.get("/admin/learning", learningController.listAdminLessons);
+  app.put("/admin/learning/:slug", learningController.saveAdminLessonDraft);
+  app.post(
+    "/admin/learning/:slug/publish",
+    learningController.publishAdminLesson,
+  );
   app.get("/admin/catalogue", authController.getAdminCatalogue);
   app.get("/admin/audit-log", authController.getAdminAuditLog);
   app.get("/admin/feedback", feedbackController.listFeedback);

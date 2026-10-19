@@ -96,6 +96,38 @@ export interface AdminIntegrationStatus {
   };
 }
 
+export interface LearningSource {
+  title: string;
+  url: string;
+}
+
+export interface LearningLesson {
+  slug: string;
+  levelId: string;
+  levelName: string;
+  subject: string;
+  title: string;
+  summary: string;
+  objectives: string[];
+  body: string;
+  estimatedMinutes: number;
+  difficulty: Difficulty;
+  quizSectionId: string | null;
+  quizTitle: string | null;
+  sources: LearningSource[];
+  reviewedAt: string | null;
+  builtIn: boolean;
+  published: boolean;
+  hasUnpublishedChanges: boolean;
+}
+
+export interface LearningProgress {
+  lessonSlug: string;
+  status: "started" | "completed";
+  lastOpenedAt: string;
+  completedAt: string | null;
+}
+
 export interface EmailProviderStatus {
   provider: "smtp" | "resend";
   configured: boolean;
@@ -207,6 +239,7 @@ export interface FeedbackItem {
 const CONTENT_PATHS = [
   "/health",
   "/levels",
+  "/learning",
   "/quizzes",
   "/submit",
   "/leaderboard",
@@ -755,6 +788,70 @@ export async function publishCatalogueSection(
 ): Promise<{ section: AdminCatalogueSection }> {
   return fetchJson<{ section: AdminCatalogueSection }>(
     `/admin/catalogue/${encodeURIComponent(sectionId)}/publish`,
+    { method: "POST" },
+  );
+}
+
+export async function getLearningLessons(): Promise<{ lessons: LearningLesson[] }> {
+  return fetchJson<{ lessons: LearningLesson[] }>("/learning");
+}
+
+export async function getLearningLesson(slug: string): Promise<{ lesson: LearningLesson }> {
+  return fetchJson<{ lesson: LearningLesson }>(`/learning/${encodeURIComponent(slug)}`);
+}
+
+export async function getLearningProgress(): Promise<{
+  progress: LearningProgress[];
+}> {
+  return fetchJson<{ progress: LearningProgress[] }>("/auth/me/learning-progress");
+}
+
+export async function saveLearningProgress(
+  slug: string,
+  status: LearningProgress["status"],
+): Promise<{ progress: LearningProgress }> {
+  return fetchJson<{ progress: LearningProgress }>(
+    `/auth/me/learning-progress/${encodeURIComponent(slug)}`,
+    { method: "PUT", body: JSON.stringify({ status }) },
+  );
+}
+
+export type LearningLessonDraft = Pick<
+  LearningLesson,
+  | "levelId"
+  | "subject"
+  | "title"
+  | "summary"
+  | "objectives"
+  | "body"
+  | "estimatedMinutes"
+  | "difficulty"
+  | "quizSectionId"
+  | "sources"
+  | "reviewedAt"
+>;
+
+export async function getAdminLearningLessons(): Promise<{
+  lessons: LearningLesson[];
+}> {
+  return fetchJson<{ lessons: LearningLesson[] }>("/admin/learning");
+}
+
+export async function saveAdminLearningLesson(
+  slug: string,
+  draft: LearningLessonDraft,
+): Promise<{ lesson: LearningLesson }> {
+  return fetchJson<{ lesson: LearningLesson }>(`/admin/learning/${encodeURIComponent(slug)}`, {
+    method: "PUT",
+    body: JSON.stringify(draft),
+  });
+}
+
+export async function publishAdminLearningLesson(
+  slug: string,
+): Promise<{ lesson: LearningLesson }> {
+  return fetchJson<{ lesson: LearningLesson }>(
+    `/admin/learning/${encodeURIComponent(slug)}/publish`,
     { method: "POST" },
   );
 }

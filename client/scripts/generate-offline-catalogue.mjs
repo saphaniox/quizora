@@ -44,6 +44,7 @@ async function writeCatalogue(levels, sourceLabel) {
 
   const sitemapUrls = [
     "",
+    "/learn",
     "/leaderboard",
     "/certificate",
     "/support",

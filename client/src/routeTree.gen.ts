@@ -19,6 +19,7 @@ import { Route as EmailPreferencesRouteImport } from './routes/email-preferences
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as LeaderboardRouteImport } from './routes/leaderboard'
+import { Route as LearnRouteImport } from './routes/learn'
 import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ResultsRouteImport } from './routes/results'
 import { Route as RevisionNotesRouteImport } from './routes/revision-notes'
@@ -26,6 +27,7 @@ import { Route as StudyGuidesRouteImport } from './routes/study-guides'
 import { Route as SupportRouteImport } from './routes/support'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
+import { Route as AuthenticatedLearningAdminRouteImport } from './routes/_authenticated/learning-admin'
 import { Route as AuthenticatedWalletRouteImport } from './routes/_authenticated/wallet'
 import { Route as ApiIndexRouteImport } from './routes/api.index'
 import { Route as ApiAppUpdateRouteImport } from './routes/api/app-update'
@@ -33,10 +35,12 @@ import { Route as ApiEmailPreferencesRouteImport } from './routes/api/email-pref
 import { Route as ApiFeedbackRouteImport } from './routes/api/feedback'
 import { Route as ApiHealthRouteImport } from './routes/api/health'
 import { Route as ApiLeaderboardRouteImport } from './routes/api/leaderboard'
+import { Route as ApiLearningRouteImport } from './routes/api/learning'
 import { Route as ApiLevelsRouteImport } from './routes/api/levels'
 import { Route as ApiSubmitRouteImport } from './routes/api/submit'
 import { Route as CertificateIndexRouteImport } from './routes/certificate.index'
 import { Route as CertificateCodeRouteImport } from './routes/certificate.$code'
+import { Route as LearnSlugRouteImport } from './routes/learn.$slug'
 import { Route as QuizzesIdRouteImport } from './routes/quizzes.$id'
 import { Route as ApiAdminAnalyticsRouteImport } from './routes/api/admin/analytics'
 import { Route as ApiAdminAuditLogRouteImport } from './routes/api/admin/audit-log'
@@ -45,6 +49,7 @@ import { Route as ApiAdminCertificatesRouteImport } from './routes/api/admin/cer
 import { Route as ApiAdminEmailsRouteImport } from './routes/api/admin/emails'
 import { Route as ApiAdminFeedbackRouteImport } from './routes/api/admin/feedback'
 import { Route as ApiAdminIntegrationsRouteImport } from './routes/api/admin/integrations'
+import { Route as ApiAdminLearningRouteImport } from './routes/api/admin/learning'
 import { Route as ApiAdminNotificationsRouteImport } from './routes/api/admin/notifications'
 import { Route as ApiAdminSystemRouteImport } from './routes/api/admin/system'
 import { Route as ApiAdminUsersRouteImport } from './routes/api/admin/users'
@@ -56,6 +61,7 @@ import { Route as ApiAuthMeRouteImport } from './routes/api/auth/me'
 import { Route as ApiAuthRegisterRouteImport } from './routes/api/auth/register'
 import { Route as ApiAuthResetPasswordRouteImport } from './routes/api/auth/reset-password'
 import { Route as ApiCertificatesCodeRouteImport } from './routes/api/certificates.$code'
+import { Route as ApiLearningSlugRouteImport } from './routes/api/learning.$slug'
 import { Route as ApiQuizzesIndexRouteImport } from './routes/api/quizzes.index'
 import { Route as ApiQuizzesIdRouteImport } from './routes/api/quizzes.$id'
 import { Route as ApiAdminCatalogueSectionIdRouteImport } from './routes/api/admin/catalogue.$sectionId'
@@ -64,16 +70,20 @@ import { Route as ApiAdminEmailsTestRouteImport } from './routes/api/admin/email
 import { Route as ApiAdminFeedbackIdRouteImport } from './routes/api/admin/feedback.$id'
 import { Route as ApiAdminIntegrationsEmailProviderRouteImport } from './routes/api/admin/integrations.email-provider'
 import { Route as ApiAdminLeaderboardIdRouteImport } from './routes/api/admin/leaderboard.$id'
+import { Route as ApiAdminLearningSlugRouteImport } from './routes/api/admin/learning.$slug'
 import { Route as ApiAdminUsersUserIdRouteImport } from './routes/api/admin/users.$userId'
 import { Route as ApiAuthMeActivityRouteImport } from './routes/api/auth/me/activity'
 import { Route as ApiAuthMeEmailPreferencesRouteImport } from './routes/api/auth/me/email-preferences'
+import { Route as ApiAuthMeLearningProgressRouteImport } from './routes/api/auth/me/learning-progress'
 import { Route as ApiAuthMePasswordRouteImport } from './routes/api/auth/me/password'
 import { Route as ApiAuthMeProgressRouteImport } from './routes/api/auth/me/progress'
 import { Route as ApiAuthMePushDeviceRouteImport } from './routes/api/auth/me/push-device'
 import { Route as ApiAdminCatalogueSectionIdPublishRouteImport } from './routes/api/admin/catalogue.$sectionId.publish'
+import { Route as ApiAdminLearningSlugPublishRouteImport } from './routes/api/admin/learning.$slug.publish'
 import { Route as ApiAdminUsersUserIdResetPasswordRouteImport } from './routes/api/admin/users.$userId.reset-password'
 import { Route as ApiAdminUsersUserIdRoleRouteImport } from './routes/api/admin/users.$userId.role'
 import { Route as ApiAuthMeLeaderboardQuizIdRouteImport } from './routes/api/auth/me/leaderboard.$quizId'
+import { Route as ApiAuthMeLearningProgressSlugRouteImport } from './routes/api/auth/me/learning-progress.$slug'
 import { Route as ApiAuthMeProgressQuizIdRouteImport } from './routes/api/auth/me/progress.$quizId'
 
 const IndexRoute = IndexRouteImport.update({
@@ -125,6 +135,11 @@ const LeaderboardRoute = LeaderboardRouteImport.update({
   path: '/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const LearnRoute = LearnRouteImport.update({
+  id: '/learn',
+  path: '/learn',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PrivacyRoute = PrivacyRouteImport.update({
   id: '/privacy',
   path: '/privacy',
@@ -160,6 +175,12 @@ const AuthenticatedAdminRoute = AuthenticatedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedLearningAdminRoute =
+  AuthenticatedLearningAdminRouteImport.update({
+    id: '/learning-admin',
+    path: '/learning-admin',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedWalletRoute = AuthenticatedWalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
@@ -195,6 +216,11 @@ const ApiLeaderboardRoute = ApiLeaderboardRouteImport.update({
   path: '/api/leaderboard',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearningRoute = ApiLearningRouteImport.update({
+  id: '/api/learning',
+  path: '/api/learning',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiLevelsRoute = ApiLevelsRouteImport.update({
   id: '/api/levels',
   path: '/api/levels',
@@ -214,6 +240,11 @@ const CertificateCodeRoute = CertificateCodeRouteImport.update({
   id: '/certificate/$code',
   path: '/certificate/$code',
   getParentRoute: () => rootRouteImport,
+} as any)
+const LearnSlugRoute = LearnSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => LearnRoute,
 } as any)
 const QuizzesIdRoute = QuizzesIdRouteImport.update({
   id: '/quizzes/$id',
@@ -253,6 +284,11 @@ const ApiAdminFeedbackRoute = ApiAdminFeedbackRouteImport.update({
 const ApiAdminIntegrationsRoute = ApiAdminIntegrationsRouteImport.update({
   id: '/api/admin/integrations',
   path: '/api/admin/integrations',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiAdminLearningRoute = ApiAdminLearningRouteImport.update({
+  id: '/api/admin/learning',
+  path: '/api/admin/learning',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiAdminNotificationsRoute = ApiAdminNotificationsRouteImport.update({
@@ -310,6 +346,11 @@ const ApiCertificatesCodeRoute = ApiCertificatesCodeRouteImport.update({
   path: '/api/certificates/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiLearningSlugRoute = ApiLearningSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiLearningRoute,
+} as any)
 const ApiQuizzesIndexRoute = ApiQuizzesIndexRouteImport.update({
   id: '/api/quizzes/',
   path: '/api/quizzes/',
@@ -353,6 +394,11 @@ const ApiAdminLeaderboardIdRoute = ApiAdminLeaderboardIdRouteImport.update({
   path: '/api/admin/leaderboard/$id',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiAdminLearningSlugRoute = ApiAdminLearningSlugRouteImport.update({
+  id: '/$slug',
+  path: '/$slug',
+  getParentRoute: () => ApiAdminLearningRoute,
+} as any)
 const ApiAdminUsersUserIdRoute = ApiAdminUsersUserIdRouteImport.update({
   id: '/$userId',
   path: '/$userId',
@@ -367,6 +413,12 @@ const ApiAuthMeEmailPreferencesRoute =
   ApiAuthMeEmailPreferencesRouteImport.update({
     id: '/email-preferences',
     path: '/email-preferences',
+    getParentRoute: () => ApiAuthMeRoute,
+  } as any)
+const ApiAuthMeLearningProgressRoute =
+  ApiAuthMeLearningProgressRouteImport.update({
+    id: '/learning-progress',
+    path: '/learning-progress',
     getParentRoute: () => ApiAuthMeRoute,
   } as any)
 const ApiAuthMePasswordRoute = ApiAuthMePasswordRouteImport.update({
@@ -390,6 +442,12 @@ const ApiAdminCatalogueSectionIdPublishRoute =
     path: '/publish',
     getParentRoute: () => ApiAdminCatalogueSectionIdRoute,
   } as any)
+const ApiAdminLearningSlugPublishRoute =
+  ApiAdminLearningSlugPublishRouteImport.update({
+    id: '/publish',
+    path: '/publish',
+    getParentRoute: () => ApiAdminLearningSlugRoute,
+  } as any)
 const ApiAdminUsersUserIdResetPasswordRoute =
   ApiAdminUsersUserIdResetPasswordRouteImport.update({
     id: '/reset-password',
@@ -407,6 +465,12 @@ const ApiAuthMeLeaderboardQuizIdRoute =
     path: '/leaderboard/$quizId',
     getParentRoute: () => ApiAuthMeRoute,
   } as any)
+const ApiAuthMeLearningProgressSlugRoute =
+  ApiAuthMeLearningProgressSlugRouteImport.update({
+    id: '/$slug',
+    path: '/$slug',
+    getParentRoute: () => ApiAuthMeLearningProgressRoute,
+  } as any)
 const ApiAuthMeProgressQuizIdRoute = ApiAuthMeProgressQuizIdRouteImport.update({
   id: '/$quizId',
   path: '/$quizId',
@@ -423,6 +487,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/revision-notes': typeof RevisionNotesRoute
@@ -430,15 +495,18 @@ export interface FileRoutesByFullPath {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/learning-admin': typeof AuthenticatedLearningAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/api/app-update': typeof ApiAppUpdateRoute
   '/api/email-preferences': typeof ApiEmailPreferencesRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
+  '/api/learning': typeof ApiLearningRouteWithChildren
   '/api/levels': typeof ApiLevelsRoute
   '/api/submit': typeof ApiSubmitRoute
   '/certificate/$code': typeof CertificateCodeRoute
+  '/learn/$slug': typeof LearnSlugRoute
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
@@ -449,6 +517,7 @@ export interface FileRoutesByFullPath {
   '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/integrations': typeof ApiAdminIntegrationsRouteWithChildren
+  '/api/admin/learning': typeof ApiAdminLearningRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
@@ -460,6 +529,7 @@ export interface FileRoutesByFullPath {
   '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
+  '/api/learning/$slug': typeof ApiLearningSlugRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
@@ -468,16 +538,20 @@ export interface FileRoutesByFullPath {
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/integrations/email-provider': typeof ApiAdminIntegrationsEmailProviderRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
+  '/api/admin/learning/$slug': typeof ApiAdminLearningSlugRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
   '/api/auth/me/email-preferences': typeof ApiAuthMeEmailPreferencesRoute
+  '/api/auth/me/learning-progress': typeof ApiAuthMeLearningProgressRouteWithChildren
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/admin/learning/$slug/publish': typeof ApiAdminLearningSlugPublishRoute
   '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
   '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
   '/api/auth/me/leaderboard/$quizId': typeof ApiAuthMeLeaderboardQuizIdRoute
+  '/api/auth/me/learning-progress/$slug': typeof ApiAuthMeLearningProgressSlugRoute
   '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRoutesByTo {
@@ -490,6 +564,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/revision-notes': typeof RevisionNotesRoute
@@ -497,15 +572,18 @@ export interface FileRoutesByTo {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/admin': typeof AuthenticatedAdminRoute
+  '/learning-admin': typeof AuthenticatedLearningAdminRoute
   '/wallet': typeof AuthenticatedWalletRoute
   '/api/app-update': typeof ApiAppUpdateRoute
   '/api/email-preferences': typeof ApiEmailPreferencesRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
+  '/api/learning': typeof ApiLearningRouteWithChildren
   '/api/levels': typeof ApiLevelsRoute
   '/api/submit': typeof ApiSubmitRoute
   '/certificate/$code': typeof CertificateCodeRoute
+  '/learn/$slug': typeof LearnSlugRoute
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api': typeof ApiIndexRoute
   '/certificate': typeof CertificateIndexRoute
@@ -516,6 +594,7 @@ export interface FileRoutesByTo {
   '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/integrations': typeof ApiAdminIntegrationsRouteWithChildren
+  '/api/admin/learning': typeof ApiAdminLearningRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
@@ -527,6 +606,7 @@ export interface FileRoutesByTo {
   '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
+  '/api/learning/$slug': typeof ApiLearningSlugRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
@@ -535,16 +615,20 @@ export interface FileRoutesByTo {
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/integrations/email-provider': typeof ApiAdminIntegrationsEmailProviderRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
+  '/api/admin/learning/$slug': typeof ApiAdminLearningSlugRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
   '/api/auth/me/email-preferences': typeof ApiAuthMeEmailPreferencesRoute
+  '/api/auth/me/learning-progress': typeof ApiAuthMeLearningProgressRouteWithChildren
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/admin/learning/$slug/publish': typeof ApiAdminLearningSlugPublishRoute
   '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
   '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
   '/api/auth/me/leaderboard/$quizId': typeof ApiAuthMeLeaderboardQuizIdRoute
+  '/api/auth/me/learning-progress/$slug': typeof ApiAuthMeLearningProgressSlugRoute
   '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRoutesById {
@@ -559,6 +643,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/history': typeof HistoryRoute
   '/leaderboard': typeof LeaderboardRoute
+  '/learn': typeof LearnRouteWithChildren
   '/privacy': typeof PrivacyRoute
   '/results': typeof ResultsRoute
   '/revision-notes': typeof RevisionNotesRoute
@@ -566,15 +651,18 @@ export interface FileRoutesById {
   '/support': typeof SupportRoute
   '/terms': typeof TermsRoute
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
+  '/_authenticated/learning-admin': typeof AuthenticatedLearningAdminRoute
   '/_authenticated/wallet': typeof AuthenticatedWalletRoute
   '/api/app-update': typeof ApiAppUpdateRoute
   '/api/email-preferences': typeof ApiEmailPreferencesRoute
   '/api/feedback': typeof ApiFeedbackRoute
   '/api/health': typeof ApiHealthRoute
   '/api/leaderboard': typeof ApiLeaderboardRoute
+  '/api/learning': typeof ApiLearningRouteWithChildren
   '/api/levels': typeof ApiLevelsRoute
   '/api/submit': typeof ApiSubmitRoute
   '/certificate/$code': typeof CertificateCodeRoute
+  '/learn/$slug': typeof LearnSlugRoute
   '/quizzes/$id': typeof QuizzesIdRoute
   '/api/': typeof ApiIndexRoute
   '/certificate/': typeof CertificateIndexRoute
@@ -585,6 +673,7 @@ export interface FileRoutesById {
   '/api/admin/emails': typeof ApiAdminEmailsRouteWithChildren
   '/api/admin/feedback': typeof ApiAdminFeedbackRouteWithChildren
   '/api/admin/integrations': typeof ApiAdminIntegrationsRouteWithChildren
+  '/api/admin/learning': typeof ApiAdminLearningRouteWithChildren
   '/api/admin/notifications': typeof ApiAdminNotificationsRoute
   '/api/admin/system': typeof ApiAdminSystemRoute
   '/api/admin/users': typeof ApiAdminUsersRouteWithChildren
@@ -596,6 +685,7 @@ export interface FileRoutesById {
   '/api/auth/register': typeof ApiAuthRegisterRoute
   '/api/auth/reset-password': typeof ApiAuthResetPasswordRoute
   '/api/certificates/$code': typeof ApiCertificatesCodeRoute
+  '/api/learning/$slug': typeof ApiLearningSlugRoute
   '/api/quizzes/$id': typeof ApiQuizzesIdRoute
   '/api/quizzes/': typeof ApiQuizzesIndexRoute
   '/api/admin/catalogue/$sectionId': typeof ApiAdminCatalogueSectionIdRouteWithChildren
@@ -604,16 +694,20 @@ export interface FileRoutesById {
   '/api/admin/feedback/$id': typeof ApiAdminFeedbackIdRoute
   '/api/admin/integrations/email-provider': typeof ApiAdminIntegrationsEmailProviderRoute
   '/api/admin/leaderboard/$id': typeof ApiAdminLeaderboardIdRoute
+  '/api/admin/learning/$slug': typeof ApiAdminLearningSlugRouteWithChildren
   '/api/admin/users/$userId': typeof ApiAdminUsersUserIdRouteWithChildren
   '/api/auth/me/activity': typeof ApiAuthMeActivityRoute
   '/api/auth/me/email-preferences': typeof ApiAuthMeEmailPreferencesRoute
+  '/api/auth/me/learning-progress': typeof ApiAuthMeLearningProgressRouteWithChildren
   '/api/auth/me/password': typeof ApiAuthMePasswordRoute
   '/api/auth/me/progress': typeof ApiAuthMeProgressRouteWithChildren
   '/api/auth/me/push-device': typeof ApiAuthMePushDeviceRoute
   '/api/admin/catalogue/$sectionId/publish': typeof ApiAdminCatalogueSectionIdPublishRoute
+  '/api/admin/learning/$slug/publish': typeof ApiAdminLearningSlugPublishRoute
   '/api/admin/users/$userId/reset-password': typeof ApiAdminUsersUserIdResetPasswordRoute
   '/api/admin/users/$userId/role': typeof ApiAdminUsersUserIdRoleRoute
   '/api/auth/me/leaderboard/$quizId': typeof ApiAuthMeLeaderboardQuizIdRoute
+  '/api/auth/me/learning-progress/$slug': typeof ApiAuthMeLearningProgressSlugRoute
   '/api/auth/me/progress/$quizId': typeof ApiAuthMeProgressQuizIdRoute
 }
 export interface FileRouteTypes {
@@ -628,6 +722,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
+    | '/learn'
     | '/privacy'
     | '/results'
     | '/revision-notes'
@@ -635,15 +730,18 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/admin'
+    | '/learning-admin'
     | '/wallet'
     | '/api/app-update'
     | '/api/email-preferences'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
+    | '/api/learning'
     | '/api/levels'
     | '/api/submit'
     | '/certificate/$code'
+    | '/learn/$slug'
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
@@ -654,6 +752,7 @@ export interface FileRouteTypes {
     | '/api/admin/emails'
     | '/api/admin/feedback'
     | '/api/admin/integrations'
+    | '/api/admin/learning'
     | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
@@ -665,6 +764,7 @@ export interface FileRouteTypes {
     | '/api/auth/register'
     | '/api/auth/reset-password'
     | '/api/certificates/$code'
+    | '/api/learning/$slug'
     | '/api/quizzes/$id'
     | '/api/quizzes/'
     | '/api/admin/catalogue/$sectionId'
@@ -673,16 +773,20 @@ export interface FileRouteTypes {
     | '/api/admin/feedback/$id'
     | '/api/admin/integrations/email-provider'
     | '/api/admin/leaderboard/$id'
+    | '/api/admin/learning/$slug'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
     | '/api/auth/me/email-preferences'
+    | '/api/auth/me/learning-progress'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/auth/me/push-device'
     | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/admin/learning/$slug/publish'
     | '/api/admin/users/$userId/reset-password'
     | '/api/admin/users/$userId/role'
     | '/api/auth/me/leaderboard/$quizId'
+    | '/api/auth/me/learning-progress/$slug'
     | '/api/auth/me/progress/$quizId'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -695,6 +799,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
+    | '/learn'
     | '/privacy'
     | '/results'
     | '/revision-notes'
@@ -702,15 +807,18 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/admin'
+    | '/learning-admin'
     | '/wallet'
     | '/api/app-update'
     | '/api/email-preferences'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
+    | '/api/learning'
     | '/api/levels'
     | '/api/submit'
     | '/certificate/$code'
+    | '/learn/$slug'
     | '/quizzes/$id'
     | '/api'
     | '/certificate'
@@ -721,6 +829,7 @@ export interface FileRouteTypes {
     | '/api/admin/emails'
     | '/api/admin/feedback'
     | '/api/admin/integrations'
+    | '/api/admin/learning'
     | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
@@ -732,6 +841,7 @@ export interface FileRouteTypes {
     | '/api/auth/register'
     | '/api/auth/reset-password'
     | '/api/certificates/$code'
+    | '/api/learning/$slug'
     | '/api/quizzes/$id'
     | '/api/quizzes'
     | '/api/admin/catalogue/$sectionId'
@@ -740,16 +850,20 @@ export interface FileRouteTypes {
     | '/api/admin/feedback/$id'
     | '/api/admin/integrations/email-provider'
     | '/api/admin/leaderboard/$id'
+    | '/api/admin/learning/$slug'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
     | '/api/auth/me/email-preferences'
+    | '/api/auth/me/learning-progress'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/auth/me/push-device'
     | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/admin/learning/$slug/publish'
     | '/api/admin/users/$userId/reset-password'
     | '/api/admin/users/$userId/role'
     | '/api/auth/me/leaderboard/$quizId'
+    | '/api/auth/me/learning-progress/$slug'
     | '/api/auth/me/progress/$quizId'
   id:
     | '__root__'
@@ -763,6 +877,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/history'
     | '/leaderboard'
+    | '/learn'
     | '/privacy'
     | '/results'
     | '/revision-notes'
@@ -770,15 +885,18 @@ export interface FileRouteTypes {
     | '/support'
     | '/terms'
     | '/_authenticated/admin'
+    | '/_authenticated/learning-admin'
     | '/_authenticated/wallet'
     | '/api/app-update'
     | '/api/email-preferences'
     | '/api/feedback'
     | '/api/health'
     | '/api/leaderboard'
+    | '/api/learning'
     | '/api/levels'
     | '/api/submit'
     | '/certificate/$code'
+    | '/learn/$slug'
     | '/quizzes/$id'
     | '/api/'
     | '/certificate/'
@@ -789,6 +907,7 @@ export interface FileRouteTypes {
     | '/api/admin/emails'
     | '/api/admin/feedback'
     | '/api/admin/integrations'
+    | '/api/admin/learning'
     | '/api/admin/notifications'
     | '/api/admin/system'
     | '/api/admin/users'
@@ -800,6 +919,7 @@ export interface FileRouteTypes {
     | '/api/auth/register'
     | '/api/auth/reset-password'
     | '/api/certificates/$code'
+    | '/api/learning/$slug'
     | '/api/quizzes/$id'
     | '/api/quizzes/'
     | '/api/admin/catalogue/$sectionId'
@@ -808,16 +928,20 @@ export interface FileRouteTypes {
     | '/api/admin/feedback/$id'
     | '/api/admin/integrations/email-provider'
     | '/api/admin/leaderboard/$id'
+    | '/api/admin/learning/$slug'
     | '/api/admin/users/$userId'
     | '/api/auth/me/activity'
     | '/api/auth/me/email-preferences'
+    | '/api/auth/me/learning-progress'
     | '/api/auth/me/password'
     | '/api/auth/me/progress'
     | '/api/auth/me/push-device'
     | '/api/admin/catalogue/$sectionId/publish'
+    | '/api/admin/learning/$slug/publish'
     | '/api/admin/users/$userId/reset-password'
     | '/api/admin/users/$userId/role'
     | '/api/auth/me/leaderboard/$quizId'
+    | '/api/auth/me/learning-progress/$slug'
     | '/api/auth/me/progress/$quizId'
   fileRoutesById: FileRoutesById
 }
@@ -832,6 +956,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   HistoryRoute: typeof HistoryRoute
   LeaderboardRoute: typeof LeaderboardRoute
+  LearnRoute: typeof LearnRouteWithChildren
   PrivacyRoute: typeof PrivacyRoute
   ResultsRoute: typeof ResultsRoute
   RevisionNotesRoute: typeof RevisionNotesRoute
@@ -843,6 +968,7 @@ export interface RootRouteChildren {
   ApiFeedbackRoute: typeof ApiFeedbackRoute
   ApiHealthRoute: typeof ApiHealthRoute
   ApiLeaderboardRoute: typeof ApiLeaderboardRoute
+  ApiLearningRoute: typeof ApiLearningRouteWithChildren
   ApiLevelsRoute: typeof ApiLevelsRoute
   ApiSubmitRoute: typeof ApiSubmitRoute
   CertificateCodeRoute: typeof CertificateCodeRoute
@@ -856,6 +982,7 @@ export interface RootRouteChildren {
   ApiAdminEmailsRoute: typeof ApiAdminEmailsRouteWithChildren
   ApiAdminFeedbackRoute: typeof ApiAdminFeedbackRouteWithChildren
   ApiAdminIntegrationsRoute: typeof ApiAdminIntegrationsRouteWithChildren
+  ApiAdminLearningRoute: typeof ApiAdminLearningRouteWithChildren
   ApiAdminNotificationsRoute: typeof ApiAdminNotificationsRoute
   ApiAdminSystemRoute: typeof ApiAdminSystemRoute
   ApiAdminUsersRoute: typeof ApiAdminUsersRouteWithChildren
@@ -944,6 +1071,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof LeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/learn': {
+      id: '/learn'
+      path: '/learn'
+      fullPath: '/learn'
+      preLoaderRoute: typeof LearnRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/privacy': {
       id: '/privacy'
       path: '/privacy'
@@ -991,6 +1125,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AuthenticatedAdminRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/learning-admin': {
+      id: '/_authenticated/learning-admin'
+      path: '/learning-admin'
+      fullPath: '/learning-admin'
+      preLoaderRoute: typeof AuthenticatedLearningAdminRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/wallet': {
@@ -1042,6 +1183,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiLeaderboardRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learning': {
+      id: '/api/learning'
+      path: '/api/learning'
+      fullPath: '/api/learning'
+      preLoaderRoute: typeof ApiLearningRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/levels': {
       id: '/api/levels'
       path: '/api/levels'
@@ -1069,6 +1217,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/certificate/$code'
       preLoaderRoute: typeof CertificateCodeRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/learn/$slug': {
+      id: '/learn/$slug'
+      path: '/$slug'
+      fullPath: '/learn/$slug'
+      preLoaderRoute: typeof LearnSlugRouteImport
+      parentRoute: typeof LearnRoute
     }
     '/quizzes/$id': {
       id: '/quizzes/$id'
@@ -1124,6 +1279,13 @@ declare module '@tanstack/react-router' {
       path: '/api/admin/integrations'
       fullPath: '/api/admin/integrations'
       preLoaderRoute: typeof ApiAdminIntegrationsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/admin/learning': {
+      id: '/api/admin/learning'
+      path: '/api/admin/learning'
+      fullPath: '/api/admin/learning'
+      preLoaderRoute: typeof ApiAdminLearningRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/admin/notifications': {
@@ -1203,6 +1365,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCertificatesCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/learning/$slug': {
+      id: '/api/learning/$slug'
+      path: '/$slug'
+      fullPath: '/api/learning/$slug'
+      preLoaderRoute: typeof ApiLearningSlugRouteImport
+      parentRoute: typeof ApiLearningRoute
+    }
     '/api/quizzes/': {
       id: '/api/quizzes/'
       path: '/api/quizzes'
@@ -1259,6 +1428,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminLeaderboardIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/admin/learning/$slug': {
+      id: '/api/admin/learning/$slug'
+      path: '/$slug'
+      fullPath: '/api/admin/learning/$slug'
+      preLoaderRoute: typeof ApiAdminLearningSlugRouteImport
+      parentRoute: typeof ApiAdminLearningRoute
+    }
     '/api/admin/users/$userId': {
       id: '/api/admin/users/$userId'
       path: '/$userId'
@@ -1278,6 +1454,13 @@ declare module '@tanstack/react-router' {
       path: '/email-preferences'
       fullPath: '/api/auth/me/email-preferences'
       preLoaderRoute: typeof ApiAuthMeEmailPreferencesRouteImport
+      parentRoute: typeof ApiAuthMeRoute
+    }
+    '/api/auth/me/learning-progress': {
+      id: '/api/auth/me/learning-progress'
+      path: '/learning-progress'
+      fullPath: '/api/auth/me/learning-progress'
+      preLoaderRoute: typeof ApiAuthMeLearningProgressRouteImport
       parentRoute: typeof ApiAuthMeRoute
     }
     '/api/auth/me/password': {
@@ -1308,6 +1491,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAdminCatalogueSectionIdPublishRouteImport
       parentRoute: typeof ApiAdminCatalogueSectionIdRoute
     }
+    '/api/admin/learning/$slug/publish': {
+      id: '/api/admin/learning/$slug/publish'
+      path: '/publish'
+      fullPath: '/api/admin/learning/$slug/publish'
+      preLoaderRoute: typeof ApiAdminLearningSlugPublishRouteImport
+      parentRoute: typeof ApiAdminLearningSlugRoute
+    }
     '/api/admin/users/$userId/reset-password': {
       id: '/api/admin/users/$userId/reset-password'
       path: '/reset-password'
@@ -1329,6 +1519,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiAuthMeLeaderboardQuizIdRouteImport
       parentRoute: typeof ApiAuthMeRoute
     }
+    '/api/auth/me/learning-progress/$slug': {
+      id: '/api/auth/me/learning-progress/$slug'
+      path: '/$slug'
+      fullPath: '/api/auth/me/learning-progress/$slug'
+      preLoaderRoute: typeof ApiAuthMeLearningProgressSlugRouteImport
+      parentRoute: typeof ApiAuthMeLearningProgressRoute
+    }
     '/api/auth/me/progress/$quizId': {
       id: '/api/auth/me/progress/$quizId'
       path: '/$quizId'
@@ -1341,16 +1538,40 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAdminRoute: typeof AuthenticatedAdminRoute
+  AuthenticatedLearningAdminRoute: typeof AuthenticatedLearningAdminRoute
   AuthenticatedWalletRoute: typeof AuthenticatedWalletRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAdminRoute: AuthenticatedAdminRoute,
+  AuthenticatedLearningAdminRoute: AuthenticatedLearningAdminRoute,
   AuthenticatedWalletRoute: AuthenticatedWalletRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
+interface LearnRouteChildren {
+  LearnSlugRoute: typeof LearnSlugRoute
+}
+
+const LearnRouteChildren: LearnRouteChildren = {
+  LearnSlugRoute: LearnSlugRoute,
+}
+
+const LearnRouteWithChildren = LearnRoute._addFileChildren(LearnRouteChildren)
+
+interface ApiLearningRouteChildren {
+  ApiLearningSlugRoute: typeof ApiLearningSlugRoute
+}
+
+const ApiLearningRouteChildren: ApiLearningRouteChildren = {
+  ApiLearningSlugRoute: ApiLearningSlugRoute,
+}
+
+const ApiLearningRouteWithChildren = ApiLearningRoute._addFileChildren(
+  ApiLearningRouteChildren,
+)
 
 interface ApiAdminCatalogueSectionIdRouteChildren {
   ApiAdminCatalogueSectionIdPublishRoute: typeof ApiAdminCatalogueSectionIdPublishRoute
@@ -1424,6 +1645,28 @@ const ApiAdminIntegrationsRouteChildren: ApiAdminIntegrationsRouteChildren = {
 const ApiAdminIntegrationsRouteWithChildren =
   ApiAdminIntegrationsRoute._addFileChildren(ApiAdminIntegrationsRouteChildren)
 
+interface ApiAdminLearningSlugRouteChildren {
+  ApiAdminLearningSlugPublishRoute: typeof ApiAdminLearningSlugPublishRoute
+}
+
+const ApiAdminLearningSlugRouteChildren: ApiAdminLearningSlugRouteChildren = {
+  ApiAdminLearningSlugPublishRoute: ApiAdminLearningSlugPublishRoute,
+}
+
+const ApiAdminLearningSlugRouteWithChildren =
+  ApiAdminLearningSlugRoute._addFileChildren(ApiAdminLearningSlugRouteChildren)
+
+interface ApiAdminLearningRouteChildren {
+  ApiAdminLearningSlugRoute: typeof ApiAdminLearningSlugRouteWithChildren
+}
+
+const ApiAdminLearningRouteChildren: ApiAdminLearningRouteChildren = {
+  ApiAdminLearningSlugRoute: ApiAdminLearningSlugRouteWithChildren,
+}
+
+const ApiAdminLearningRouteWithChildren =
+  ApiAdminLearningRoute._addFileChildren(ApiAdminLearningRouteChildren)
+
 interface ApiAdminUsersUserIdRouteChildren {
   ApiAdminUsersUserIdResetPasswordRoute: typeof ApiAdminUsersUserIdResetPasswordRoute
   ApiAdminUsersUserIdRoleRoute: typeof ApiAdminUsersUserIdRoleRoute
@@ -1449,6 +1692,20 @@ const ApiAdminUsersRouteWithChildren = ApiAdminUsersRoute._addFileChildren(
   ApiAdminUsersRouteChildren,
 )
 
+interface ApiAuthMeLearningProgressRouteChildren {
+  ApiAuthMeLearningProgressSlugRoute: typeof ApiAuthMeLearningProgressSlugRoute
+}
+
+const ApiAuthMeLearningProgressRouteChildren: ApiAuthMeLearningProgressRouteChildren =
+  {
+    ApiAuthMeLearningProgressSlugRoute: ApiAuthMeLearningProgressSlugRoute,
+  }
+
+const ApiAuthMeLearningProgressRouteWithChildren =
+  ApiAuthMeLearningProgressRoute._addFileChildren(
+    ApiAuthMeLearningProgressRouteChildren,
+  )
+
 interface ApiAuthMeProgressRouteChildren {
   ApiAuthMeProgressQuizIdRoute: typeof ApiAuthMeProgressQuizIdRoute
 }
@@ -1463,6 +1720,7 @@ const ApiAuthMeProgressRouteWithChildren =
 interface ApiAuthMeRouteChildren {
   ApiAuthMeActivityRoute: typeof ApiAuthMeActivityRoute
   ApiAuthMeEmailPreferencesRoute: typeof ApiAuthMeEmailPreferencesRoute
+  ApiAuthMeLearningProgressRoute: typeof ApiAuthMeLearningProgressRouteWithChildren
   ApiAuthMePasswordRoute: typeof ApiAuthMePasswordRoute
   ApiAuthMeProgressRoute: typeof ApiAuthMeProgressRouteWithChildren
   ApiAuthMePushDeviceRoute: typeof ApiAuthMePushDeviceRoute
@@ -1472,6 +1730,7 @@ interface ApiAuthMeRouteChildren {
 const ApiAuthMeRouteChildren: ApiAuthMeRouteChildren = {
   ApiAuthMeActivityRoute: ApiAuthMeActivityRoute,
   ApiAuthMeEmailPreferencesRoute: ApiAuthMeEmailPreferencesRoute,
+  ApiAuthMeLearningProgressRoute: ApiAuthMeLearningProgressRouteWithChildren,
   ApiAuthMePasswordRoute: ApiAuthMePasswordRoute,
   ApiAuthMeProgressRoute: ApiAuthMeProgressRouteWithChildren,
   ApiAuthMePushDeviceRoute: ApiAuthMePushDeviceRoute,
@@ -1493,6 +1752,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   HistoryRoute: HistoryRoute,
   LeaderboardRoute: LeaderboardRoute,
+  LearnRoute: LearnRouteWithChildren,
   PrivacyRoute: PrivacyRoute,
   ResultsRoute: ResultsRoute,
   RevisionNotesRoute: RevisionNotesRoute,
@@ -1504,6 +1764,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiFeedbackRoute: ApiFeedbackRoute,
   ApiHealthRoute: ApiHealthRoute,
   ApiLeaderboardRoute: ApiLeaderboardRoute,
+  ApiLearningRoute: ApiLearningRouteWithChildren,
   ApiLevelsRoute: ApiLevelsRoute,
   ApiSubmitRoute: ApiSubmitRoute,
   CertificateCodeRoute: CertificateCodeRoute,
@@ -1517,6 +1778,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiAdminEmailsRoute: ApiAdminEmailsRouteWithChildren,
   ApiAdminFeedbackRoute: ApiAdminFeedbackRouteWithChildren,
   ApiAdminIntegrationsRoute: ApiAdminIntegrationsRouteWithChildren,
+  ApiAdminLearningRoute: ApiAdminLearningRouteWithChildren,
   ApiAdminNotificationsRoute: ApiAdminNotificationsRoute,
   ApiAdminSystemRoute: ApiAdminSystemRoute,
   ApiAdminUsersRoute: ApiAdminUsersRouteWithChildren,

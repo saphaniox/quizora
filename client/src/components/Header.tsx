@@ -4,6 +4,7 @@ import {
   BadgeCheck,
   BookOpen,
   BookOpenCheck,
+  GraduationCap,
   CalendarDays,
   History,
   Home,
@@ -22,6 +23,7 @@ import { getCurrentUser } from "@/lib/api";
 import { syncPushNotifications } from "@/lib/native-services";
 
 const links = [
+  { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/", label: "Quizzes", icon: Home },
   { to: "/daily-challenge", label: "Daily challenge", icon: CalendarDays },
   { to: "/study-guides", label: "Study guides", icon: BookOpen },

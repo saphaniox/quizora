@@ -257,6 +257,10 @@ function buildQuizzes(): Quiz[] {
 const quizzes: Quiz[] = buildQuizzes();
 const quizIndex = new Map(quizzes.map((quiz) => [quiz.id, quiz]));
 
+export function listBuiltInQuizzes(): Quiz[] {
+  return quizzes;
+}
+
 function editMap(rows: CatalogueEditRow[]): Map<string, CatalogueEditRow> {
   return new Map(rows.map((row) => [row.sectionId, row]));
 }

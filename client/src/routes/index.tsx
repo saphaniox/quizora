@@ -181,10 +181,16 @@ function HomePage() {
       </section>
 
       <section
-        className="mx-auto grid max-w-7xl gap-3 px-4 py-6 sm:grid-cols-3 sm:px-6 lg:px-8"
+        className="mx-auto grid max-w-7xl gap-3 px-4 py-6 sm:grid-cols-2 sm:px-6 xl:grid-cols-4 lg:px-8"
         aria-label="Learning tools"
       >
         {[
+          {
+            to: "/learn",
+            icon: BookOpenCheck,
+            title: "Study a lesson",
+            copy: "Choose a course and learn the topic before you practise.",
+          },
           {
             to: "/daily-challenge",
             icon: CalendarDays,
