@@ -391,13 +391,13 @@ function LearningAdminPage() {
                   </select>
                 </label>
                 <label className="text-sm font-medium text-foreground">
-                  Minutes
+                  Study minutes · include reading, worked examples, and practice
                   <input
                     type="number"
                     value={form.estimatedMinutes}
                     onChange={(event) => setField("estimatedMinutes", Number(event.target.value))}
                     min={2}
-                    max={120}
+                    max={600}
                     className="mt-1 min-h-10 w-full rounded-md border border-input bg-background px-3 text-sm"
                   />
                 </label>
@@ -422,11 +422,13 @@ function LearningAdminPage() {
                 />
               </label>
               <label className="text-sm font-medium text-foreground sm:col-span-2">
-                Lesson content · use headings, lists, **bold**, and blank lines between paragraphs
+                Long-form lesson content · use ## headings, lists, **bold**, and blank lines between
+                paragraphs
                 <textarea
                   value={form.body}
                   onChange={(event) => setField("body", event.target.value)}
                   rows={14}
+                  maxLength={150_000}
                   className="mt-1 w-full rounded-md border border-input bg-background p-3 font-mono text-sm leading-6"
                 />
               </label>

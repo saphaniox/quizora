@@ -24,11 +24,16 @@ its question bank, alongside relevant external references. Guides without a revi
 **Expert review pending**; they provide coverage of the existing quiz catalogue, not a claim of
 complete syllabus coverage.
 
-Admins can open **Admin → Learning content** to create or edit lessons. Save drafts first, confirm
-course and optional quiz-section links, provide learning objectives and HTTPS references, and set
-the date the sources were actually reviewed before publishing. Draft edits do not replace live
-content until published. Have subject experts review content against the applicable syllabus
-before treating it as exam preparation.
+Admins can open **Admin → Learning content** to create or edit lessons. Core Foundations has
+substantial authored material; Secondary, College & University, Professional, and Popular Topics
+now have expanded lessons using distinct examples and explanations from each topic's question bank.
+Those lessons include worked examples, guided practice, cumulative application, and a study sequence.
+Study-time estimates include the planned reading and learning activities; they must not be increased
+without adding the corresponding material. Save drafts first, confirm course and
+optional quiz-section links, provide learning objectives and HTTPS references, and set the date the
+sources were actually reviewed before publishing. Draft edits do not replace live content until
+published. Have subject experts review content against the applicable syllabus before treating it
+as exam preparation.
 
 ## Resend email provider
 

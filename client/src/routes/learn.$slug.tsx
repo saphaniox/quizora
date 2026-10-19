@@ -10,6 +10,8 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { LearningBody } from "@/components/LearningBody";
+import { NativeCatalogueAd } from "@/components/NativeCatalogueAd";
+import { formatStudyDuration } from "@/lib/learning";
 import {
   getCurrentUser,
   getLearningLesson,
@@ -116,7 +118,7 @@ function LearningLessonPage() {
         <p className="mt-3 max-w-3xl text-base leading-7 text-muted-foreground">{lesson.summary}</p>
         <div className="mt-5 flex flex-wrap gap-3 text-xs text-muted-foreground">
           <span className="inline-flex items-center gap-1.5 rounded-full border border-border bg-background/80 px-3 py-1.5">
-            <Clock3 className="h-3.5 w-3.5" /> About {lesson.estimatedMinutes} minutes
+            <Clock3 className="h-3.5 w-3.5" /> About {formatStudyDuration(lesson.estimatedMinutes)}
           </span>
           <span className="rounded-full border border-border bg-background/80 px-3 py-1.5">
             {lesson.difficulty}
@@ -216,6 +218,10 @@ function LearningLessonPage() {
           {progressMutation.error instanceof Error ? progressMutation.error.message : ""}
         </p>
       )}
+
+      <div className="mt-8">
+        <NativeCatalogueAd />
+      </div>
     </main>
   );
 }

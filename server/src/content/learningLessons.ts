@@ -1,4 +1,10 @@
 import { listBuiltInQuizzes } from "../models/quizModel.js";
+import { foundationsAppliedMathLessons } from "./foundationsAppliedMathLessons.js";
+import { foundationEnglishLessons } from "./foundationsEnglishLessons.js";
+import { foundationHumanitiesLessons } from "./foundationsHumanitiesLessons.js";
+import { foundationNumberLessons } from "./foundationsNumberLessons.js";
+import { foundationScienceLessons } from "./foundationsScienceLessons.js";
+import { expandCourseLesson } from "./courseLearningLessons.js";
 
 export interface LearningSource {
   title: string;
@@ -395,11 +401,43 @@ Close this guide and explain the main ideas in your own words. When you are read
 const curatedSectionIds = new Set(
   curatedLearningLessons.map((lesson) => lesson.quizSectionId),
 );
-const generatedLessons = listBuiltInQuizzes()
+const builtInQuizzes = listBuiltInQuizzes();
+const generatedLessons = builtInQuizzes
   .filter((quiz) => !curatedSectionIds.has(quiz.sectionId))
   .map(generatedLesson);
+const quizzesBySection = new Map(
+  builtInQuizzes.map((quiz) => [quiz.sectionId, quiz]),
+);
 
 export const builtInLearningLessons: BuiltInLearningLesson[] = [
   ...curatedLearningLessons,
   ...generatedLessons,
-];
+].map((lesson) => {
+  if (lesson.levelId === "foundations") {
+    const content = {
+      ...foundationNumberLessons,
+      ...foundationsAppliedMathLessons,
+      ...foundationEnglishLessons,
+      ...foundationScienceLessons,
+      ...foundationHumanitiesLessons,
+    }[lesson.quizSectionId ?? ""];
+    if (!content) {
+      throw new Error(`Missing long-form Core Foundations content for ${lesson.quizSectionId}.`);
+    }
+    return {
+      ...lesson,
+      ...content,
+      estimatedMinutes: Math.max(content.estimatedMinutes, 300),
+      reviewedAt: null,
+    };
+  }
+
+  const quiz = quizzesBySection.get(lesson.quizSectionId ?? "");
+  if (!quiz) {
+    throw new Error(`Missing quiz bank for study lesson ${lesson.quizSectionId}.`);
+  }
+  return {
+    ...expandCourseLesson(lesson, quiz),
+    reviewedAt: null,
+  };
+});

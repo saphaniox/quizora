@@ -20,8 +20,9 @@
 # hide the original source file name.
 #-renamesourcefileattribute SourceFile
 
-# Let R8 move optimized app classes to reduce package metadata.
--repackageclasses
+# WorkManager 2.7 initializes its Room database reflectively at app startup.
+-keep class androidx.work.** { *; }
+-keep class androidx.room.** { *; }
 
 # Capacitor registers this plugin by class and discovers @PluginMethod methods at runtime.
 -keep,allowoptimization class com.saptechug.quitech.NativeCatalogueAdPlugin {

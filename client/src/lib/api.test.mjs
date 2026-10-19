@@ -12,7 +12,9 @@ const sessions = new Map();
 pool.query = async (sql, values) => {
   if (sql.startsWith("INSERT INTO users")) {
     const [id, email, phone_e164, password_hash, display_name] = values;
-    if ([...users.values()].some(u => email ? u.email === email : u.phone_e164 === phone_e164)) {
+    if (
+      [...users.values()].some((u) => (email ? u.email === email : u.phone_e164 === phone_e164))
+    ) {
       throw Object.assign(new Error("Duplicate"), { code: "23505" });
     }
     const user = { id, email, phone_e164, password_hash, display_name, role: "user" };
@@ -23,8 +25,18 @@ pool.query = async (sql, values) => {
     sessions.set(values[0], values[1]);
     return { rows: [] };
   }
+  if (sql.startsWith("UPDATE users SET last_seen_at = NOW()")) {
+    return { rows: [] };
+  }
+  if (sql.startsWith("INSERT INTO email_jobs")) {
+    return { rows: [{ id: values[0] }] };
+  }
   if (sql.startsWith("SELECT id, email")) {
-    return { rows: [...users.values()].filter(u => (values[0] && u.email === values[0]) || (values[1] && u.phone_e164 === values[1])) };
+    return {
+      rows: [...users.values()].filter(
+        (u) => (values[0] && u.email === values[0]) || (values[1] && u.phone_e164 === values[1]),
+      ),
+    };
   }
   if (sql.startsWith("SELECT u.id")) {
     const user = users.get(sessions.get(values[0]));
@@ -34,15 +46,21 @@ pool.query = async (sql, values) => {
     sessions.delete(values[0]);
     return { rows: [] };
   }
+  if (sql.startsWith("WITH logged_out AS")) {
+    sessions.delete(values[0]);
+    return { rows: [] };
+  }
   throw new Error(`Unexpected database query: ${sql}`);
 };
 const app = await createApp();
 const storage = new Map();
-globalThis.window = { localStorage: {
-  getItem: key => storage.get(key) ?? null,
-  setItem: (key, value) => storage.set(key, value),
-  removeItem: key => storage.delete(key),
-} };
+globalThis.window = {
+  localStorage: {
+    getItem: (key) => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, value),
+    removeItem: (key) => storage.delete(key),
+  },
+};
 let calls = [];
 let failure = false;
 globalThis.fetch = async (url, init) => {
@@ -58,10 +76,18 @@ globalThis.fetch = async (url, init) => {
   return new Response(result.body, { status: result.statusCode });
 };
 let source = await readFile(new URL("./api.ts", import.meta.url), "utf8");
-source = source.replace('import { Capacitor } from "@capacitor/core";', 'const Capacitor = { isNativePlatform: () => false };');
-source = source.replace(/import \{ loadApiCache[^;]+;/, 'const loadApiCache = () => null; const saveApiCache = () => {};');
-source = source.replaceAll("import.meta.env", '({})');
-const compiled = ts.transpileModule(source, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
+source = source.replace(
+  'import { Capacitor } from "@capacitor/core";',
+  "const Capacitor = { isNativePlatform: () => false };",
+);
+source = source.replace(
+  /import \{ loadApiCache[^;]+;/,
+  "const loadApiCache = () => null; const saveApiCache = () => {};",
+);
+source = source.replaceAll("import.meta.env", "({})");
+const compiled = ts.transpileModule(source, {
+  compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+}).outputText;
 const api = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
 
 test("email and phone registration, sign in, current user, and logout", async () => {
@@ -75,8 +101,17 @@ test("email and phone registration, sign in, current user, and logout", async ()
     await api.logoutAccount();
     assert.equal(calls.at(-1).init.headers.has("content-type"), false);
     assert.equal((await api.getCurrentUser()).user, null);
-    await assert.rejects(api.loginAccount({ identifier: contact.email ?? contact.phoneE164, password: "wrong-password" }), /Invalid/);
-    const signedIn = await api.loginAccount({ identifier: contact.email ?? contact.phoneE164, password: payload.password });
+    await assert.rejects(
+      api.loginAccount({
+        identifier: contact.email ?? contact.phoneE164,
+        password: "wrong-password",
+      }),
+      /Invalid/,
+    );
+    const signedIn = await api.loginAccount({
+      identifier: contact.email ?? contact.phoneE164,
+      password: payload.password,
+    });
     assert.equal(signedIn.user.id, registered.user.id);
     assert.equal((await api.getCurrentUser()).user.id, registered.user.id);
     failure = true;
@@ -94,15 +129,25 @@ test("bodyless DELETE reaches authorization instead of JSON parser failure", asy
 });
 
 test("Fastify reproduces original empty JSON logout failure", async () => {
-  const result = await app.inject({ method: "POST", url: "/auth/logout", headers: { "content-type": "application/json" } });
+  const result = await app.inject({
+    method: "POST",
+    url: "/auth/logout",
+    headers: { "content-type": "application/json" },
+  });
   assert.equal(result.statusCode, 400);
   assert.equal(result.json().code, "FST_ERR_CTP_EMPTY_JSON_BODY");
 });
 
 test("web proxy forwards credentials, JSON, empty requests, and cookies", async () => {
-  const proxySource = (await readFile(new URL("./api-proxy.server.ts", import.meta.url), "utf8")).replaceAll("import.meta.env", "({})");
-  const proxyCode = ts.transpileModule(proxySource, { compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 } }).outputText;
-  const { proxyApiRequest } = await import(`data:text/javascript;base64,${Buffer.from(proxyCode).toString("base64")}`);
+  const proxySource = (
+    await readFile(new URL("./api-proxy.server.ts", import.meta.url), "utf8")
+  ).replaceAll("import.meta.env", "({})");
+  const proxyCode = ts.transpileModule(proxySource, {
+    compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+  }).outputText;
+  const { proxyApiRequest } = await import(
+    `data:text/javascript;base64,${Buffer.from(proxyCode).toString("base64")}`
+  );
   const originalFetch = globalThis.fetch;
   const originalBase = process.env.SERVER_API_URL;
   process.env.SERVER_API_URL = "http://localhost:3001";
@@ -110,13 +155,22 @@ test("web proxy forwards credentials, JSON, empty requests, and cookies", async 
     globalThis.fetch = async (url, init) => {
       assert.equal(new URL(url).pathname, "/auth/login");
       assert.equal(init.headers.get("authorization"), "Bearer test-token");
-      assert.deepEqual(JSON.parse(new TextDecoder().decode(init.body)), { identifier: "test@example.com", password: "example-password" });
-      return new Response(JSON.stringify({ user: { id: "test" } }), { headers: { "set-cookie": "session=test; Domain=api.example.com; HttpOnly; Path=/" } });
+      assert.deepEqual(JSON.parse(new TextDecoder().decode(init.body)), {
+        identifier: "test@example.com",
+        password: "example-password",
+      });
+      return new Response(JSON.stringify({ user: { id: "test" } }), {
+        headers: { "set-cookie": "session=test; Domain=api.example.com; HttpOnly; Path=/" },
+      });
     };
-    const response = await proxyApiRequest(new Request("https://example.com/api/auth/login", {
-      method: "POST", headers: { "content-type": "application/json", authorization: "Bearer test-token" },
-      body: JSON.stringify({ identifier: "test@example.com", password: "example-password" }),
-    }), "/auth/login");
+    const response = await proxyApiRequest(
+      new Request("https://example.com/api/auth/login", {
+        method: "POST",
+        headers: { "content-type": "application/json", authorization: "Bearer test-token" },
+        body: JSON.stringify({ identifier: "test@example.com", password: "example-password" }),
+      }),
+      "/auth/login",
+    );
     assert.equal(response.status, 200);
     assert.equal(response.headers.get("cache-control"), "no-store");
     assert.equal(response.headers.get("set-cookie"), "session=test; HttpOnly; Path=/");
@@ -125,7 +179,18 @@ test("web proxy forwards credentials, JSON, empty requests, and cookies", async 
       assert.equal(init.body, undefined);
       return new Response('{"ok":true}');
     };
-    assert.equal((await proxyApiRequest(new Request("https://example.com/api/auth/logout", { method: "POST", headers: { "content-type": "application/json" } }), "/auth/logout")).status, 200);
+    assert.equal(
+      (
+        await proxyApiRequest(
+          new Request("https://example.com/api/auth/logout", {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+          }),
+          "/auth/logout",
+        )
+      ).status,
+      200,
+    );
   } finally {
     globalThis.fetch = originalFetch;
     if (originalBase === undefined) delete process.env.SERVER_API_URL;
@@ -133,5 +198,7 @@ test("web proxy forwards credentials, JSON, empty requests, and cookies", async 
   }
 });
 
-test.after(async () => { await app.close(); await pool.end(); });
-
+test.after(async () => {
+  await app.close();
+  await pool.end();
+});

@@ -3,6 +3,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, Clock3, GraduationCap, Search, ShieldCheck } from "lucide-react";
 import { getLearningLessons } from "@/lib/api";
+import { formatStudyDuration } from "@/lib/learning";
 import type { LearningLesson } from "@/lib/api";
 
 export const Route = createFileRoute("/learn/")({
@@ -39,26 +40,35 @@ function LearningHubPage() {
     const byId = new Map(lessons.map((lesson) => [lesson.levelId, lesson.levelName] as const));
     return [...byId].map(([id, name]) => ({ id, name }));
   }, [lessons]);
+  const subjectGroups = useMemo(
+    () =>
+      levels
+        .filter((level) => levelFilter === "all" || level.id === levelFilter)
+        .map((level) => ({
+          ...level,
+          subjects: [
+            ...new Set(
+              lessons
+                .filter((lesson) => lesson.levelId === level.id)
+                .map((lesson) => lesson.subject),
+            ),
+          ].sort((a, b) => a.localeCompare(b)),
+        }))
+        .filter((level) => level.subjects.length > 0),
+    [lessons, levelFilter, levels],
+  );
   const levelOrder = useMemo(
     () => new Map(levels.map((level, index) => [level.id, index])),
     [levels],
-  );
-  const subjects = useMemo(
-    () =>
-      [
-        ...new Set(
-          lessons
-            .filter((lesson) => levelFilter === "all" || lesson.levelId === levelFilter)
-            .map((lesson) => lesson.subject),
-        ),
-      ].sort((a, b) => a.localeCompare(b)),
-    [lessons, levelFilter],
   );
   const filteredLessons = useMemo(() => {
     const term = search.trim().toLocaleLowerCase();
     return lessons
       .filter((lesson) => levelFilter === "all" || lesson.levelId === levelFilter)
-      .filter((lesson) => subjectFilter === "all" || lesson.subject === subjectFilter)
+      .filter(
+        (lesson) =>
+          subjectFilter === "all" || `${lesson.levelId}::${lesson.subject}` === subjectFilter,
+      )
       .filter((lesson) => {
         if (!term) return true;
         return [
@@ -177,10 +187,14 @@ function LearningHubPage() {
               className="min-h-11 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
             >
               <option value="all">All subjects</option>
-              {subjects.map((subject) => (
-                <option key={subject} value={subject}>
-                  {subject}
-                </option>
+              {subjectGroups.map((group) => (
+                <optgroup key={group.id} label={group.name}>
+                  {group.subjects.map((subject) => (
+                    <option key={`${group.id}::${subject}`} value={`${group.id}::${subject}`}>
+                      {subject}
+                    </option>
+                  ))}
+                </optgroup>
               ))}
             </select>
           </label>
@@ -283,7 +297,7 @@ function LearningHubPage() {
                     <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
                       <span className="inline-flex items-center gap-1.5">
                         <Clock3 className="h-3.5 w-3.5" />
-                        {lesson.estimatedMinutes} min
+                        {formatStudyDuration(lesson.estimatedMinutes)}
                       </span>
                       <span className="inline-flex items-center gap-1.5 font-medium text-primary">
                         Study lesson{" "}

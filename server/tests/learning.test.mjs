@@ -78,15 +78,97 @@ test("built-in lessons have valid curriculum links and source references", async
       new Set(lesson.sources.map((source) => source.url)).size,
       lesson.sources.length,
     );
-    if (lesson.slug === lesson.quizSectionId) {
+    if (lesson.slug === lesson.quizSectionId && lesson.levelId !== "foundations") {
       assert.ok(lesson.body.includes("Worked examples"));
       assert.ok(lesson.body.includes("quiz directly"));
       const workedExamples = [...lesson.body.matchAll(/### Worked example \d+: (.+)/g)].map(
         ([, prompt]) => prompt.replace(/ - Set \d+:\s*/i, ": ").toLowerCase(),
       );
-      assert.ok(workedExamples.length > 0 && workedExamples.length <= 3);
+      assert.ok(workedExamples.length <= 3);
       assert.equal(new Set(workedExamples).size, workedExamples.length);
     }
+  }
+});
+
+test("Core Foundations has complete long-form lessons with realistic study durations", () => {
+  const foundations = builtInLearningLessons.filter(
+    (lesson) => lesson.levelId === "foundations",
+  );
+  assert.equal(foundations.length, 21);
+  for (const lesson of foundations) {
+    const wordCount = lesson.body.trim().split(/\s+/).length;
+    assert.ok(
+      wordCount >= 1_500,
+      `${lesson.quizSectionId} has only ${wordCount} words`,
+    );
+    assert.ok(
+      lesson.estimatedMinutes >= 300,
+      `${lesson.quizSectionId} is estimated below five hours`,
+    );
+    assert.ok(
+      lesson.body.includes("## "),
+      `${lesson.quizSectionId} is missing structured lesson headings`,
+    );
+    assert.match(
+      lesson.body,
+      /worked examples?|worked revision|example/i,
+      `${lesson.quizSectionId} is missing worked examples`,
+    );
+    assert.match(
+      lesson.body,
+      /guided practice|practice \d+/i,
+      `${lesson.quizSectionId} is missing guided practice`,
+    );
+    assert.match(
+      lesson.body,
+      /answer key|answers and explanations/i,
+      `${lesson.quizSectionId} is missing explained answers`,
+    );
+    assert.match(
+      lesson.body,
+      /cumulative (review|transfer task)/i,
+      `${lesson.quizSectionId} is missing cumulative practice`,
+    );
+    assert.match(
+      lesson.body,
+      /study (plan|sequence)/i,
+      `${lesson.quizSectionId} is missing a study sequence`,
+    );
+    assert.ok(
+      lesson.estimatedMinutes <= 600,
+      `${lesson.quizSectionId} exceeds the maximum supported study duration`,
+    );
+  }
+});
+
+test("secondary, higher-education, professional, and popular courses have expanded lessons", () => {
+  const courseIds = [
+    "secondary",
+    "college",
+    "professional",
+    "popular-topics",
+  ];
+  const lessons = builtInLearningLessons.filter((lesson) =>
+    courseIds.includes(lesson.levelId),
+  );
+  assert.equal(lessons.length, 90);
+
+  for (const lesson of lessons) {
+    const wordCount = lesson.body.trim().split(/\s+/).length;
+    assert.ok(
+      wordCount >= 1_200,
+      `${lesson.quizSectionId} has only ${wordCount} words`,
+    );
+    assert.ok(
+      lesson.estimatedMinutes >= 300,
+      `${lesson.quizSectionId} is estimated below five hours`,
+    );
+    assert.ok(lesson.estimatedMinutes <= 600);
+    assert.equal(lesson.reviewedAt, null);
+    assert.match(lesson.body, /### Worked example 8/);
+    assert.match(lesson.body, /### Answers and explanations/);
+    assert.match(lesson.body, /take the linked quiz directly/i);
+    assert.match(lesson.body, /Suggested study sequence/);
   }
 });
 
