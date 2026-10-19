@@ -75,9 +75,11 @@ export function expandCourseLesson<T extends CourseLessonInput>(
   objectives: string[];
 } {
   const minutes = studyMinutes(quiz);
-  const examples = selectStudyQuestions(quiz, 16);
-  const workedExamples = examples.slice(0, 8);
-  const guidedPractice = examples.slice(8);
+  const extendedCourse = ["college", "professional"].includes(quiz.levelId);
+  const examples = selectStudyQuestions(quiz, extendedCourse ? 64 : 16);
+  const workedExampleCount = extendedCourse ? 40 : 8;
+  const workedExamples = examples.slice(0, workedExampleCount);
+  const guidedPractice = examples.slice(workedExampleCount);
 
   const workedExampleText = workedExamples
     .map((question, index) => {

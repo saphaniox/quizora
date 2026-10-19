@@ -169,6 +169,22 @@ test("secondary, higher-education, professional, and popular courses have expand
     assert.match(lesson.body, /### Answers and explanations/);
     assert.match(lesson.body, /take the linked quiz directly/i);
     assert.match(lesson.body, /Suggested study sequence/);
+    if (["college", "professional"].includes(lesson.levelId)) {
+      assert.ok(
+        wordCount >= 2_500,
+        `${lesson.quizSectionId} has only ${wordCount} words of advanced-course material`,
+      );
+      assert.equal(
+        [...lesson.body.matchAll(/### Worked example \d+/g)].length,
+        40,
+        `${lesson.quizSectionId} should include 40 worked examples`,
+      );
+      assert.equal(
+        [...lesson.body.matchAll(/\*\*Answer:\*\*/g)].length,
+        64,
+        `${lesson.quizSectionId} should include 64 explained quiz-bank examples`,
+      );
+    }
   }
 });
 
