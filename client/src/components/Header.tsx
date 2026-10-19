@@ -1,4 +1,4 @@
-import { Link, useRouter } from "@tanstack/react-router";
+import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import {
   ArrowLeft,
   BadgeCheck,
@@ -36,6 +36,7 @@ const links = [
 export function Header() {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { data } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: () => getCurrentUser(),
@@ -51,18 +52,6 @@ export function Header() {
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
-        <button
-          type="button"
-          aria-label="Go back"
-          title="Go back"
-          onClick={() => {
-            if (router.history.canGoBack()) router.history.back();
-            else void router.navigate({ to: "/" });
-          }}
-          className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-        >
-          <ArrowLeft className="h-4 w-4" />
-        </button>
         <Link
           to="/"
           className="flex min-w-0 items-center gap-2 text-lg font-semibold tracking-tight text-foreground"
@@ -140,6 +129,24 @@ export function Header() {
           </button>
         </div>
       </div>
+
+      {pathname !== "/" && (
+        <div className="mx-auto max-w-7xl px-4 pb-2 sm:px-6 lg:px-8">
+          <button
+            type="button"
+            aria-label="Go back"
+            title="Go back"
+            onClick={() => {
+              if (router.history.canGoBack()) router.history.back();
+              else void router.navigate({ to: "/" });
+            }}
+            className="inline-flex h-8 items-center gap-2 rounded-md px-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            Back
+          </button>
+        </div>
+      )}
 
       {open && (
         <nav
