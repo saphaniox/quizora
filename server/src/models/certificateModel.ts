@@ -29,7 +29,7 @@ export async function findByCode(
   code: string,
 ): Promise<Certificate | undefined> {
   const result = await pool.query<Certificate>(
-    `SELECT code, player_name AS "playerName", quiz_id AS "quizId", quiz_title AS "quizTitle", level_name AS "levelName", category, country_code AS "countryCode", country_name AS "countryName", score, max_score AS "maxScore", percentage, issued_at AS "issuedAt" FROM certificates WHERE code = $1`,
+    `SELECT code, CASE WHEN max_score = 100 THEN 'gold' WHEN max_score = 200 THEN 'platinum' WHEN max_score = 500 THEN 'diamond' ELSE 'standard' END AS "awardTier", player_name AS "playerName", quiz_id AS "quizId", quiz_title AS "quizTitle", level_name AS "levelName", category, country_code AS "countryCode", country_name AS "countryName", score, max_score AS "maxScore", percentage, issued_at AS "issuedAt" FROM certificates WHERE code = $1`,
     [code.toUpperCase()],
   );
   return result.rows[0];
@@ -37,7 +37,7 @@ export async function findByCode(
 
 export async function listAll(): Promise<Certificate[]> {
   const result = await pool.query<Certificate>(
-    `SELECT code, player_name AS "playerName", quiz_id AS "quizId", quiz_title AS "quizTitle", level_name AS "levelName", category, country_code AS "countryCode", country_name AS "countryName", score, max_score AS "maxScore", percentage, issued_at AS "issuedAt" FROM certificates ORDER BY issued_at DESC`,
+    `SELECT code, CASE WHEN max_score = 100 THEN 'gold' WHEN max_score = 200 THEN 'platinum' WHEN max_score = 500 THEN 'diamond' ELSE 'standard' END AS "awardTier", player_name AS "playerName", quiz_id AS "quizId", quiz_title AS "quizTitle", level_name AS "levelName", category, country_code AS "countryCode", country_name AS "countryName", score, max_score AS "maxScore", percentage, issued_at AS "issuedAt" FROM certificates ORDER BY issued_at DESC`,
   );
   return result.rows;
 }
@@ -47,7 +47,7 @@ export async function listByUser(
   limit = 50,
 ): Promise<Certificate[]> {
   const result = await pool.query<Certificate>(
-    `SELECT code, player_name AS "playerName", quiz_id AS "quizId", quiz_title AS "quizTitle", level_name AS "levelName", category, country_code AS "countryCode", country_name AS "countryName", score, max_score AS "maxScore", percentage, issued_at AS "issuedAt"
+    `SELECT code, CASE WHEN max_score = 100 THEN 'gold' WHEN max_score = 200 THEN 'platinum' WHEN max_score = 500 THEN 'diamond' ELSE 'standard' END AS "awardTier", player_name AS "playerName", quiz_id AS "quizId", quiz_title AS "quizTitle", level_name AS "levelName", category, country_code AS "countryCode", country_name AS "countryName", score, max_score AS "maxScore", percentage, issued_at AS "issuedAt"
      FROM certificates
      WHERE user_id = $1
      ORDER BY issued_at DESC

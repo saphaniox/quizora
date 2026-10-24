@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { BadgeCheck } from "lucide-react";
+import { BadgeCheck, Eye } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/certificate/")({
   head: () => ({
@@ -55,6 +56,13 @@ function VerifyPage() {
             Verify
           </button>
         </form>
+        <Link
+          to="/certificate-samples"
+          className="mt-5 inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline"
+        >
+          <Eye className="h-4 w-4" />
+          View Gold, Platinum and Diamond samples
+        </Link>
       </div>
     </div>
   );

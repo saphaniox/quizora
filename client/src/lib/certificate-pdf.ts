@@ -1,6 +1,11 @@
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import type { Certificate } from "@/types/quiz";
+import {
+  certificateCompletionText,
+  getCertificateTier,
+  certificateTierLabel,
+} from "@/lib/certificate-awards";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -193,9 +198,24 @@ export async function downloadCertificatePdf(
 
   const navy = [12, 21, 38] as const;
   const slate = [100, 116, 139] as const;
-  const blue = [37, 99, 235] as const;
+  const tier = getCertificateTier(certificate);
+  const blue =
+    tier === "diamond"
+      ? ([3, 105, 161] as const)
+      : tier === "platinum"
+        ? ([71, 85, 105] as const)
+        : tier === "gold"
+          ? ([161, 98, 7] as const)
+          : ([37, 99, 235] as const);
   const emerald = [4, 120, 87] as const;
-  const gold = [180, 132, 45] as const;
+  const gold =
+    tier === "diamond"
+      ? ([125, 211, 252] as const)
+      : tier === "platinum"
+        ? ([148, 163, 184] as const)
+        : tier === "gold"
+          ? ([202, 138, 4] as const)
+          : ([180, 132, 45] as const);
   const issuedDate = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "long",
@@ -240,13 +260,31 @@ export async function downloadCertificatePdf(
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.text("Learn, challenge & progress", logo ? 126 : 72, 92);
 
-  doc.setDrawColor(167, 243, 208);
-  doc.setFillColor(236, 253, 245);
+  const badgeColor =
+    tier === "diamond"
+      ? [3, 105, 161]
+      : tier === "platinum"
+        ? [71, 85, 105]
+        : tier === "gold"
+          ? [146, 64, 14]
+          : [4, 120, 87];
+  const badgeFill =
+    tier === "diamond"
+      ? [224, 242, 254]
+      : tier === "platinum"
+        ? [241, 245, 249]
+        : tier === "gold"
+          ? [254, 243, 199]
+          : [236, 253, 245];
+  doc.setDrawColor(badgeColor[0], badgeColor[1], badgeColor[2]);
+  doc.setFillColor(badgeFill[0], badgeFill[1], badgeFill[2]);
   doc.roundedRect(width - 218, 62, 146, 32, 6, 6, "FD");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
-  doc.setTextColor(emerald[0], emerald[1], emerald[2]);
-  doc.text("VERIFIED CREDENTIAL", width - 145, 82, { align: "center" });
+  doc.setTextColor(badgeColor[0], badgeColor[1], badgeColor[2]);
+  doc.text(`${certificateTierLabel(tier).toUpperCase()} CERTIFICATE`, width - 145, 82, {
+    align: "center",
+  });
 
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.setFont("helvetica", "bold");
@@ -279,19 +317,15 @@ export async function downloadCertificatePdf(
   doc.setFont("helvetica", "normal");
   doc.setFontSize(12);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text(
-    "has successfully completed the full Quitech learning section",
-    width / 2,
-    nameBottom + 32,
-    {
-      align: "center",
-    },
-  );
+  doc.text(certificateCompletionText(certificate), width / 2, nameBottom + 32, {
+    align: "center",
+    maxWidth: width - 240,
+  });
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(20);
   doc.setTextColor(navy[0], navy[1], navy[2]);
-  const titleBottom = fittedCenteredText(
+  fittedCenteredText(
     doc,
     certificate.quizTitle,
     width / 2,
@@ -302,19 +336,11 @@ export async function downloadCertificatePdf(
     16,
   );
 
-  doc.setFont("helvetica", "normal");
-  doc.setFontSize(11);
-  doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text(`${certificate.levelName}  |  ${certificate.category}`, width / 2, titleBottom + 22, {
-    align: "center",
-    maxWidth: width - 300,
-  });
-
   doc.setFont("helvetica", "italic");
   doc.setFontSize(10);
   doc.setTextColor(emerald[0], emerald[1], emerald[2]);
   doc.text(
-    "Awarded in recognition of focused learning, persistence, and achievement.",
+    "Awarded in recognition of the learner's focused learning, persistence and achievement.",
     width / 2,
     357,
     { align: "center" },

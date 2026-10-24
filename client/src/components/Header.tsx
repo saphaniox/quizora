@@ -4,6 +4,7 @@ import {
   BadgeCheck,
   BookOpen,
   BookOpenCheck,
+  Award,
   GraduationCap,
   CalendarDays,
   History,
@@ -30,6 +31,7 @@ const links = [
   { to: "/revision-notes", label: "Revision notes", icon: BookOpenCheck },
   { to: "/leaderboard", label: "Leaderboard", icon: Trophy },
   { to: "/history", label: "My progress", icon: History },
+  { to: "/certificate-samples", label: "Samples", icon: Award },
   { to: "/certificate", label: "Verify", icon: BadgeCheck },
 ] as const;
 

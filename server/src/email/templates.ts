@@ -354,28 +354,41 @@ function templateContent(
       return content;
     }
     case "certificateEarned": {
+      const certificateTier = value(data, "certificateTier", "achievement");
+      const awardName =
+        certificateTier === "gold"
+          ? "Gold"
+          : certificateTier === "platinum"
+            ? "Platinum"
+            : certificateTier === "diamond"
+              ? "Diamond"
+              : "Quitech";
       const content = base(
         "learning",
-        `You earned a Quitech certificate in ${quizTitle}`,
+        `You earned a ${awardName} certificate in ${quizTitle}`,
         "Your certificate is ready",
-        `You passed ${quizTitle} and earned a verifiable credential.`,
+        `You completed ${maxScore} questions in ${quizTitle} with ${percentage}% and earned a verifiable ${awardName} certificate.`,
         data,
       );
-      content.preheader = `You passed ${quizTitle} and earned a verifiable credential.`;
+      content.preheader = `You earned a verifiable ${awardName} certificate for completing ${maxScore} questions in ${quizTitle}.`;
       content.bodyHtml =
         paragraph(
-          `You completed the full ${quizTitle} section with ${percentage}% and earned a Quitech certificate.`,
+          `You completed ${maxScore} questions in ${quizTitle} with ${percentage}% and earned a ${awardName} certificate.`,
         ) +
         notice(
           "This document is evidence of the focused work you completed. Keep it, share it, and let it remind you what steady effort can produce.",
         );
       content.textLines = [
-        `You earned a certificate in ${quizTitle}.`,
+        `You earned a ${awardName} certificate in ${quizTitle}.`,
+        `Questions completed: ${maxScore}`,
         `Score: ${score}/${maxScore} (${percentage}%)`,
         `Certificate code: ${value(data, "certificateCode")}`,
       ];
       content.infoRows = [
-        { label: "Achievement", value: quizTitle },
+        {
+          label: "Achievement",
+          value: `${awardName} certificate - ${quizTitle}`,
+        },
         { label: "Score", value: `${score}/${maxScore} (${percentage}%)` },
         { label: "Certificate code", value: value(data, "certificateCode") },
       ];

@@ -9,6 +9,7 @@ import { getLeaderboard } from "@/lib/api";
 import { loadAttempt, type StoredAttempt } from "@/lib/attempt-store";
 import { countryFlag } from "@/lib/countries";
 import { appLinksText, webAppUrl } from "@/lib/share-links";
+import { certificateTierLabel, getCertificateTier } from "@/lib/certificate-awards";
 
 export const Route = createFileRoute("/results")({
   ssr: false,
@@ -143,14 +144,36 @@ function ResultsPage() {
       </div>
 
       {certificate ? (
-        <div className="mt-6 rounded-lg border border-emerald-500/40 bg-emerald-500/5 p-5 sm:p-6">
+        <div
+          className={`mt-6 rounded-lg border p-5 sm:p-6 ${
+            getCertificateTier(certificate) === "platinum"
+              ? "border-slate-400/60 bg-slate-300/10"
+              : getCertificateTier(certificate) === "diamond"
+                ? "border-sky-500/50 bg-sky-500/5"
+                : getCertificateTier(certificate) === "gold"
+                  ? "border-amber-500/50 bg-amber-500/5"
+                  : "border-emerald-500/40 bg-emerald-500/5"
+          }`}
+        >
           <div className="flex flex-col gap-3 sm:flex-row sm:items-start">
-            <Award className="h-6 w-6 shrink-0 text-emerald-600 dark:text-emerald-400" />
+            <Award
+              className={`h-6 w-6 shrink-0 ${
+                getCertificateTier(certificate) === "platinum"
+                  ? "text-slate-600 dark:text-slate-300"
+                  : getCertificateTier(certificate) === "diamond"
+                    ? "text-sky-700 dark:text-sky-300"
+                    : getCertificateTier(certificate) === "gold"
+                      ? "text-amber-600 dark:text-amber-400"
+                      : "text-emerald-600 dark:text-emerald-400"
+              }`}
+            />
             <div className="min-w-0">
-              <h2 className="text-lg font-semibold text-foreground">Certificate earned</h2>
+              <h2 className="text-lg font-semibold text-foreground">
+                {certificateTierLabel(getCertificateTier(certificate))} certificate earned
+              </h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                {certificate.playerName}, you passed with {certificate.percentage}%. Your
-                verification code is{" "}
+                {certificate.playerName}, you completed {certificate.maxScore} questions with{" "}
+                {certificate.percentage}%. Your verification code is{" "}
                 <span className="font-mono font-semibold text-foreground">{certificate.code}</span>.
               </p>
               <Link

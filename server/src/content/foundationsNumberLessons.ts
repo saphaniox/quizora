@@ -261,7 +261,7 @@ For whole-number division, estimate the quotient first. Then break a dividend in
 ## Worked examples
 **Example 1 — partial quotients.** Find 156 ÷ 6. Think of 156 as 120 + 36. Since 120 ÷ 6 = 20 and 36 ÷ 6 = 6, the quotient is 20 + 6 = 26. Check 26 × 6 = 156. An estimate of 150 ÷ 6 is about 25, supporting the answer.
 
-**Example 2 — long division.** Find 847 ÷ 7. Seven goes into 8 once, leaving 1. Bring down the 4 to make 14; seven goes into 14 twice, leaving 0. Bring down the 7; seven goes into 7 once. The quotient is 121. Check 121 × 7 = 847. Each step handles a place-value part: one hundred, two tens, one one.
+**Example 2 — long division.** Find 847 ÷ 7. Seven goes into 8 once, leaving 1. Bring down the 4 to make 14; seven goes into 14 twice, leaving 0. Bring down the 7; seven goes into 7 once. The quotient is 121. Check 121 × 7 = 847. Each step handles a place-value part: one hundred, two tens, and one unit.
 
 **Example 3 — remainder meaning.** For 29 ÷ 6, there are 4 whole groups of 6, with 5 left over: 29 = 6 × 4 + 5. The remainder must be smaller than the divisor, or another complete group could be made.
 

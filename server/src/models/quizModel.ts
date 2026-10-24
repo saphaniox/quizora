@@ -7,7 +7,10 @@ import type {
   PublicQuiz,
 } from "../types.js";
 import * as catalogueEditModel from "./catalogueEditModel.js";
-import type { CatalogueDraftInput, CatalogueEditRow } from "./catalogueEditModel.js";
+import type {
+  CatalogueDraftInput,
+  CatalogueEditRow,
+} from "./catalogueEditModel.js";
 import {
   expandSectionToQuestionCount,
   finalize,
@@ -16,6 +19,11 @@ import {
   type Draft,
   type SectionDefinition,
 } from "./bank/helpers.js";
+import {
+  FULL_SECTION_CERTIFICATE_QUESTION_COUNT,
+  GOLD_CERTIFICATE_QUESTION_COUNT,
+  PLATINUM_CERTIFICATE_QUESTION_COUNT,
+} from "../services/certificateAwards.js";
 import { primarySections } from "./bank/primary.js";
 import { primaryExtraSections } from "./bank/primary-extra.js";
 import { secondarySections } from "./bank/secondary.js";
@@ -38,12 +46,16 @@ import {
 import { popularTopicSections } from "./bank/popular-topics.js";
 
 export const PASS_MARK = 80;
-export const CERTIFICATE_QUESTION_COUNT = 500;
+export const CERTIFICATE_QUESTION_COUNT =
+  FULL_SECTION_CERTIFICATE_QUESTION_COUNT;
 
 const descriptionTails: Record<string, string> = {
-  foundations: "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
-  secondary: "Built for focused revision, confident recall, and steady exam-style practice.",
-  college: "Built for higher-level practice, applied reasoning, and certificate-ready review.",
+  foundations:
+    "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+  secondary:
+    "Built for focused revision, confident recall, and steady exam-style practice.",
+  college:
+    "Built for higher-level practice, applied reasoning, and certificate-ready review.",
   professional:
     "Built for practical workplace review, interview preparation, and certification practice.",
   "popular-topics":
@@ -59,90 +71,114 @@ function sectionDescription(levelId: string, description: string): string {
   return `${base} ${tail}`;
 }
 
-const foundationPresentation: Record<string, Pick<SectionDefinition, "name" | "description">> = {
+const foundationPresentation: Record<
+  string,
+  Pick<SectionDefinition, "name" | "description">
+> = {
   "foundations-mathematics": {
     name: "Quantitative Reasoning",
-    description: "Arithmetic, fractions, estimation and introductory algebra for secondary entry.",
+    description:
+      "Arithmetic, fractions, estimation and introductory algebra for secondary entry.",
   },
   "foundations-english": {
     name: "English Language",
-    description: "Vocabulary, grammar, sentence control and precise written communication.",
+    description:
+      "Vocabulary, grammar, sentence control and precise written communication.",
   },
   "foundations-science": {
     name: "Integrated Science",
-    description: "Scientific reasoning across life science, matter, energy and the environment.",
+    description:
+      "Scientific reasoning across life science, matter, energy and the environment.",
   },
   "foundations-social-studies": {
     name: "Global Studies & Civics",
-    description: "Geography, citizenship, institutions and evidence-based global awareness.",
+    description:
+      "Geography, citizenship, institutions and evidence-based global awareness.",
   },
   "foundations-ict": {
     name: "Digital Literacy",
-    description: "Computing concepts, online safety, information skills and responsible technology use.",
+    description:
+      "Computing concepts, online safety, information skills and responsible technology use.",
   },
   "foundations-money-time": {
     name: "Practical Numeracy & Time Management",
-    description: "Financial calculations, time planning, schedules and applied numerical decisions.",
+    description:
+      "Financial calculations, time planning, schedules and applied numerical decisions.",
   },
   "foundations-reading": {
     name: "Academic Reading & Grammar",
-    description: "Reading accuracy, grammar, punctuation and editing for secondary-level learning.",
+    description:
+      "Reading accuracy, grammar, punctuation and editing for secondary-level learning.",
   },
   "foundations-health": {
     name: "Health, Wellbeing & Safety",
-    description: "Health literacy, personal safety, nutrition and responsible everyday decisions.",
+    description:
+      "Health literacy, personal safety, nutrition and responsible everyday decisions.",
   },
   "foundations-reasoning": {
     name: "Critical Thinking & Problem Solving",
-    description: "Patterns, logic, quantitative problems and clear step-by-step reasoning.",
+    description:
+      "Patterns, logic, quantitative problems and clear step-by-step reasoning.",
   },
   "foundations-arts": {
     name: "Creative Arts, Design & Music",
-    description: "Visual design, music literacy, cultural arts and creative analysis.",
+    description:
+      "Visual design, music literacy, cultural arts and creative analysis.",
   },
   "foundations-times-tables": {
     name: "Multiplicative Reasoning",
-    description: "Multiplication, factors, multiples and proportional reasoning for secondary entry.",
+    description:
+      "Multiplication, factors, multiples and proportional reasoning for secondary entry.",
   },
   "foundations-division": {
     name: "Division, Ratios & Proportion",
-    description: "Division, remainders, ratios and proportional reasoning in applied contexts.",
+    description:
+      "Division, remainders, ratios and proportional reasoning in applied contexts.",
   },
   "foundations-fractions": {
     name: "Fractions, Decimals & Percentages",
-    description: "Equivalent forms, operations and percentage reasoning for secondary mathematics.",
+    description:
+      "Equivalent forms, operations and percentage reasoning for secondary mathematics.",
   },
   "foundations-measures": {
     name: "Measurement & Applied Geometry",
-    description: "Units, conversion, perimeter, area and measurement-based problem solving.",
+    description:
+      "Units, conversion, perimeter, area and measurement-based problem solving.",
   },
   "foundations-time": {
     name: "Time, Schedules & Planning",
-    description: "Durations, timetables, time zones and practical planning calculations.",
+    description:
+      "Durations, timetables, time zones and practical planning calculations.",
   },
   "foundations-money": {
     name: "Personal Finance & Budgeting",
-    description: "Costs, change, discounts, budgets and sound financial decisions.",
+    description:
+      "Costs, change, discounts, budgets and sound financial decisions.",
   },
   "foundations-rounding": {
     name: "Estimation & Numerical Accuracy",
-    description: "Rounding, significant figures, estimation and checking numerical reasonableness.",
+    description:
+      "Rounding, significant figures, estimation and checking numerical reasonableness.",
   },
   "foundations-spelling": {
     name: "English Usage & Editing",
-    description: "Spelling, grammar, punctuation and precise word choice in formal writing.",
+    description:
+      "Spelling, grammar, punctuation and precise word choice in formal writing.",
   },
   "foundations-wellbeing": {
     name: "Wellbeing & Health Literacy",
-    description: "Evidence-based personal wellbeing, prevention, safety and informed choices.",
+    description:
+      "Evidence-based personal wellbeing, prevention, safety and informed choices.",
   },
   "foundations-world": {
     name: "World Geography & Global Awareness",
-    description: "Places, people, environments and global patterns for informed citizenship.",
+    description:
+      "Places, people, environments and global patterns for informed citizenship.",
   },
   "foundations-place-value": {
     name: "Number Sense & Place Value",
-    description: "Whole numbers, decimals, place value and numerical representation.",
+    description:
+      "Whole numbers, decimals, place value and numerical representation.",
   },
 };
 
@@ -168,7 +204,8 @@ const levelDefinitions: (Level & { sections: SectionDefinition[] })[] = [
   {
     id: "foundations",
     name: "Core Foundations",
-    tagline: "Academic foundations for learners preparing to enter secondary education.",
+    tagline:
+      "Academic foundations for learners preparing to enter secondary education.",
     ageRange: "Secondary-entry preparation",
     order: 1,
     sections: foundationSections,
@@ -293,7 +330,10 @@ function statusFor(edit: CatalogueEditRow | undefined): CatalogueStatus {
   return "published";
 }
 
-function toAdminSection(quiz: Quiz, edit?: CatalogueEditRow): AdminCatalogueSection {
+function toAdminSection(
+  quiz: Quiz,
+  edit?: CatalogueEditRow,
+): AdminCatalogueSection {
   const draftTitle = edit?.draftTitle ?? quiz.title;
   const draftDescription = edit?.draftDescription ?? quiz.description;
   const draftDifficulty = edit?.draftDifficulty ?? quiz.difficulty;
@@ -385,7 +425,10 @@ export async function listLevels() {
 export async function findQuiz(id: string): Promise<Quiz | undefined> {
   const quiz = quizIndex.get(id);
   if (!quiz) return undefined;
-  return withPublishedEdit(quiz, (await catalogueEditModel.find(id)) ?? undefined) ?? undefined;
+  return (
+    withPublishedEdit(quiz, (await catalogueEditModel.find(id)) ?? undefined) ??
+    undefined
+  );
 }
 
 export async function listAdminSections(): Promise<AdminCatalogueSection[]> {
@@ -428,8 +471,8 @@ export async function listAdminAuditLog() {
 }
 
 /**
- * Build the client-safe quiz. `limit` produces a shorter practice run, which is
- * never certificate eligible. `seed` shuffles question order for every run.
+ * Build the client-safe quiz. `limit` selects a run length; only the 100-, 200-,
+ * and verified full-section runs can earn certificates. `seed` shuffles each run.
  */
 export function toPublicQuiz(
   quiz: Quiz,
@@ -458,14 +501,23 @@ export function toPublicQuiz(
     levelName: quiz.levelName,
     sectionId: quiz.sectionId,
     difficulty: quiz.difficulty,
-    timeLimitSeconds: count === total ? questions.length * 120 : questions.length * (quiz.difficulty === "Hard" ? 120 : 60),
+    timeLimitSeconds:
+      count === total
+        ? questions.length * 120
+        : questions.length * (quiz.difficulty === "Hard" ? 120 : 60),
     totalQuestionsInSection: total,
-    certificateEligible: count === total && total === CERTIFICATE_QUESTION_COUNT,
+    certificateEligible:
+      count === GOLD_CERTIFICATE_QUESTION_COUNT ||
+      count === PLATINUM_CERTIFICATE_QUESTION_COUNT ||
+      (count === total && total === CERTIFICATE_QUESTION_COUNT),
     passMark: PASS_MARK,
     questions,
   };
 }
 
 export async function totalQuestions(): Promise<number> {
-  return (await publishedQuizzes()).reduce((sum, quiz) => sum + quiz.questions.length, 0);
+  return (await publishedQuizzes()).reduce(
+    (sum, quiz) => sum + quiz.questions.length,
+    0,
+  );
 }

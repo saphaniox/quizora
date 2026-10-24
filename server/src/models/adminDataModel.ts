@@ -16,6 +16,7 @@ export interface AdminUser {
 
 export interface AdminCertificate {
   code: string;
+  awardTier: "gold" | "platinum" | "diamond" | "standard";
   playerName: string;
   quizTitle: string;
   levelName: string;
@@ -135,7 +136,8 @@ export async function listCertificates(
   limit = 100,
 ): Promise<AdminCertificate[]> {
   const result = await pool.query<AdminCertificate>(
-    `SELECT code, player_name AS "playerName", quiz_title AS "quizTitle",
+    `SELECT code, CASE WHEN max_score = 100 THEN 'gold' WHEN max_score = 200 THEN 'platinum' WHEN max_score = 500 THEN 'diamond' ELSE 'standard' END AS "awardTier",
+            player_name AS "playerName", quiz_title AS "quizTitle",
             level_name AS "levelName", percentage, issued_at AS "issuedAt"
      FROM certificates ORDER BY issued_at DESC LIMIT $1`,
     [limit],

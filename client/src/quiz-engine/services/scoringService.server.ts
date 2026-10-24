@@ -1,6 +1,10 @@
-import { CERTIFICATE_QUESTION_COUNT, findQuiz, PASS_MARK } from "../models/quizModel.server";
+import { findQuiz, PASS_MARK } from "../models/quizModel.server";
 import * as leaderboardModel from "../models/leaderboardModel.server";
 import * as certificateModel from "../models/certificateModel.server";
+import {
+  certificateTierForQuestionCount,
+  isCertificateRunEligible,
+} from "../models/certificateAwards.server";
 import type { AnswerPayload, AnswerResult, Certificate, LeaderboardEntry } from "../types.server";
 
 export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
@@ -74,8 +78,8 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   if (!leaderboardVisible) leaderboardModel.hideParticipantEntries(entry);
 
   const fullSection = graded.length === quiz.questions.length;
-  const certificateSection = quiz.questions.length === CERTIFICATE_QUESTION_COUNT;
-  const certificateEligible = fullSection && certificateSection;
+  const certificateTier = certificateTierForQuestionCount(maxScore);
+  const certificateEligible = isCertificateRunEligible(maxScore, fullSection);
   const passed = percentage >= PASS_MARK;
   let certificate: Certificate | null = null;
   let certificateMessage: string;
@@ -83,6 +87,7 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
   if (passed && certificateEligible) {
     certificate = certificateModel.issue({
       code: certificateModel.makeCode(quiz.id),
+      awardTier: certificateTier ?? "standard",
       playerName,
       quizId: quiz.id,
       quizTitle: quiz.title,
@@ -95,13 +100,21 @@ export function scoreSubmission(payload: AnswerPayload): AnswerResult | null {
       percentage,
       issuedAt: new Date().toISOString(),
     });
-    certificateMessage = `Congratulations! You scored ${percentage}% and earned a certificate in ${quiz.title}.`;
-  } else if (!certificateSection) {
-    certificateMessage = `This ${quiz.questions.length}-question section is available for practice. Certificates are issued after a verified ${CERTIFICATE_QUESTION_COUNT}-question section.`;
+    const awardName =
+      certificateTier === "gold"
+        ? "Gold"
+        : certificateTier === "platinum"
+          ? "Platinum"
+          : certificateTier === "diamond"
+            ? "Diamond"
+            : "achievement";
+    certificateMessage = `Congratulations! You scored ${percentage}% and earned a ${awardName} certificate in ${quiz.title}.`;
+  } else if (certificateEligible && !passed) {
+    certificateMessage = `You need ${PASS_MARK}% or higher on all ${maxScore} questions to earn this certificate.`;
   } else if (passed) {
-    certificateMessage = `Great score! Certificates are awarded after completing all ${CERTIFICATE_QUESTION_COUNT} questions.`;
+    certificateMessage = `Complete 100 questions with ${PASS_MARK}% or higher for Gold, 200 for Platinum, or all 500 for Diamond.`;
   } else {
-    certificateMessage = `You need ${PASS_MARK}% or more after completing all ${CERTIFICATE_QUESTION_COUNT} questions to earn a certificate.`;
+    certificateMessage = `Gold requires 100 questions, Platinum 200, and Diamond all 500 questions. A score of ${PASS_MARK}% or higher is required.`;
   }
 
   return {

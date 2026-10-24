@@ -8,6 +8,11 @@ import { countryFlag } from "@/lib/countries";
 import { appLinksText, webAppUrl } from "@/lib/share-links";
 import type { Certificate } from "@/types/quiz";
 import { notifications } from "@/lib/notifications";
+import {
+  certificateCompletionText,
+  certificateTierLabel,
+  getCertificateTier,
+} from "@/lib/certificate-awards";
 
 /** Look the code up through the client-hosted API. */
 async function verify(code: string): Promise<{ certificate: Certificate }> {
@@ -93,6 +98,8 @@ function CertificatePage() {
   }
 
   const certificate = data.certificate;
+  const certificateTier = getCertificateTier(certificate);
+  const tierLabel = certificateTierLabel(certificateTier);
   const issuedDate = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "long",
@@ -192,13 +199,21 @@ function CertificatePage() {
             </div>
             <div className="inline-flex w-fit items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
               <BadgeCheck className="h-4 w-4" />
-              Verified credential
+              {tierLabel} certificate · Verified credential
             </div>
           </div>
 
           <div className="mx-auto mt-12 max-w-3xl">
             <Award className="mx-auto h-12 w-12 text-primary" />
-            <p className="mt-5 text-xs font-semibold uppercase text-slate-500">
+            <p
+              className={`mt-5 text-xs font-semibold uppercase tracking-[0.2em] ${
+                certificateTier === "diamond"
+                  ? "text-sky-800"
+                  : certificateTier === "platinum"
+                    ? "text-slate-600"
+                    : "text-amber-700"
+              }`}
+            >
               Certificate of Achievement
             </p>
             <div
@@ -211,18 +226,13 @@ function CertificatePage() {
               <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
               <span className="h-px flex-1 bg-amber-500/70" />
             </div>
-            <p className="mt-5 text-sm text-slate-600">This certifies that</p>
+            <p className="mt-5 text-sm text-slate-600">Presented with pride to</p>
             <h1 className="mt-3 wrap-break-word text-3xl font-bold text-slate-950 sm:text-4xl">
               {certificate.playerName}
             </h1>
-            <p className="mt-5 text-sm text-slate-600">
-              has successfully completed the full Quitech section
-            </p>
+            <p className="mt-5 text-sm text-slate-600">{certificateCompletionText(certificate)}</p>
             <p className="mt-3 wrap-break-word text-xl font-semibold text-slate-950 sm:text-2xl">
               {certificate.quizTitle}
-            </p>
-            <p className="mt-2 text-sm text-slate-600">
-              {certificate.levelName} - {certificate.category}
             </p>
             {certificate.countryName && (
               <p className="mt-2 text-sm text-slate-600">
@@ -231,8 +241,17 @@ function CertificatePage() {
             )}
           </div>
 
-          <p className="mx-auto mt-6 max-w-2xl text-sm italic text-emerald-700">
-            Awarded in recognition of focused learning, persistence, and achievement.
+          <p
+            className={`mx-auto mt-6 max-w-2xl text-sm italic ${
+              certificateTier === "diamond"
+                ? "text-sky-800"
+                : certificateTier === "platinum"
+                  ? "text-slate-700"
+                  : "text-amber-800"
+            }`}
+          >
+            Awarded in recognition of the learner&apos;s focused learning, persistence and
+            achievement.
           </p>
 
           <div className="mx-auto mt-8 grid max-w-4xl gap-4 border-y border-slate-200 py-5 text-left sm:grid-cols-3">

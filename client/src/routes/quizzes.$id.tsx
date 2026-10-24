@@ -73,7 +73,7 @@ export const Route = createFileRoute("/quizzes/$id")({
   component: QuizPage,
 });
 
-type Mode = 10 | 25 | 50 | "full";
+type Mode = 10 | 25 | 50 | 100 | 200 | "full";
 
 function storedCountryToOption(country: PlayerCountry | null): CountryDialCode | null {
   if (!country) return null;
@@ -416,7 +416,57 @@ function QuizPage() {
 
   const savedProgress = resumeState;
   const setupQuestionCount = setupData?.quiz.totalQuestionsInSection;
-  const certificateReady = setupQuestionCount === 500;
+  const certificateReady = (setupQuestionCount ?? 0) >= 100;
+  const quizModes: { value: Mode; title: string; copy: string }[] = [
+    {
+      value: 10,
+      title: "Quick practice",
+      copy: "10 shuffled questions. A small start still counts.",
+    },
+    {
+      value: 25,
+      title: "Focused practice",
+      copy: "25 shuffled questions when you want a real rhythm.",
+    },
+    {
+      value: 50,
+      title: "Extended practice",
+      copy: "50 shuffled questions for serious revision.",
+    },
+    ...(setupQuestionCount && setupQuestionCount >= 100
+      ? [
+          {
+            value: 100 as const,
+            title: "Gold certificate quiz",
+            copy: "Complete 100 questions and score at least 80% to earn Gold.",
+          },
+        ]
+      : []),
+    ...(setupQuestionCount && setupQuestionCount >= 200
+      ? [
+          {
+            value: 200 as const,
+            title: "Platinum certificate quiz",
+            copy: "Complete 200 questions and score at least 80% to earn Platinum.",
+          },
+        ]
+      : []),
+    {
+      value: "full",
+      title:
+        setupQuestionCount === 500 ? "Full section (Diamond certificate eligible)" : "Full section",
+      copy:
+        setupQuestionCount === 500
+          ? "Complete all 500 questions and score at least 80% to earn Diamond."
+          : setupQuestionCount === 200
+            ? "Complete all 200 questions and score at least 80% to earn Platinum."
+            : setupQuestionCount === 100
+              ? "Complete all 100 questions and score at least 80% to earn Gold."
+              : setupQuestionCount
+                ? `All ${setupQuestionCount} available questions for focused practice.`
+                : "All available questions for focused practice.",
+    },
+  ];
 
   if (!started) {
     return (
@@ -471,34 +521,7 @@ function QuizPage() {
 
           <p className="mt-6 text-sm font-medium text-foreground">Choose how you want to take it</p>
           <div className="mt-3 grid gap-3">
-            {(
-              [
-                {
-                  value: 10,
-                  title: "Quick practice",
-                  copy: "10 shuffled questions. A small start still counts.",
-                },
-                {
-                  value: 25,
-                  title: "Focused practice",
-                  copy: "25 shuffled questions when you want a real rhythm.",
-                },
-                {
-                  value: 50,
-                  title: "Extended practice",
-                  copy: "50 shuffled questions for serious revision.",
-                },
-                {
-                  value: "full",
-                  title: certificateReady ? "Full section (certificate eligible)" : "Full section",
-                  copy: certificateReady
-                    ? "All 500 questions, self-paced. Score 80%+ to earn a certificate."
-                    : setupQuestionCount
-                      ? `All ${setupQuestionCount} available questions for focused practice.`
-                      : "All available questions for focused practice.",
-                },
-              ] as { value: Mode; title: string; copy: string }[]
-            ).map((option) => (
+            {quizModes.map((option) => (
               <button
                 key={String(option.value)}
                 type="button"
@@ -512,7 +535,9 @@ function QuizPage() {
                   </span>
                   <span className="mt-0.5 block text-xs text-muted-foreground">{option.copy}</span>
                 </span>
-                {option.value === "full" && certificateReady ? (
+                {option.value === 100 ||
+                option.value === 200 ||
+                (option.value === "full" && certificateReady) ? (
                   <Award className="h-5 w-5 shrink-0 text-primary" />
                 ) : (
                   <ArrowRight className="h-5 w-5 shrink-0 text-muted-foreground" />

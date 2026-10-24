@@ -16,8 +16,12 @@ function cleanText(value: string): string {
   return value.replace(/\s+/g, " ").trim();
 }
 
+function cleanQuestionText(value: string): string {
+  return cleanText(value.replace(/^.+? - Set \d+:\s*/i, ""));
+}
+
 function questionKey(value: string): string {
-  return cleanText(value)
+  return cleanQuestionText(value)
     .toLocaleLowerCase()
     .replace(/[^a-z0-9#]+/g, " ")
     .trim();
@@ -84,14 +88,14 @@ export function expandCourseLesson<T extends CourseLessonInput>(
   const workedExampleText = workedExamples
     .map((question, index) => {
       const answer = cleanText(question.options[question.correctOptionIndex]);
-      return `### Worked example ${index + 1}\n\n**Question:** ${cleanText(question.text)}\n\n**Answer:** ${answer}\n\n**Explanation:** ${cleanText(question.explanation)}`;
+      return `### Worked example ${index + 1}\n\n**Question:** ${cleanQuestionText(question.text)}\n\n**Answer:** ${answer}\n\n**Explanation:** ${cleanText(question.explanation)}`;
     })
     .join("\n\n");
 
   const guidedPracticeText = guidedPractice
     .map(
       (question, index) =>
-        `${index + 1}. ${cleanText(question.text)}`,
+        `${index + 1}. ${cleanQuestionText(question.text)}`,
     )
     .join("\n");
 
@@ -112,9 +116,9 @@ export function expandCourseLesson<T extends CourseLessonInput>(
 
 ${lesson.summary}
 
-This lesson is a structured study course for **${quiz.title}** in **${lesson.subject}**. It is organized around the concepts and question styles present in this topic's practice bank. The examples below are teaching material, not a requirement to complete the lesson before taking the quiz. You can take the linked quiz directly at any time.
+This guide is for **${quiz.title}** in **${lesson.subject}**. It uses questions from the practice bank to help you understand the ideas behind each answer. Try the examples at your own pace; you can take the linked quiz directly at any time, with or without finishing the guide first.
 
-The lesson is still awaiting expert review. Treat it as a guided introduction: verify high-stakes, rapidly changing, or specialist claims with an appropriate instructor or authoritative source. The source list identifies places to continue learning; it does not mean every example has been independently reviewed.
+This guide has not yet been reviewed by a subject expert. Use it as a study aid, and check specialist or high-stakes information against a trusted source or qualified instructor. The links at the end are useful places to continue, but they do not mean every example has been independently reviewed.
 
 ## Begin with a map, not memorization
 

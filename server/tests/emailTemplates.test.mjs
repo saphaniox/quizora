@@ -59,6 +59,38 @@ test("every email renders branded HTML and a plain-text fallback", () => {
   }
 });
 
+test("certificate emails identify Gold, Platinum, and Diamond awards", () => {
+  const gold = buildEmailTemplate("certificateEarned", {
+    ...sampleData,
+    certificateTier: "gold",
+    maxScore: 100,
+    score: 88,
+    percentage: 88,
+  });
+  assert.match(gold.subject, /Gold certificate/);
+  assert.match(gold.html, /100 questions/);
+
+  const platinum = buildEmailTemplate("certificateEarned", {
+    ...sampleData,
+    certificateTier: "platinum",
+    maxScore: 200,
+    score: 170,
+    percentage: 85,
+  });
+  assert.match(platinum.subject, /Platinum certificate/);
+  assert.match(platinum.html, /200 questions/);
+
+  const diamond = buildEmailTemplate("certificateEarned", {
+    ...sampleData,
+    certificateTier: "diamond",
+    maxScore: 500,
+    score: 450,
+    percentage: 90,
+  });
+  assert.match(diamond.subject, /Diamond certificate/);
+  assert.match(diamond.html, /500 questions/);
+});
+
 test("learner-provided values are escaped before entering email HTML", () => {
   const email = buildEmailTemplate("adminMessage", {
     displayName: "<img src=x onerror=alert(1)>",
@@ -77,7 +109,10 @@ test("learner-provided values are escaped before entering email HTML", () => {
     submitterName: "Guest learner",
   });
   assert.doesNotMatch(feedbackEmail.html, /<script>/i);
-  assert.match(feedbackEmail.html, /&lt;script&gt;alert\(&#39;feedback&#39;\)&lt;\/script&gt;/);
+  assert.match(
+    feedbackEmail.html,
+    /&lt;script&gt;alert\(&#39;feedback&#39;\)&lt;\/script&gt;/,
+  );
 });
 
 test("optional messages include standards-based unsubscribe metadata", () => {

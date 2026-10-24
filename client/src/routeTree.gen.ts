@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as CertificateSamplesRouteImport } from './routes/certificate-samples'
 import { Route as DailyChallengeRouteImport } from './routes/daily-challenge'
 import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as DeleteDataRouteImport } from './routes/delete-data'
@@ -99,6 +100,11 @@ const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CertificateSamplesRoute = CertificateSamplesRouteImport.update({
+  id: '/certificate-samples',
+  path: '/certificate-samples',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DailyChallengeRoute = DailyChallengeRouteImport.update({
@@ -486,6 +492,7 @@ const ApiAuthMeProgressQuizIdRoute = ApiAuthMeProgressQuizIdRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/certificate-samples': typeof CertificateSamplesRoute
   '/daily-challenge': typeof DailyChallengeRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
@@ -564,6 +571,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
+  '/certificate-samples': typeof CertificateSamplesRoute
   '/daily-challenge': typeof DailyChallengeRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
@@ -643,6 +651,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
+  '/certificate-samples': typeof CertificateSamplesRoute
   '/daily-challenge': typeof DailyChallengeRoute
   '/delete-account': typeof DeleteAccountRoute
   '/delete-data': typeof DeleteDataRoute
@@ -723,6 +732,7 @@ export interface FileRouteTypes {
   fullPaths:
     | '/'
     | '/auth'
+    | '/certificate-samples'
     | '/daily-challenge'
     | '/delete-account'
     | '/delete-data'
@@ -801,6 +811,7 @@ export interface FileRouteTypes {
   to:
     | '/'
     | '/auth'
+    | '/certificate-samples'
     | '/daily-challenge'
     | '/delete-account'
     | '/delete-data'
@@ -879,6 +890,7 @@ export interface FileRouteTypes {
     | '/'
     | '/_authenticated'
     | '/auth'
+    | '/certificate-samples'
     | '/daily-challenge'
     | '/delete-account'
     | '/delete-data'
@@ -959,6 +971,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
+  CertificateSamplesRoute: typeof CertificateSamplesRoute
   DailyChallengeRoute: typeof DailyChallengeRoute
   DeleteAccountRoute: typeof DeleteAccountRoute
   DeleteDataRoute: typeof DeleteDataRoute
@@ -1030,6 +1043,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/certificate-samples': {
+      id: '/certificate-samples'
+      path: '/certificate-samples'
+      fullPath: '/certificate-samples'
+      preLoaderRoute: typeof CertificateSamplesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/daily-challenge': {
@@ -1764,6 +1784,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
+  CertificateSamplesRoute: CertificateSamplesRoute,
   DailyChallengeRoute: DailyChallengeRoute,
   DeleteAccountRoute: DeleteAccountRoute,
   DeleteDataRoute: DeleteDataRoute,

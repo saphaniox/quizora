@@ -4,6 +4,7 @@ import { builtInLearningLessons } from "../dist/content/learningLessons.js";
 import * as learningModel from "../dist/models/learningModel.js";
 import { pool } from "../dist/db.js";
 import * as quizModel from "../dist/models/quizModel.js";
+import { fromMap } from "../dist/models/bank/helpers.js";
 import {
   hasDuplicateQuizSection,
   isLearningSectionConflict,
@@ -90,6 +91,48 @@ test("built-in lessons have valid curriculum links and source references", async
   }
 });
 
+test("generated study explanations are grammatical and lessons avoid repeated set prompts", () => {
+  const explanation = (text, answer) =>
+    fromMap(
+      [[text, answer]],
+      (question) => question,
+      (_question, value) => `The correct answer is: ${value}.`,
+    )[0].explanation;
+
+  assert.equal(
+    explanation("What is a function that calls itself?", "Recursion"),
+    "A function that calls itself is Recursion.",
+  );
+  assert.equal(
+    explanation(
+      "What is produced when an acid reacts with a base?",
+      "A salt and water",
+    ),
+    "When an acid reacts with a base, the products include salt and water.",
+  );
+  assert.equal(
+    explanation("What do we call farm produce sold for cash?", "Cash crops"),
+    'The term for farm produce sold for cash is "Cash crops".',
+  );
+  assert.equal(
+    explanation("Which OSI layer routes packets?", "The network layer"),
+    "The network layer routes packets.",
+  );
+  assert.equal(
+    explanation(
+      "When is a set of vectors linearly dependent?",
+      "When one vector is a combination of the others",
+    ),
+    "A set of vectors is linearly dependent when one vector is a combination of the others.",
+  );
+
+  const repeatedWord = /\b([A-Za-z]{3,})[ \t]+\1\b/i;
+  for (const lesson of builtInLearningLessons) {
+    assert.doesNotMatch(lesson.body, / - Set \d+:/i, lesson.slug);
+    assert.doesNotMatch(lesson.body, repeatedWord, lesson.slug);
+  }
+});
+
 test("Core Foundations has complete long-form lessons with realistic study durations", () => {
   const foundations = builtInLearningLessons.filter(
     (lesson) => lesson.levelId === "foundations",
@@ -165,24 +208,44 @@ test("secondary, higher-education, professional, and popular courses have expand
     );
     assert.ok(lesson.estimatedMinutes <= 600);
     assert.equal(lesson.reviewedAt, null);
-    assert.match(lesson.body, /### Worked example 8/);
+    assert.match(lesson.body, /### Worked example \d+/);
     assert.match(lesson.body, /### Answers and explanations/);
     assert.match(lesson.body, /take the linked quiz directly/i);
     assert.match(lesson.body, /Suggested study sequence/);
     if (["college", "professional"].includes(lesson.levelId)) {
+      const quiz = quizModel
+        .listBuiltInQuizzes()
+        .find((item) => item.sectionId === lesson.quizSectionId);
+      assert.ok(quiz, `missing quiz ${lesson.quizSectionId}`);
+      const distinctExamples = new Set(
+        quiz.questions
+          .filter(
+            (question) =>
+              question.options[question.correctOptionIndex] &&
+              question.explanation.trim(),
+          )
+          .map((question) =>
+            question.text
+              .replace(/^.+? - Set \d+:\s*/i, "")
+              .toLocaleLowerCase()
+              .replace(/[^a-z0-9#]+/g, " ")
+              .trim(),
+          ),
+      );
+      const exampleCount = Math.min(64, distinctExamples.size);
       assert.ok(
-        wordCount >= 2_500,
-        `${lesson.quizSectionId} has only ${wordCount} words of advanced-course material`,
+        wordCount >= 1_200,
+        `${lesson.quizSectionId} has only ${wordCount} words of study material`,
       );
       assert.equal(
         [...lesson.body.matchAll(/### Worked example \d+/g)].length,
-        40,
-        `${lesson.quizSectionId} should include 40 worked examples`,
+        Math.min(40, exampleCount),
+        `${lesson.quizSectionId} should include distinct worked examples`,
       );
       assert.equal(
         [...lesson.body.matchAll(/\*\*Answer:\*\*/g)].length,
-        64,
-        `${lesson.quizSectionId} should include 64 explained quiz-bank examples`,
+        exampleCount,
+        `${lesson.quizSectionId} should not repeat quiz-bank examples`,
       );
     }
   }

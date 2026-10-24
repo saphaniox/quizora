@@ -54,14 +54,26 @@ export function fromMap(
 function explainFact(question: string, answer: string): string {
   const prompt = question.replace(/[?]+$/, "").trim();
   const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-  let match = prompt.match(/^what is (.+?) called$/i);
+  let match = prompt.match(/^what is produced when (.+)$/i);
+  if (match) {
+    const product = answer.replace(/^(a|an) /i, "");
+    return `When ${match[1] as string}, the products include ${product}.`;
+  }
+
+  match = prompt.match(/^what is (?:the )?process of (.+)$/i);
+  if (match) return `The process is called ${answer}.`;
+
+  match = prompt.match(/^what is the name of (.+)$/i);
+  if (match) return `The name for ${match[1] as string} is ${answer}.`;
+
+  match = prompt.match(/^what is (.+?) called$/i);
   if (match) return `${capitalize(match[1] as string)} is called ${answer}.`;
 
   match = prompt.match(/^what factors can increase (.+)$/i);
   if (match) return `${capitalize(answer)} can increase ${match[1] as string}.`;
 
   match = prompt.match(/^what do we call (.+)$/i);
-  if (match) return `We call ${match[1] as string} ${answer}.`;
+  if (match) return `The term for ${match[1] as string} is "${answer}".`;
 
   match = prompt.match(/^what does (.+?) mean(?: in (.+))?$/i);
   if (match) {
@@ -320,7 +332,7 @@ function explainFact(question: string, answer: string): string {
   if (match) return `The Premier League began in ${answer}.`;
 
   match = prompt.match(/^when does a square matrix have an inverse$/i);
-  if (match) return `A square matrix has an inverse when ${answer.toLowerCase()}.`;
+  if (match) return `A square matrix has an inverse when ${answer.replace(/^when\s+/i, "").toLowerCase()}.`;
 
   match = prompt.match(/^what defines the work included in a project$/i);
   if (match) return `The project scope defines the work included in the project.`;
@@ -329,7 +341,7 @@ function explainFact(question: string, answer: string): string {
   if (match) return `A project closes formally with ${answer.toLowerCase()}.`;
 
   match = prompt.match(/^when is a set of vectors linearly dependent$/i);
-  if (match) return `A set of vectors is linearly dependent when ${answer.toLowerCase()}.`;
+  if (match) return `A set of vectors is linearly dependent when ${answer.replace(/^when\s+/i, "").toLowerCase()}.`;
 
   match = prompt.match(/^roughly how many (.+?) fit in (.+)$/i);
   if (match) return `Roughly ${answer.toLowerCase()} ${match[1] as string} fit in ${match[2] as string}.`;
@@ -355,7 +367,7 @@ function explainFact(question: string, answer: string): string {
   match = prompt.match(/^where is (.+?) found$/i);
   if (match) return `${capitalize(match[1] as string)} is found ${answer.toLowerCase()}.`;
 
-  match = prompt.match(/^what (.+?) ([a-z]+s) (.+)$/i);
+  match = prompt.match(/^what (?!is\b|are\b|was\b|were\b)(.+?) ([a-z]+s) (.+)$/i);
   if (match) {
     const noun = match[1] as string;
     const answerText = capitalize(answer);
@@ -375,7 +387,7 @@ function explainFact(question: string, answer: string): string {
     return `${capitalize(answerText)} ${inflected} ${predicate}.`;
   }
 
-  match = prompt.match(/^which (.+?) (carries|produces|contains|converts|controls|makes|absorbs|transports|protects|regulates|measures|uses|stores|fights|filters|breaks down|helps|develops|turns|allows|prevents) (.+)$/i);
+  match = prompt.match(/^which (.+?) (carries|produces|contains|converts|controls|makes|absorbs|transports|protects|regulates|measures|uses|stores|fights|fight|filters|routes|breaks down|helps|develops|turns|allows|prevents) (.+)$/i);
   if (match) {
     const answerText = /^(a|an|the) /i.test(answer) ? answer : `The ${answer}`;
     return `${capitalize(answerText)} ${match[2] as string} ${match[3] as string}.`;
@@ -475,7 +487,7 @@ function explainFact(question: string, answer: string): string {
   match = prompt.match(/^how many (.+?) should (.+?) (.+)$/i);
   if (match) return `${capitalize(match[2] as string)} should ${match[3] as string} ${answer.toLowerCase()} ${match[1] as string}.`;
 
-  match = prompt.match(/^which (.+?) (is|are|was|were|has|have|can|[a-z]+) (.+)$/i);
+  match = prompt.match(/^which (.+?) (is|are|was|were|has|have|can) (.+)$/i);
   if (match) {
     let verb = match[2] as string;
     const predicate = match[3] as string;

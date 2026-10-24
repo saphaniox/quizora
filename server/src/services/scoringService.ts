@@ -1,11 +1,11 @@
 import { randomUUID } from "node:crypto";
-import {
-  CERTIFICATE_QUESTION_COUNT,
-  findQuiz,
-  PASS_MARK,
-} from "../models/quizModel.js";
+import { findQuiz, PASS_MARK } from "../models/quizModel.js";
 import * as leaderboardModel from "../models/leaderboardModel.js";
 import * as certificateModel from "../models/certificateModel.js";
+import {
+  certificateTierForQuestionCount,
+  isCertificateRunEligible,
+} from "./certificateAwards.js";
 import type {
   AnswerPayload,
   AnswerResult,
@@ -79,21 +79,33 @@ function quizPushNotification(input: {
       `That’s a great start in ${quizTitle} — you scored ${percentage}%.`,
     );
   }
-  if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 1) {
+  if (
+    leaderboardImproved &&
+    previousPercentage !== null &&
+    leaderboardRank === 1
+  ) {
     return event(
       "leaderboard-first",
       "You’re in first place!",
       `Your latest ${quizTitle} score puts you at the top of the leaderboard.`,
     );
   }
-  if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 2) {
+  if (
+    leaderboardImproved &&
+    previousPercentage !== null &&
+    leaderboardRank === 2
+  ) {
     return event(
       "leaderboard-second",
       "You’ve reached second place!",
       `Your new best in ${quizTitle} has moved you up the leaderboard.`,
     );
   }
-  if (leaderboardImproved && previousPercentage !== null && leaderboardRank === 3) {
+  if (
+    leaderboardImproved &&
+    previousPercentage !== null &&
+    leaderboardRank === 3
+  ) {
     return event(
       "leaderboard-third",
       "You’ve made the top three!",
@@ -286,8 +298,8 @@ export async function scoreSubmission(
   if (!leaderboardVisible) await leaderboardModel.hideParticipantEntries(entry);
 
   const fullSection = graded.length === quiz.questions.length;
-  const certificateSection = quiz.questions.length === CERTIFICATE_QUESTION_COUNT;
-  const certificateEligible = fullSection && certificateSection;
+  const certificateTier = certificateTierForQuestionCount(maxScore);
+  const certificateEligible = isCertificateRunEligible(maxScore, fullSection);
   const passed = percentage >= PASS_MARK;
   let certificate: Certificate | null = null;
   let certificateMessage: string;
@@ -295,6 +307,7 @@ export async function scoreSubmission(
   if (passed && certificateEligible) {
     certificate = await certificateModel.issue({
       code: certificateModel.makeCode(quiz.id),
+      awardTier: certificateTier ?? "standard",
       playerName,
       quizId: quiz.id,
       quizTitle: quiz.title,
@@ -308,13 +321,21 @@ export async function scoreSubmission(
       percentage,
       issuedAt: new Date().toISOString(),
     });
-    certificateMessage = `Congratulations! You scored ${percentage}% and earned a certificate in ${quiz.title}.`;
-  } else if (!certificateSection) {
-    certificateMessage = `This ${quiz.questions.length}-question section is available for practice. Certificates are issued after a verified ${CERTIFICATE_QUESTION_COUNT}-question section.`;
+    const awardName =
+      certificateTier === "gold"
+        ? "Gold"
+        : certificateTier === "platinum"
+          ? "Platinum"
+          : certificateTier === "diamond"
+            ? "Diamond"
+            : "achievement";
+    certificateMessage = `Congratulations! You scored ${percentage}% and earned a ${awardName} certificate in ${quiz.title}.`;
+  } else if (certificateEligible && !passed) {
+    certificateMessage = `You need ${PASS_MARK}% or higher on all ${maxScore} questions to earn this certificate.`;
   } else if (passed) {
-    certificateMessage = `Great score! Certificates are awarded after completing all ${CERTIFICATE_QUESTION_COUNT} questions.`;
+    certificateMessage = `Complete 100 questions with ${PASS_MARK}% or higher for Gold, 200 for Platinum, or all 500 for Diamond.`;
   } else {
-    certificateMessage = `You need ${PASS_MARK}% or more after completing all ${CERTIFICATE_QUESTION_COUNT} questions to earn a certificate.`;
+    certificateMessage = `Gold requires 100 questions, Platinum 200, and Diamond all 500 questions. A score of ${PASS_MARK}% or higher is required.`;
   }
 
   const leaderboardRank = leaderboardResult
@@ -353,6 +374,7 @@ export async function scoreSubmission(
           template: "certificateEarned",
           data: {
             ...commonData,
+            certificateTier: certificate.awardTier,
             certificateCode: certificate.code,
             certificateUrl: appUrl(`/certificates/${certificate.code}`),
           },

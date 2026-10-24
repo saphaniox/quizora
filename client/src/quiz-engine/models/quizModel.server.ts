@@ -7,6 +7,11 @@ import {
   type Draft,
   type SectionDefinition,
 } from "./bank/helpers.server";
+import {
+  FULL_SECTION_CERTIFICATE_QUESTION_COUNT,
+  GOLD_CERTIFICATE_QUESTION_COUNT,
+  PLATINUM_CERTIFICATE_QUESTION_COUNT,
+} from "./certificateAwards.server";
 import { primarySections } from "./bank/primary.server";
 import { primaryExtraSections } from "./bank/primary-extra.server";
 import { secondarySections } from "./bank/secondary.server";
@@ -29,7 +34,7 @@ import {
 import { popularTopicSections } from "./bank/popular-topics.server";
 
 export const PASS_MARK = 80;
-export const CERTIFICATE_QUESTION_COUNT = 500;
+export const CERTIFICATE_QUESTION_COUNT = FULL_SECTION_CERTIFICATE_QUESTION_COUNT;
 
 const descriptionTails: Record<string, string> = {
   foundations: "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
@@ -69,11 +74,13 @@ const foundationPresentation: Record<string, Pick<SectionDefinition, "name" | "d
   },
   "foundations-ict": {
     name: "Digital Literacy",
-    description: "Computing concepts, online safety, information skills and responsible technology use.",
+    description:
+      "Computing concepts, online safety, information skills and responsible technology use.",
   },
   "foundations-money-time": {
     name: "Practical Numeracy & Time Management",
-    description: "Financial calculations, time planning, schedules and applied numerical decisions.",
+    description:
+      "Financial calculations, time planning, schedules and applied numerical decisions.",
   },
   "foundations-reading": {
     name: "Academic Reading & Grammar",
@@ -93,7 +100,8 @@ const foundationPresentation: Record<string, Pick<SectionDefinition, "name" | "d
   },
   "foundations-times-tables": {
     name: "Multiplicative Reasoning",
-    description: "Multiplication, factors, multiples and proportional reasoning for secondary entry.",
+    description:
+      "Multiplication, factors, multiples and proportional reasoning for secondary entry.",
   },
   "foundations-division": {
     name: "Division, Ratios & Proportion",
@@ -351,8 +359,8 @@ export function findQuiz(id: string): Quiz | undefined {
 }
 
 /**
- * Build the client-safe quiz. `limit` produces a shorter practice run, which is
- * never certificate eligible. `seed` shuffles question order for every run.
+ * Build the client-safe quiz. `limit` selects a run length; only the 100-, 200-,
+ * and verified full-section runs can earn certificates. `seed` shuffles each run.
  */
 export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQuiz {
   const total = quiz.questions.length;
@@ -367,7 +375,10 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
   }
   const questions = pool.slice(0, count).map(({ id, text, options }) => ({ id, text, options }));
   const fullSection = count === total;
-  const certificateEligible = fullSection && total === CERTIFICATE_QUESTION_COUNT;
+  const certificateEligible =
+    count === GOLD_CERTIFICATE_QUESTION_COUNT ||
+    count === PLATINUM_CERTIFICATE_QUESTION_COUNT ||
+    (fullSection && total === CERTIFICATE_QUESTION_COUNT);
   return {
     id: quiz.id,
     title: quiz.title,

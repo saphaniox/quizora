@@ -118,8 +118,11 @@ export interface LeaderboardEntry {
   completedAt: string;
 }
 
+export type CertificateTier = "gold" | "platinum" | "diamond" | "standard";
+
 export interface Certificate {
   code: string;
+  awardTier: CertificateTier;
   playerName: string;
   quizId: string;
   quizTitle: string;
