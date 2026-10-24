@@ -21,7 +21,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCurrentUser } from "@/lib/api";
-import { syncPushNotifications } from "@/lib/native-services";
+import { setNativeBannerSuppressed, syncPushNotifications } from "@/lib/native-services";
 
 const links = [
   { to: "/learn", label: "Learn", icon: GraduationCap },
@@ -50,6 +50,12 @@ export function Header() {
   useEffect(() => {
     if (userId) void syncPushNotifications();
   }, [userId]);
+
+  useEffect(() => {
+    void setNativeBannerSuppressed(open);
+    document.documentElement.dataset["mobileNavigationOpen"] = String(open);
+    window.dispatchEvent(new CustomEvent("quitech:mobile-navigation", { detail: open }));
+  }, [open]);
 
   return (
     <header className="sticky top-0 z-50 border-b border-border bg-background/95 backdrop-blur supports-backdrop-filter:bg-background/70 print:hidden">

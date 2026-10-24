@@ -187,11 +187,12 @@ function drawDiamondWatermark(doc: jsPDF, width: number): void {
   doc.line(upperRight, upperY, center, bottomY);
 }
 
-/** Render a certificate as a landscape A4 PDF and trigger a download. */
-export async function downloadCertificatePdf(
+async function buildCertificatePdf(
   certificate: Certificate,
   verifyUrl: string,
-): Promise<void> {
+  options: { sample?: boolean } = {},
+): Promise<{ blob: Blob; dataUri: string; filename: string }> {
+  const isSample = options.sample === true;
   const doc = new jsPDF({ orientation: "landscape", unit: "pt", format: "a4" });
   const width = doc.internal.pageSize.getWidth();
   const height = doc.internal.pageSize.getHeight();
@@ -222,11 +223,13 @@ export async function downloadCertificatePdf(
     day: "numeric",
   }).format(new Date(certificate.issuedAt));
   const [logo, watermark] = await Promise.all([logoDataUrl(128), logoDataUrl(512, 0.045)]);
-  const qrCode = await QRCode.toDataURL(verifyUrl, {
-    errorCorrectionLevel: "H",
-    margin: 1,
-    width: 256,
-  });
+  const qrCode = isSample
+    ? null
+    : await QRCode.toDataURL(verifyUrl, {
+        errorCorrectionLevel: "H",
+        margin: 1,
+        width: 256,
+      });
 
   doc.setProperties({
     title: `Quitech Certificate - ${certificate.playerName}`,
@@ -282,9 +285,12 @@ export async function downloadCertificatePdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(badgeColor[0], badgeColor[1], badgeColor[2]);
-  doc.text(`${certificateTierLabel(tier).toUpperCase()} CERTIFICATE`, width - 145, 82, {
-    align: "center",
-  });
+  doc.text(
+    `${isSample ? "SAMPLE " : ""}${certificateTierLabel(tier).toUpperCase()} CERTIFICATE`,
+    width - 145,
+    82,
+    { align: "center" },
+  );
 
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.setFont("helvetica", "bold");
@@ -387,60 +393,116 @@ export async function downloadCertificatePdf(
   doc.line(342, verifyY + 12, 342, verifyY + verifyHeight - 12);
   doc.line(650, verifyY + 12, 650, verifyY + verifyHeight - 12);
 
-  setFillColor(doc, [236, 253, 245]);
-  setDrawColor(doc, [167, 243, 208]);
+  setFillColor(doc, isSample ? [254, 242, 242] : [236, 253, 245]);
+  setDrawColor(doc, isSample ? [252, 165, 165] : [167, 243, 208]);
   doc.circle(103, verifyY + 24, 7, "FD");
-  setFillColor(doc, emerald);
+  setFillColor(doc, isSample ? [185, 28, 28] : emerald);
   doc.circle(103, verifyY + 24, 2.6, "F");
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
-  doc.setTextColor(emerald[0], emerald[1], emerald[2]);
-  doc.text("VERIFIED ONLINE", 118, verifyY + 27);
+  const verificationColor = isSample ? [185, 28, 28] : emerald;
+  doc.setTextColor(verificationColor[0], verificationColor[1], verificationColor[2]);
+  doc.text(isSample ? "SAMPLE ONLY" : "VERIFIED ONLINE", 118, verifyY + 27);
   doc.setFontSize(11);
   doc.setTextColor(navy[0], navy[1], navy[2]);
-  doc.text("Quitech Verification", 102, verifyY + 46);
+  doc.text(isSample ? "Not a real credential" : "Quitech Verification", 102, verifyY + 46);
   doc.setFont("helvetica", "normal");
   doc.setFontSize(8.5);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("Digitally issued and publicly verifiable", 102, verifyY + 59);
+  doc.text(
+    isSample
+      ? "Demonstration of the certificate design"
+      : "Digitally issued and publicly verifiable",
+    102,
+    verifyY + 59,
+  );
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(8);
   doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("CREDENTIAL ID", 496, verifyY + 22, { align: "center" });
+  doc.text(isSample ? "DEMO REFERENCE" : "CREDENTIAL ID", 496, verifyY + 22, {
+    align: "center",
+  });
   doc.setFontSize(12);
   doc.setTextColor(navy[0], navy[1], navy[2]);
-  doc.text(certificate.code, 496, verifyY + 43, { align: "center", maxWidth: 270 });
+  doc.text(
+    isSample ? `SAMPLE-${tier.toUpperCase()}-NOT-VALID` : certificate.code,
+    496,
+    verifyY + 43,
+    { align: "center", maxWidth: 270 },
+  );
   doc.setFontSize(8.5);
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.setFont("helvetica", "normal");
-  doc.text("Use this ID or scan the code to confirm authenticity", 496, verifyY + 58, {
-    align: "center",
-  });
+  doc.text(
+    isSample
+      ? "Sample only - cannot be used for verification"
+      : "Use this ID or scan the code to confirm authenticity",
+    496,
+    verifyY + 58,
+    { align: "center" },
+  );
 
-  const qrSize = 54;
-  const qrX = 680;
-  const qrY = verifyY + 5;
-  doc.setFillColor(255, 255, 255);
-  doc.roundedRect(qrX - 4, qrY - 3, qrSize + 8, qrSize + 8, 3, 3, "F");
-  doc.addImage(qrCode, "PNG", qrX, qrY, qrSize, qrSize);
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(7.5);
-  doc.setTextColor(slate[0], slate[1], slate[2]);
-  doc.text("SCAN TO VERIFY", qrX + qrSize / 2, verifyY + 65, { align: "center" });
+  if (qrCode) {
+    const qrSize = 54;
+    const qrX = 680;
+    const qrY = verifyY + 5;
+    doc.setFillColor(255, 255, 255);
+    doc.roundedRect(qrX - 4, qrY - 3, qrSize + 8, qrSize + 8, 3, 3, "F");
+    doc.addImage(qrCode, "PNG", qrX, qrY, qrSize, qrSize);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(7.5);
+    doc.setTextColor(slate[0], slate[1], slate[2]);
+    doc.text("SCAN TO VERIFY", qrX + qrSize / 2, verifyY + 65, { align: "center" });
+  } else {
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(8);
+    doc.setTextColor(185, 28, 28);
+    doc.text("SAMPLE", 707, verifyY + 35, { align: "center" });
+    doc.text("NOT VALID", 707, verifyY + 48, { align: "center" });
+  }
 
   doc.setFont("helvetica", "bold");
   doc.setFontSize(9);
   doc.setTextColor(navy[0], navy[1], navy[2]);
   doc.text("Powered by SAPTech Uganda", width / 2, height - 40, { align: "center" });
 
-  const filename = `Quitech-certificate-${certificate.code}.pdf`;
+  const filename = isSample
+    ? `Quitech-${tier}-certificate-SAMPLE.pdf`
+    : `Quitech-certificate-${certificate.code}.pdf`;
+
+  return {
+    blob: doc.output("blob"),
+    dataUri: doc.output("datauristring"),
+    filename,
+  };
+}
+
+export async function createCertificatePdfBlob(
+  certificate: Certificate,
+  options: { sample?: boolean } = {},
+): Promise<Blob> {
+  const { blob } = await buildCertificatePdf(certificate, "", options);
+  return blob;
+}
+
+/** Render a certificate as a landscape A4 PDF and trigger a download. */
+export async function downloadCertificatePdf(
+  certificate: Certificate,
+  verifyUrl: string,
+  options: { sample?: boolean } = {},
+): Promise<void> {
+  const { blob, dataUri, filename } = await buildCertificatePdf(certificate, verifyUrl, options);
   if (!Capacitor.isNativePlatform()) {
-    doc.save(filename);
+    const link = document.createElement("a");
+    const objectUrl = URL.createObjectURL(blob);
+    link.href = objectUrl;
+    link.download = filename;
+    link.click();
+    window.setTimeout(() => URL.revokeObjectURL(objectUrl), 1000);
     return;
   }
 
-  const dataUri = doc.output("datauristring");
   const base64 = dataUri.slice(dataUri.indexOf(",") + 1);
   const { uri } = await Filesystem.writeFile({
     path: filename,

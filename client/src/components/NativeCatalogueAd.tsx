@@ -118,9 +118,23 @@ function updateActiveSlot(): void {
   if (animationFrame !== null) window.cancelAnimationFrame(animationFrame);
   animationFrame = window.requestAnimationFrame(() => {
     animationFrame = null;
-    activeSlot = findVisibleSlot();
+    activeSlot =
+      document.documentElement.dataset["mobileNavigationOpen"] === "true"
+        ? null
+        : findVisibleSlot();
     void reconcileAd();
   });
+}
+
+function handleMobileNavigation(event: Event): void {
+  const isOpen = (event as CustomEvent<unknown>).detail === true;
+  document.documentElement.dataset["mobileNavigationOpen"] = String(isOpen);
+  if (isOpen) {
+    activeSlot = null;
+    void reconcileAd();
+  } else {
+    updateActiveSlot();
+  }
 }
 
 function retryActiveAd(): void {
@@ -135,6 +149,7 @@ function attachListeners(): void {
   window.addEventListener("scroll", updateActiveSlot, true);
   window.addEventListener("resize", updateActiveSlot);
   document.addEventListener("visibilitychange", updateActiveSlot);
+  window.addEventListener("quitech:mobile-navigation", handleMobileNavigation);
   window.addEventListener("quitech-native-ads-ready", retryActiveAd);
   resizeObserver = new ResizeObserver(updateActiveSlot);
   updateActiveSlot();
@@ -146,6 +161,7 @@ function detachListeners(): void {
   window.removeEventListener("scroll", updateActiveSlot, true);
   window.removeEventListener("resize", updateActiveSlot);
   document.removeEventListener("visibilitychange", updateActiveSlot);
+  window.removeEventListener("quitech:mobile-navigation", handleMobileNavigation);
   window.removeEventListener("quitech-native-ads-ready", retryActiveAd);
   resizeObserver?.disconnect();
   resizeObserver = null;

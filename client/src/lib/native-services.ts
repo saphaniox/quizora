@@ -36,6 +36,7 @@ let resolvePushRegistration: (() => void) | null = null;
 let rejectPushRegistration: ((error: unknown) => void) | null = null;
 let adsReady = false;
 let adsShouldBeVisible = true;
+let bannerSuppressed = false;
 let requestedBannerPlacement: NativeBannerPlacement | null = null;
 let activeBannerId: string | null = null;
 let adMobInitialization: Promise<void> | null = null;
@@ -48,7 +49,7 @@ let nativeAdRequestsAllowed = false;
 function applyBannerInset(): void {
   if (typeof document === "undefined") return;
   document.body.style.paddingBottom =
-    adsShouldBeVisible && bannerHeight > 0 ? `${bannerHeight}px` : "";
+    adsShouldBeVisible && !bannerSuppressed && bannerHeight > 0 ? `${bannerHeight}px` : "";
 }
 
 function isAdMobTesting(): boolean {
@@ -257,7 +258,7 @@ export async function initializeNativeAds(): Promise<void> {
 async function syncNativeBanner(): Promise<void> {
   if (!Capacitor.isNativePlatform() || !adsReady) return;
 
-  if (!requestedBannerPlacement) {
+  if (!requestedBannerPlacement || bannerSuppressed) {
     adsShouldBeVisible = false;
     applyBannerInset();
     if (activeBannerId) await AdMob.hideBanner();
@@ -399,5 +400,14 @@ export async function setNativeBannerPlacement(
     await syncNativeBanner();
   } catch {
     // A route can change while an ad is loading. The next route update retries the placement.
+  }
+}
+
+export async function setNativeBannerSuppressed(suppressed: boolean): Promise<void> {
+  bannerSuppressed = suppressed;
+  try {
+    await syncNativeBanner();
+  } catch (error) {
+    console.warn("Could not update native banner visibility", error);
   }
 }
