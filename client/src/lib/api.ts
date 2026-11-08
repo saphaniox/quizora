@@ -9,6 +9,7 @@ import type {
   Level,
   Certificate,
 } from "@/types/quiz";
+import { Capacitor } from "@capacitor/core";
 import { loadApiCache, saveApiCache, type SavedProgress } from "@/lib/attempt-store";
 
 export interface AccountUser {
@@ -249,8 +250,12 @@ const API_BASE = "https://api.quitech.online";
 const NATIVE_API_FALLBACK = "https://api.quitech.online";
 const SESSION_TOKEN_KEY = "quitech-session-token";
 
+function usesNativeTokenStorage(): boolean {
+  return typeof window !== "undefined" && Capacitor.isNativePlatform();
+}
+
 function sessionToken(): string | null {
-  if (typeof window === "undefined") return null;
+  if (!usesNativeTokenStorage()) return null;
   try {
     return window.localStorage.getItem(SESSION_TOKEN_KEY);
   } catch {
@@ -259,7 +264,7 @@ function sessionToken(): string | null {
 }
 
 function saveSessionToken(token: string | null): void {
-  if (typeof window === "undefined") return;
+  if (!usesNativeTokenStorage()) return;
   try {
     if (token) window.localStorage.setItem(SESSION_TOKEN_KEY, token);
     else window.localStorage.removeItem(SESSION_TOKEN_KEY);

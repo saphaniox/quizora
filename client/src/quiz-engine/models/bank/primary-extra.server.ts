@@ -2,56 +2,317 @@ import { draft, fromMap, generate, numericOptions, type SectionDefinition } from
 
 type AppliedFoundationArea = "finance" | "reading" | "health" | "reasoning";
 
+const readingTopics = [
+  "a school survey",
+  "a community poll",
+  "a science report",
+  "a library review",
+  "a class project",
+  "a local study",
+  "an environmental survey",
+  "a health questionnaire",
+  "a history essay",
+  "a sports survey",
+];
+const physicalActivities = [
+  "a long-distance run",
+  "an outdoor football practice",
+  "a cycling session",
+  "a field hockey game",
+  "a dance rehearsal",
+  "a hiking trip",
+  "a basketball training session",
+  "a netball match",
+  "a physical education class",
+  "a track workout",
+];
+const rawFoods = [
+  "chicken",
+  "fish",
+  "eggs",
+  "beef",
+  "pork",
+  "tofu",
+  "beans",
+  "mushrooms",
+  "shrimp",
+  "turkey",
+];
+const readyFoods = [
+  "fruit",
+  "salad",
+  "bread",
+  "cooked rice",
+  "cheese",
+  "washed vegetables",
+  "sandwiches",
+  "cake",
+  "cooked pasta",
+  "herbs",
+];
+const healthConcerns = [
+  "a persistent cough",
+  "a recurring headache",
+  "a skin irritation",
+  "ongoing stomach pain",
+  "trouble sleeping",
+  "a change in vision",
+  "a recurring fever",
+  "a dental problem",
+  "persistent anxiety",
+  "an unexplained injury",
+];
+const investigationPairs = [
+  ["the amount of sunlight", "a plant's growth"],
+  ["water temperature", "how quickly sugar dissolves"],
+  ["the surface material", "how far a toy car travels"],
+  ["exercise duration", "heart-rate recovery time"],
+  ["soil type", "the amount of water a plant retains"],
+  ["container shape", "how quickly water cools"],
+  ["the number of practice sessions", "a learner's typing speed"],
+  ["the ramp height", "a ball's travel distance"],
+  ["the amount of detergent", "how much grease is removed"],
+  ["light intensity", "a solar cell's output"],
+];
+
 const secondaryEntryAppliedBank = (area: AppliedFoundationArea) =>
-  generate(500, (index) => {
-    const kind = index % 5;
-    const cycle = Math.floor(index / 5) + 1;
-    if (area === "finance") {
+  generate(
+    500,
+    (index) => {
+      const kind = index % 5;
+      const cycle = Math.floor(index / 5) + 1;
+      if (area === "finance") {
+        if (kind === 0) {
+          const price = 200 + cycle * 25;
+          const rate = 5 + (cycle % 20);
+          const answer = price - (price * rate) / 100;
+          return draft(
+            `An item costs ${price} currency units and is reduced by ${rate}%. What is the sale price?`,
+            String(answer),
+            numericOptions(answer, 10),
+            `The discount is ${rate}% of ${price}; subtract it from the original price to obtain ${answer}.`,
+          );
+        }
+        if (kind === 1) {
+          const income = 800 + cycle * 30;
+          const spending = 300 + cycle * 12;
+          const answer = income - spending;
+          return draft(
+            `A monthly budget has income of ${income} currency units and planned spending of ${spending}. What is the balance?`,
+            String(answer),
+            numericOptions(answer, 20),
+            `Subtract planned spending from income: ${income} - ${spending} = ${answer}.`,
+          );
+        }
+        if (kind === 2) {
+          const start = 7 + (cycle % 8);
+          const duration = 35 + cycle;
+          const total = start * 60 + duration;
+          const hour = Math.floor(total / 60);
+          const minute = total % 60;
+          return draft(
+            `A session starts at ${String(start).padStart(2, "0")}:00 and lasts ${duration} minutes. When does it end?`,
+            `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+            [
+              `${String(start).padStart(2, "0")}:00`,
+              `${String(hour + 1).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+              `${String(hour + 2).padStart(2, "0")}:${String(minute).padStart(2, "0")}`,
+            ],
+            `Add ${duration} minutes to the start time to reach ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}.`,
+          );
+        }
+        if (kind === 3) {
+          const principal = 500 + cycle * 50;
+          const rate = 2 + (cycle % 9);
+          const answer = (principal * rate) / 100;
+          return draft(
+            `What is the simple interest on ${principal} currency units at ${rate}% for one year?`,
+            String(answer),
+            numericOptions(answer, 10),
+            `Simple interest for one year is principal multiplied by rate divided by 100: ${principal} * ${rate}/100 = ${answer}.`,
+          );
+        }
+        const rate = 10 + cycle;
+        const hours = 2 + (cycle % 7);
+        const answer = rate * hours;
+        return draft(
+          `A service charges ${rate} currency units per hour for ${hours} hours. What is the total charge?`,
+          String(answer),
+          numericOptions(answer, 10),
+          `Multiply the hourly rate by the number of hours: ${rate} * ${hours} = ${answer}.`,
+        );
+      }
+      if (area === "reading") {
+        const topic = readingTopics[(cycle - 1) % readingTopics.length] as string;
+        if (kind === 0)
+          return draft(
+            `Which sentence summarizes ${topic} most clearly?`,
+            `${topic[0]?.toUpperCase()}${topic.slice(1)} identified ${cycle + 3} useful trends.`,
+            [
+              `The ${topic} was a survey that identified ${cycle + 3} trends, and those trends were useful trends.`,
+              `There were ${cycle + 3} useful trends, and they were identified by ${topic}.`,
+              `${topic[0]?.toUpperCase()}${topic.slice(1)} identified useful trends, and the number of these trends was ${cycle + 3}.`,
+            ],
+            `The clearest sentence gives the finding directly and avoids repeated or unnecessary wording.`,
+          );
+        if (kind === 1)
+          return draft(
+            `Which revision corrects the subject-verb agreement in: "The list of ${cycle + 2} sources were reviewed"?`,
+            `The list of ${cycle + 2} sources was reviewed.`,
+            [
+              `The list of ${cycle + 2} sources were review.`,
+              `The list of ${cycle + 2} sources are reviewed.`,
+              `The list of ${cycle + 2} sources have reviewed.`,
+            ],
+            `The head noun is the singular word "list", so it requires the singular verb "was".`,
+          );
+        if (kind === 2)
+          return draft(
+            `A poll of ${cycle + 10} readers is presented as proof of a national trend, but no other evidence is cited. What should a careful reader do?`,
+            "Check whether the sample is representative and seek other credible evidence.",
+            [
+              "Accept the conclusion because every response agrees.",
+              "Assume a small poll represents the whole country.",
+              "Ignore any evidence that challenges the claim.",
+            ],
+            `A reader should consider how representative the sample is and compare the claim with reliable evidence.`,
+          );
+        if (kind === 3)
+          return draft(
+            `A study includes only ${cycle + 2} participants. ___, its conclusion should be treated cautiously.`,
+            "Therefore",
+            ["However", "For example", "Meanwhile"],
+            `"Therefore" signals the conclusion that follows from the limited sample.`,
+          );
+        return draft(
+          `A paragraph about ${topic} compares ${cycle + 1} examples. What should its topic sentence do?`,
+          "State the paragraph's main idea",
+          [
+            "List every source in full",
+            "Repeat the title without explaining it",
+            "Give only the final citation",
+          ],
+          `A topic sentence introduces the central idea that the paragraph develops.`,
+        );
+      }
+      if (area === "health") {
+        const activity = physicalActivities[(cycle - 1) % physicalActivities.length] as string;
+        if (kind === 0)
+          return draft(
+            `After ${cycle + 10} minutes of strenuous activity during ${activity}, which action best supports hydration?`,
+            "Drink safe water regularly and rest if needed.",
+            [
+              "Avoid all fluids until the activity ends.",
+              "Share an unlabelled drink.",
+              "Ignore dizziness or confusion.",
+            ],
+            `Regular hydration and attention to warning signs support safe activity.`,
+          );
+        if (kind === 1)
+          return draft(
+            `A kitchen board used for raw ${rawFoods[(cycle - 1) % rawFoods.length]} was later used to prepare ${readyFoods[(cycle - 1) % readyFoods.length]} for ${cycle + 1} people. What should happen before reuse?`,
+            "Clean and sanitise it to prevent cross-contamination.",
+            [
+              "Use it without cleaning if it looks dry.",
+              "Cover it with paper only.",
+              "Place the ready-to-eat food beside the raw food.",
+            ],
+            `Cleaning and sanitising helps prevent microbes from raw food reaching food that will not be cooked further.`,
+          );
+        if (kind === 2)
+          return draft(
+            `Someone has had ${healthConcerns[(cycle - 1) % healthConcerns.length]} for ${cycle + 1} days. Which source is most appropriate for advice?`,
+            "A qualified health professional or trusted health service",
+            [
+              "An anonymous online comment",
+              "A product advertisement",
+              "A rumour shared in a group chat",
+            ],
+            `Persistent or worsening health concerns should be discussed with a qualified professional or trusted health service.`,
+          );
+        if (kind === 3)
+          return draft(
+            `A public health programme plans vaccination visits to ${cycle + 1} communities. Why are vaccines used?`,
+            "They help the immune system prepare to recognise specific infections.",
+            [
+              "They guarantee no illness is ever possible.",
+              "They replace hygiene and medical advice.",
+              "They make antibiotics unnecessary in every case.",
+            ],
+            `Vaccines help train immune responses and are one part of broader disease prevention and health care.`,
+          );
+        return draft(
+          `A student is pressured by ${cycle + 1} classmates to take an unsafe action. What is the most responsible response?`,
+          "Refuse, move to safety, and seek help from a trusted adult or authority.",
+          [
+            "Stay silent to avoid disagreement.",
+            "Take part to fit in.",
+            "Share the situation publicly before finding safety.",
+          ],
+          `Personal safety comes first; refusing pressure and seeking trusted help are responsible steps.`,
+        );
+      }
       if (kind === 0) {
-        const price = 200 + cycle * 25; const rate = 5 + (cycle % 20); const answer = price - (price * rate) / 100;
-        return draft(`An item costs ${price} currency units and is reduced by ${rate}%. What is the sale price?`, String(answer), numericOptions(answer, 10), `The discount is ${rate}% of ${price}; subtract it from the original price to obtain ${answer}.`);
+        const start = 3 + cycle;
+        const step = 2 + (cycle % 9);
+        const answer = start + step * 4;
+        return draft(
+          `What is the next term after ${start}, ${start + step}, ${start + step * 2}, ${start + step * 3}?`,
+          String(answer),
+          numericOptions(answer, step + 2),
+          `The sequence adds ${step} each time, so the next term is ${start + step * 3} + ${step} = ${answer}.`,
+        );
       }
-      if (kind === 1) {
-        const income = 800 + cycle * 30; const spending = 300 + cycle * 12; const answer = income - spending;
-        return draft(`A monthly budget has income of ${income} currency units and planned spending of ${spending}. What is the balance?`, String(answer), numericOptions(answer, 20), `Subtract planned spending from income: ${income} - ${spending} = ${answer}.`);
-      }
+      if (kind === 1)
+        return draft(
+          `A research team verifies ${cycle + 2} reports, and every verified report includes citations. Report A is verified. What follows logically?`,
+          "Report A includes citations.",
+          [
+            "Report A is the only verified report.",
+            "Every report with citations is verified.",
+            "No other report includes citations.",
+          ],
+          `Because every verified report includes citations and Report A is verified, Report A includes citations.`,
+        );
       if (kind === 2) {
-        const start = 7 + (cycle % 8); const duration = 35 + cycle; const total = start * 60 + duration; const hour = Math.floor(total / 60); const minute = total % 60;
-        return draft(`A session starts at ${String(start).padStart(2, "0")}:00 and lasts ${duration} minutes. When does it end?`, `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`, [`${String(start).padStart(2, "0")}:${String(duration % 60).padStart(2, "0")}`, `${String(hour + 1).padStart(2, "0")}:${String(minute).padStart(2, "0")}`, `${String(hour).padStart(2, "0")}:00`], `Add ${duration} minutes to the start time to reach ${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}.`);
+        const total = 40 + cycle * 4;
+        const passed = total - (5 + (cycle % 12));
+        return draft(
+          `Out of ${total} responses, ${passed} meet a criterion. How many do not meet it?`,
+          String(total - passed),
+          numericOptions(total - passed, 3),
+          `Subtract responses that meet the criterion from the total: ${total} - ${passed} = ${total - passed}.`,
+        );
       }
       if (kind === 3) {
-        const principal = 500 + cycle * 50; const rate = 2 + (cycle % 9); const answer = (principal * rate) / 100;
-        return draft(`What is the simple interest on ${principal} currency units at ${rate}% for one year?`, String(answer), numericOptions(answer, 10), `Simple interest for one year is principal multiplied by rate divided by 100: ${principal} * ${rate}/100 = ${answer}.`);
+        const [factor, outcome] = investigationPairs[(cycle - 1) % investigationPairs.length] as [
+          string,
+          string,
+        ];
+        return draft(
+          `A learner repeats each trial ${cycle + 1} times to test whether ${factor} affects ${outcome}. Which method is fairest?`,
+          "Change the factor being tested, keep other conditions similar, and record the outcome.",
+          [
+            "Change several factors at once and guess the result.",
+            "Choose only results that support a preferred answer.",
+            "Use one observation to claim the result is always true.",
+          ],
+          `A fair test changes one relevant factor at a time and records results under consistent conditions.`,
+        );
       }
-      const rate = 10 + cycle; const hours = 2 + (cycle % 7); const answer = rate * hours;
-      return draft(`A service charges ${rate} currency units per hour for ${hours} hours. What is the total charge?`, String(answer), numericOptions(answer, 10), `Multiply the hourly rate by the number of hours: ${rate} * ${hours} = ${answer}.`);
-    }
-    if (area === "reading") {
-      if (kind === 0) return draft(`Which sentence is most concise for report ${cycle}?`, `The survey identified ${cycle + 3} key trends.`, [`The survey, which was a survey, identified ${cycle + 3} key trends that were key.`, `There were ${cycle + 3} key trends, and these trends were identified by the survey.`, `The survey identified key trends, and the key trends were ${cycle + 3} in number.`], `The correct sentence states the information directly without repetition or unnecessary wording.`);
-      if (kind === 1) return draft(`Which revision corrects the subject-verb agreement in: "The list of ${cycle + 2} sources were reviewed"?`, `The list of ${cycle + 2} sources was reviewed.`, [`The list of ${cycle + 2} sources were review.`, `The list of ${cycle + 2} sources are reviewed.`, `The list of ${cycle + 2} sources have reviewed.`], `The head noun is the singular word "list", so it requires the singular verb "was".`);
-      if (kind === 2) return draft(`A writer makes claim ${cycle} and provides no citation. What should a careful reader do?`, "Look for credible evidence before accepting the claim.", ["Accept it because it is written confidently.", "Assume it is true if many people repeat it.", "Ignore all sources that disagree."], `Careful reading requires checking important claims against reliable, relevant evidence.`);
-      if (kind === 3) return draft(`Which transition best completes: "The evidence was limited. ___, the conclusion should remain tentative."`, "Therefore", ["However", "For example", "Meanwhile"], `"Therefore" introduces a conclusion that follows from the limited evidence.`);
-      return draft(`In paragraph ${cycle}, what is the purpose of a topic sentence?`, "To state the paragraph's main idea", ["To list every source", "To repeat the title", "To provide a final citation only"], `A topic sentence guides the reader by introducing the central idea developed in the paragraph.`);
-    }
-    if (area === "health") {
-      if (kind === 0) return draft(`After ${cycle + 10} minutes of strenuous activity in hot weather, which action best supports hydration?`, "Drink safe water regularly and rest if needed.", ["Avoid all fluids until the activity ends.", "Share an unlabelled drink.", "Ignore dizziness or confusion."], `Regular hydration and attention to warning signs support safe activity in hot conditions.`);
-      if (kind === 1) return draft(`A food-preparation surface was used for raw meat in lesson ${cycle}. What should happen before it is used for ready-to-eat food?`, "Clean and sanitise it to prevent cross-contamination.", ["Use it without cleaning if it looks dry.", "Cover it with paper only.", "Place cooked food beside the raw meat."], `Cleaning and sanitising separates raw-food microbes from food that will not be cooked further.`);
-      if (kind === 2) return draft(`Which source is most appropriate for advice about a persistent health concern reported in week ${cycle}?`, "A qualified health professional or trusted health service", ["An anonymous online comment", "A product advertisement", "A rumour shared in a group chat"], `Persistent health concerns deserve advice from a qualified professional or recognised health service.`);
-      if (kind === 3) return draft(`Why are vaccinations used in public health programme ${cycle}?`, "They help the immune system prepare to recognise specific infections.", ["They guarantee no illness is ever possible.", "They replace hygiene and medical advice.", "They make antibiotics unnecessary in every case."], `Vaccines train immune responses; they are one part of broader disease prevention and health care.`);
-      return draft(`A friend feels pressured to take an unsafe action during event ${cycle}. What is the most responsible response?`, "Refuse, move to safety, and seek help from a trusted adult or authority.", ["Stay silent to avoid disagreement.", "Take part to fit in.", "Share the situation publicly before finding safety."], `Personal safety comes first; refusing pressure and seeking trusted help are responsible steps.`);
-    }
-    if (kind === 0) {
-      const start = 3 + cycle; const step = 2 + (cycle % 9); const answer = start + step * 4;
-      return draft(`What is the next term after ${start}, ${start + step}, ${start + step * 2}, ${start + step * 3}?`, String(answer), numericOptions(answer, step + 2), `The sequence adds ${step} each time, so the next term is ${start + step * 3} + ${step} = ${answer}.`);
-    }
-    if (kind === 1) return draft(`All verified sources in set ${cycle} include citations. Report A is a verified source in that set. What follows logically?`, "Report A includes citations.", ["Report A is the only verified source.", "Every cited report is verified.", "No other report includes citations."], `If every verified source in the set includes citations and A is verified, then A includes citations.`);
-    if (kind === 2) {
-      const total = 40 + cycle * 4; const passed = total - (5 + cycle % 12);
-      return draft(`Out of ${total} responses, ${passed} meet a criterion. How many do not meet it?`, String(total - passed), numericOptions(total - passed, 3), `Subtract responses that meet the criterion from the total: ${total} - ${passed} = ${total - passed}.`);
-    }
-    if (kind === 3) return draft(`Which question would best test claim ${cycle} fairly?`, "Does the result change when one variable is altered while other conditions stay the same?", ["Which outcome do we prefer?", "Can we ignore results that disagree?", "Will one example prove the claim?"], `A fair test changes one relevant variable at a time and compares evidence objectively.`);
-    return draft(`A plan has two possible actions in scenario ${cycle}. Which approach shows sound decision-making?`, "Compare evidence, risks, and likely consequences before choosing.", ["Choose the first option without reading it.", "Ignore information that challenges a preference.", "Assume the most popular option is always correct."], `Sound decisions use relevant evidence and consider consequences instead of relying on impulse or popularity.`);
-  }, `secondary-entry-${area}`);
+      return draft(
+        `A person has ${cycle + 10} minutes to choose between two travel routes. Which approach shows sound decision-making?`,
+        "Compare reliable information, risks, and likely consequences before choosing.",
+        [
+          "Choose the first option without checking it.",
+          "Ignore information that challenges a preference.",
+          "Assume the most popular route is always best.",
+        ],
+        `Sound decisions use relevant evidence and consider consequences instead of relying on impulse or popularity.`,
+      );
+    },
+    `secondary-entry-${area}`,
+  );
 
 const moneyTimeBank = () =>
   generate(
@@ -321,27 +582,27 @@ export const primaryExtraSections: SectionDefinition[] = [
     name: "Money & Time",
     description: "Shopping change, prices, clocks and calendars.",
     difficulty: "Easy",
-    build: moneyTimeBank,
+    build: () => secondaryEntryAppliedBank("finance"),
   },
   {
     id: "foundations-reading",
     name: "Reading & Grammar",
     description: "Parts of speech, punctuation, spelling and sentences.",
     difficulty: "Easy",
-    build: readingBank,
+    build: () => secondaryEntryAppliedBank("reading"),
   },
   {
     id: "foundations-health",
     name: "Health & Hygiene",
     description: "Personal hygiene, nutrition, safety and staying well.",
     difficulty: "Easy",
-    build: healthBank,
+    build: () => secondaryEntryAppliedBank("health"),
   },
   {
     id: "foundations-reasoning",
     name: "Everyday Problem Solving",
     description: "Number patterns and simple real-life word problems.",
     difficulty: "Easy",
-    build: reasoningBank,
+    build: () => secondaryEntryAppliedBank("reasoning"),
   },
 ];

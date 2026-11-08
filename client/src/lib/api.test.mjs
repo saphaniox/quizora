@@ -55,6 +55,7 @@ pool.query = async (sql, values) => {
 const app = await createApp();
 const storage = new Map();
 globalThis.window = {
+  location: { protocol: "https:", hostname: "quitech.online" },
   localStorage: {
     getItem: (key) => storage.get(key) ?? null,
     setItem: (key, value) => storage.set(key, value),
@@ -63,22 +64,39 @@ globalThis.window = {
 };
 let calls = [];
 let failure = false;
+const cookies = new Map();
 globalThis.fetch = async (url, init) => {
   calls.push({ url, init });
   if (failure) throw new TypeError("Network unavailable");
-  assert.ok(url.startsWith("/api/"));
+  const target = new URL(url, "https://quitech.online");
+  const path = target.pathname.startsWith("/api/") ? target.pathname.slice(4) : target.pathname;
+  const headers = new Headers(init.headers);
+  if (cookies.size && !headers.has("cookie")) {
+    headers.set("cookie", [...cookies].map(([name, value]) => `${name}=${value}`).join("; "));
+  }
   const result = await app.inject({
     method: init.method ?? "GET",
-    url: url.slice(4),
-    headers: Object.fromEntries(init.headers),
+    url: `${path}${target.search}`,
+    headers: Object.fromEntries(headers),
     ...(init.body ? { payload: init.body } : {}),
   });
+  const setCookies = result.headers["set-cookie"];
+  for (const setCookie of Array.isArray(setCookies) ? setCookies : setCookies ? [setCookies] : []) {
+    const [pair = "", ...attributes] = setCookie.split(";");
+    const separator = pair.indexOf("=");
+    if (separator < 0) continue;
+    const name = pair.slice(0, separator).trim();
+    const value = pair.slice(separator + 1).trim();
+    const expires = attributes.some((attribute) => /^max-age=0\b/i.test(attribute.trim()));
+    if (!value || expires) cookies.delete(name);
+    else cookies.set(name, value);
+  }
   return new Response(result.body, { status: result.statusCode });
 };
 let source = await readFile(new URL("./api.ts", import.meta.url), "utf8");
 source = source.replace(
   'import { Capacitor } from "@capacitor/core";',
-  "const Capacitor = { isNativePlatform: () => false };",
+  "const Capacitor = { isNativePlatform: () => globalThis.__quitechNativePlatform === true };",
 );
 source = source.replace(
   /import \{ loadApiCache[^;]+;/,
@@ -89,6 +107,7 @@ const compiled = ts.transpileModule(source, {
   compilerOptions: { module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
 }).outputText;
 const api = await import(`data:text/javascript;base64,${Buffer.from(compiled).toString("base64")}`);
+globalThis.__quitechNativePlatform = false;
 
 test("email and phone registration, sign in, current user, and logout", async () => {
   for (const contact of [{ email: "test@example.com" }, { phoneE164: "+256700000001" }]) {
@@ -116,16 +135,41 @@ test("email and phone registration, sign in, current user, and logout", async ()
     assert.equal((await api.getCurrentUser()).user.id, registered.user.id);
     failure = true;
     await assert.rejects(api.logoutAccount(), /Network unavailable/);
-    assert.ok(storage.get("quitech-session-token"), "failed logout retains session for retry");
+    assert.ok(cookies.size, "failed logout retains the browser session for retry");
     failure = false;
     await api.logoutAccount();
-    assert.equal(storage.has("quitech-session-token"), false);
+    assert.equal(cookies.size, 0);
   }
 });
 
 test("bodyless DELETE reaches authorization instead of JSON parser failure", async () => {
   await assert.rejects(api.deleteAccountProgress("example"), /Sign in to clear saved progress/);
   assert.equal(calls.at(-1).init.headers.has("content-type"), false);
+});
+
+test("native authentication stores and sends bearer tokens", async () => {
+  globalThis.__quitechNativePlatform = true;
+  window.location = { protocol: "capacitor:", hostname: "localhost" };
+
+  try {
+    const registered = await api.registerAccount({
+      email: "native-test@example.com",
+      displayName: "Native Test",
+      password: "native-test-password",
+    });
+    assert.ok(registered.token);
+    assert.equal(storage.get("quitech-session-token"), registered.token);
+
+    await api.getCurrentUser();
+    assert.equal(calls.at(-1).init.headers.get("authorization"), `Bearer ${registered.token}`);
+
+    await api.logoutAccount();
+    assert.equal(calls.at(-1).init.headers.get("authorization"), `Bearer ${registered.token}`);
+    assert.equal(storage.has("quitech-session-token"), false);
+  } finally {
+    globalThis.__quitechNativePlatform = false;
+    window.location = { protocol: "https:", hostname: "quitech.online" };
+  }
 });
 
 test("Fastify reproduces original empty JSON logout failure", async () => {

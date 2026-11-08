@@ -116,6 +116,9 @@ function CertificatePage() {
           ornament: "border-sky-700",
           badge: "border-sky-200 bg-sky-50 text-sky-700",
           title: "text-sky-800",
+          icon: "text-sky-700",
+          rule: "bg-sky-500/70",
+          dot: "bg-sky-700",
         }
       : certificateTier === "platinum"
         ? {
@@ -127,6 +130,9 @@ function CertificatePage() {
             ornament: "border-slate-600",
             badge: "border-slate-300 bg-slate-100 text-slate-700",
             title: "text-slate-700",
+            icon: "text-slate-600",
+            rule: "bg-slate-400",
+            dot: "bg-slate-600",
           }
         : certificateTier === "gold"
           ? {
@@ -138,6 +144,9 @@ function CertificatePage() {
               ornament: "border-amber-700",
               badge: "border-amber-200 bg-amber-50 text-amber-800",
               title: "text-amber-800",
+              icon: "text-amber-700",
+              rule: "bg-amber-500/70",
+              dot: "bg-amber-700",
             }
           : {
               paper: "bg-[#fbfcf8]",
@@ -148,6 +157,9 @@ function CertificatePage() {
               ornament: "border-amber-600",
               badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
               title: "text-blue-800",
+              icon: "text-blue-700",
+              rule: "bg-amber-500/70",
+              dot: "bg-blue-700",
             };
   const TierWatermark =
     certificateTier === "diamond"
@@ -299,7 +311,7 @@ function CertificatePage() {
           </div>
 
           <div className="mx-auto mt-12 max-w-3xl">
-            <Award className="mx-auto h-12 w-12 text-primary" />
+            <Award className={`mx-auto h-12 w-12 ${certificateTheme.icon}`} />
             <p
               className={`mt-5 text-xs font-semibold uppercase tracking-[0.2em] ${certificateTheme.title}`}
             >
@@ -309,11 +321,11 @@ function CertificatePage() {
               className="mx-auto mt-4 flex max-w-xs items-center justify-center gap-3"
               aria-hidden="true"
             >
-              <span className="h-px flex-1 bg-amber-500/70" />
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-              <span className="h-2.5 w-2.5 rounded-full bg-blue-700" />
-              <span className="h-1.5 w-1.5 rounded-full bg-amber-600" />
-              <span className="h-px flex-1 bg-amber-500/70" />
+              <span className={`h-px flex-1 ${certificateTheme.rule}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${certificateTheme.dot}`} />
+              <span className={`h-2.5 w-2.5 rounded-full ${certificateTheme.icon}`} />
+              <span className={`h-1.5 w-1.5 rounded-full ${certificateTheme.dot}`} />
+              <span className={`h-px flex-1 ${certificateTheme.rule}`} />
             </div>
             <p className="mt-5 text-sm text-slate-600">Presented with pride to</p>
             <h1 className="mt-3 wrap-break-word text-3xl font-bold text-slate-950 sm:text-4xl">

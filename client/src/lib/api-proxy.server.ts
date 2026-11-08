@@ -1,11 +1,7 @@
 const DEFAULT_SERVER_API_BASE = "https://api.quitech.online";
 const DEFAULT_PROXY_HOSTS = [
-  "quitech.com",
-  "www.quitech.com",
-  "api.quitech.online",
   "quitech.online",
   "www.quitech.online",
-  "quizora-two-mocha.vercel.app",
 ];
 const API_ENV_KEYS = ["SERVER_API_URL", "API_URL", "VITE_SERVER_API_URL", "VITE_API_URL"] as const;
 const FORWARDED_REQUEST_HEADERS = [

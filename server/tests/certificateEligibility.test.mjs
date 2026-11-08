@@ -4,6 +4,7 @@ import test from "node:test";
 import {
   CERTIFICATE_QUESTION_COUNT,
   PASS_MARK,
+  listBuiltInQuizzes,
   toPublicQuiz,
 } from "../dist/models/quizModel.js";
 import {
@@ -83,6 +84,55 @@ test("a full 500-question section remains eligible for Diamond", () => {
     isCertificateRunEligible(CERTIFICATE_QUESTION_COUNT, false),
     false,
   );
+});
+
+test("full-length runs are self-paced while short practice runs remain timed", () => {
+  const quiz = makeQuiz(CERTIFICATE_QUESTION_COUNT);
+  assert.equal(toPublicQuiz(quiz).timeLimitSeconds, 0);
+  assert.equal(toPublicQuiz(quiz, 100).timeLimitSeconds, 100 * 60);
+});
+
+test("new foundation banks have 500 distinct questions and usable answer choices", () => {
+  const sectionIds = [
+    "foundations-money-time",
+    "foundations-reading",
+    "foundations-health",
+    "foundations-reasoning",
+  ];
+  const quizzes = listBuiltInQuizzes();
+
+  for (const sectionId of sectionIds) {
+    const quiz = quizzes.find(({ id }) => id === sectionId);
+    assert.ok(quiz, `missing section ${sectionId}`);
+    assert.equal(
+      quiz.questions.length,
+      500,
+      `${sectionId} should support full runs`,
+    );
+    assert.equal(
+      new Set(quiz.questions.map(({ text }) => text)).size,
+      500,
+      `${sectionId} should not repeat prompts`,
+    );
+    for (const question of quiz.questions) {
+      assert.doesNotMatch(
+        question.text,
+        /\b(?:report|claim|set|week|lesson|event|scenario|paragraph)\s+\d+\b/i,
+        `${question.id} contains a synthetic sequence label`,
+      );
+      assert.equal(
+        new Set(question.options).size,
+        4,
+        `${question.id} has repeated choices`,
+      );
+      assert.ok(
+        Number.isInteger(question.correctOptionIndex) &&
+          question.correctOptionIndex >= 0 &&
+          question.correctOptionIndex < 4,
+        `${question.id} has an invalid answer key`,
+      );
+    }
+  }
 });
 
 test("a limited practice run is never certificate eligible", () => {

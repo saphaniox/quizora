@@ -14,49 +14,49 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
         {
           "id": "foundations-mathematics",
           "title": "Quantitative Reasoning",
-          "description": "Arithmetic, fractions, estimation and introductory algebra for secondary entry. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Arithmetic, fractions, estimation and introductory algebra for secondary entry. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Quantitative Reasoning",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-mathematics",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-english",
           "title": "English Language",
-          "description": "Vocabulary, grammar, sentence control and precise written communication. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Vocabulary, grammar, sentence control and precise written communication. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "English Language",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-english",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-science",
           "title": "Integrated Science",
-          "description": "Scientific reasoning across life science, matter, energy and the environment. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Scientific reasoning across life science, matter, energy and the environment. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Integrated Science",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-science",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-social-studies",
           "title": "Global Studies & Civics",
-          "description": "Geography, citizenship, institutions and evidence-based global awareness. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Geography, citizenship, institutions and evidence-based global awareness. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Global Studies & Civics",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-social-studies",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -68,7 +68,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Core Foundations",
           "sectionId": "foundations-ict",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -80,7 +80,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Core Foundations",
           "sectionId": "foundations-money-time",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -92,43 +92,43 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Core Foundations",
           "sectionId": "foundations-reading",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-health",
           "title": "Health, Wellbeing & Safety",
-          "description": "Health literacy, personal safety, nutrition and responsible everyday decisions. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Health literacy, personal safety, nutrition and responsible everyday decisions. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Health, Wellbeing & Safety",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-health",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-reasoning",
           "title": "Critical Thinking & Problem Solving",
-          "description": "Patterns, logic, quantitative problems and clear step-by-step reasoning. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Patterns, logic, quantitative problems and clear step-by-step reasoning. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Critical Thinking & Problem Solving",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-reasoning",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-arts",
           "title": "Creative Arts, Design & Music",
-          "description": "Visual design, music literacy, cultural arts and creative analysis. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Visual design, music literacy, cultural arts and creative analysis. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Creative Arts, Design & Music",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-arts",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -140,19 +140,19 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Core Foundations",
           "sectionId": "foundations-times-tables",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-division",
           "title": "Division, Ratios & Proportion",
-          "description": "Division, remainders, ratios and proportional reasoning in applied contexts. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Division, remainders, ratios and proportional reasoning in applied contexts. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Division, Ratios & Proportion",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-division",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -164,43 +164,43 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Core Foundations",
           "sectionId": "foundations-fractions",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-measures",
           "title": "Measurement & Applied Geometry",
-          "description": "Units, conversion, perimeter, area and measurement-based problem solving. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Units, conversion, perimeter, area and measurement-based problem solving. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Measurement & Applied Geometry",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-measures",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-time",
           "title": "Time, Schedules & Planning",
-          "description": "Durations, timetables, time zones and practical planning calculations. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Durations, timetables, time zones and practical planning calculations. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Time, Schedules & Planning",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-time",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-money",
           "title": "Personal Finance & Budgeting",
-          "description": "Costs, change, discounts, budgets and sound financial decisions. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Costs, change, discounts, budgets and sound financial decisions. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Personal Finance & Budgeting",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-money",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -212,55 +212,55 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Core Foundations",
           "sectionId": "foundations-rounding",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-spelling",
           "title": "English Usage & Editing",
-          "description": "Spelling, grammar, punctuation and precise word choice in formal writing. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Spelling, grammar, punctuation and precise word choice in formal writing. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "English Usage & Editing",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-spelling",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-wellbeing",
           "title": "Wellbeing & Health Literacy",
-          "description": "Evidence-based personal wellbeing, prevention, safety and informed choices. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Evidence-based personal wellbeing, prevention, safety and informed choices. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Wellbeing & Health Literacy",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-wellbeing",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-world",
           "title": "World Geography & Global Awareness",
-          "description": "Places, people, environments and global patterns for informed citizenship. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Places, people, environments and global patterns for informed citizenship. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "World Geography & Global Awareness",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-world",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
           "id": "foundations-place-value",
           "title": "Number Sense & Place Value",
-          "description": "Whole numbers, decimals, place value and numerical representation. Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+          "description": "Whole numbers, decimals, place value and numerical representation. Designed for confident secondary-entry preparation and durable academic understanding.",
           "category": "Number Sense & Place Value",
           "levelId": "foundations",
           "levelName": "Core Foundations",
           "sectionId": "foundations-place-value",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         }
       ]
@@ -282,7 +282,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-algebra",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -294,7 +294,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-geometry",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -306,7 +306,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-chemistry",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -318,7 +318,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-physics",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -330,7 +330,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-biology",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -342,7 +342,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-geography",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -354,7 +354,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-history",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -366,7 +366,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-literature",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -378,7 +378,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-business",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -390,7 +390,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-computer",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -402,7 +402,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-economics",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -414,7 +414,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-agriculture",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -426,7 +426,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-trigonometry",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -438,7 +438,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-statistics",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -450,7 +450,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-physics-numeric",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -462,7 +462,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-chemistry-formulas",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -474,7 +474,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-human-biology",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -486,7 +486,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-world-history",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -498,7 +498,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-literature-in-english",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -510,7 +510,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-computer-systems",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -522,7 +522,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Secondary Education",
           "sectionId": "secondary-algebra-drills",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         }
       ]
@@ -544,7 +544,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-calculus",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -556,7 +556,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-statistics",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -568,7 +568,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-programming",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -580,7 +580,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-economics",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -592,7 +592,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-digital-logic",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -604,7 +604,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-accounting",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -616,7 +616,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-linear-algebra",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -628,7 +628,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-databases",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -640,7 +640,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-engineering-physics",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -652,7 +652,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-management",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -664,7 +664,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-psychology",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -676,7 +676,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-matrix-vector-algebra",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -688,7 +688,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-probability",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -700,7 +700,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-financial-accounting",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -712,7 +712,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-business-law",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -724,7 +724,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-data-structures",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -736,7 +736,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-operating-systems",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -748,7 +748,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-environmental-science",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -760,7 +760,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-research-methods",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -772,7 +772,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-percentages-finance",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -784,7 +784,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-calculus-drills",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -796,7 +796,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "College & University",
           "sectionId": "college-project-management",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         }
       ]
@@ -818,7 +818,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-electrical",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -830,7 +830,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-it",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -842,7 +842,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-finance",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -854,7 +854,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-project-management",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -866,7 +866,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-safety",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -878,7 +878,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-data-ai",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -890,7 +890,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-iot",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -902,7 +902,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-automation",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -914,7 +914,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-cybersecurity",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -926,7 +926,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-mechanical",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -938,7 +938,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-civil",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -950,7 +950,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-healthcare",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -962,7 +962,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-agriculture",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -974,7 +974,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-hr",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -986,7 +986,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-law",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -998,7 +998,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-automotive",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1010,7 +1010,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-cloud",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1022,7 +1022,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-marketing",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1034,7 +1034,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-logistics",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1046,7 +1046,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-telecom",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1058,7 +1058,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-renewable-energy",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1070,7 +1070,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-aviation",
           "difficulty": "Hard",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1082,7 +1082,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Professional",
           "sectionId": "professional-hospitality",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         }
       ]
@@ -1104,7 +1104,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-football",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1116,7 +1116,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-manchester-united",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1128,7 +1128,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-chelsea",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1140,7 +1140,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-arsenal",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1152,7 +1152,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-liverpool",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1164,7 +1164,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-manchester-city",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1176,7 +1176,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-tottenham",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1188,7 +1188,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-newcastle-united",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1200,7 +1200,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-aston-villa",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1212,7 +1212,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-world-cup",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1224,7 +1224,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-premier-league",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1236,7 +1236,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-champions-league",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1248,7 +1248,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-la-liga",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1260,7 +1260,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-serie-a",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1272,7 +1272,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-bundesliga",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1284,7 +1284,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-african-football",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1296,7 +1296,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-womens-football",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1308,7 +1308,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-club-history",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1320,7 +1320,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-famous-players",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1332,7 +1332,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-transfers",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1344,7 +1344,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-football-rules",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1356,7 +1356,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-general-knowledge",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1368,7 +1368,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-movies-music",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         },
         {
@@ -1380,7 +1380,7 @@ export const offlineCatalogue: { levels: Level[]; totalQuestions: number } = {
           "levelName": "Popular Topics",
           "sectionId": "popular-gaming",
           "difficulty": "Medium",
-          "timeLimitSeconds": 60000,
+          "timeLimitSeconds": 0,
           "questionCount": 500
         }
       ]

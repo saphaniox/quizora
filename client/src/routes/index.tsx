@@ -110,8 +110,8 @@ function HomePage() {
           <span className="inline-flex items-center gap-2 rounded-full border border-border bg-card/85 px-3 py-1 text-xs font-medium text-muted-foreground shadow-sm backdrop-blur">
             <Sparkles className="h-3.5 w-3.5 text-primary" />
             {data
-              ? `${data.totalQuestions.toLocaleString()} questions`
-              : "Thousands of questions"}{" "}
+              ? `${data.totalQuestions.toLocaleString()} practice questions`
+              : "Thousands of practice questions"}{" "}
             for learners 13+
           </span>
           <h1 className="mt-5 max-w-3xl text-3xl font-bold tracking-tight text-foreground sm:text-5xl">

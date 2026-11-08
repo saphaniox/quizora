@@ -32,6 +32,9 @@ const localCounts = new Map(
     level.sections.map(({ id, questionCount }) => [id, questionCount]),
   ),
 );
+const localSections = new Map(
+  localLevels.flatMap((level) => level.sections.map((section) => [section.id, section])),
+);
 
 async function writeCatalogue(levels, sourceLabel) {
   const totalQuestions = levels.reduce((count, level) => count + level.questionCount, 0);
@@ -66,10 +69,24 @@ try {
   if (!response.ok) throw new Error(`Catalogue request returned ${response.status}`);
   const payload = await response.json();
   const levels = (payload.levels ?? []).map((level) => {
-    const sections = (Array.isArray(level.sections) ? level.sections : []).map((section) => ({
-      ...section,
-      questionCount: localCounts.get(section.id) ?? section.questionCount,
-    }));
+    const sections = (Array.isArray(level.sections) ? level.sections : []).map((section) => {
+      const localSection = localSections.get(section.id);
+      return {
+        ...section,
+        ...(localSection
+          ? {
+              timeLimitSeconds: localSection.timeLimitSeconds,
+              ...(level.id === "foundations"
+                ? {
+                    title: localSection.title,
+                    description: localSection.description,
+                  }
+                : {}),
+            }
+          : {}),
+        questionCount: localCounts.get(section.id) ?? section.questionCount,
+      };
+    });
     return {
       ...level,
       questionCount: sections.reduce((count, section) => count + section.questionCount, 0),

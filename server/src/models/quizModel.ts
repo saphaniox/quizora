@@ -51,7 +51,7 @@ export const CERTIFICATE_QUESTION_COUNT =
 
 const descriptionTails: Record<string, string> = {
   foundations:
-    "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+    "Designed for confident secondary-entry preparation and durable academic understanding.",
   secondary:
     "Built for focused revision, confident recall, and steady exam-style practice.",
   college:
@@ -283,7 +283,8 @@ function buildQuizzes(): Quiz[] {
         levelName: level.name,
         sectionId: section.id,
         difficulty: section.difficulty,
-        timeLimitSeconds: questions.length * 120,
+        // Certificate-length runs are intentionally self-paced and resumable.
+        timeLimitSeconds: questions.length === FULL_SECTION_CERTIFICATE_QUESTION_COUNT ? 0 : questions.length * 120,
         questions,
       });
     }
@@ -502,9 +503,7 @@ export function toPublicQuiz(
     sectionId: quiz.sectionId,
     difficulty: quiz.difficulty,
     timeLimitSeconds:
-      count === total
-        ? questions.length * 120
-        : questions.length * (quiz.difficulty === "Hard" ? 120 : 60),
+      count === total ? 0 : questions.length * (quiz.difficulty === "Hard" ? 120 : 60),
     totalQuestionsInSection: total,
     certificateEligible:
       count === GOLD_CERTIFICATE_QUESTION_COUNT ||

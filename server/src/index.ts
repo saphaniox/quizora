@@ -18,26 +18,8 @@ export async function createApp() {
     if (startedAt) recordRequest(startedAt, reply.statusCode);
   });
   const defaultProductionOrigins = [
-    "https://quitech.com",
-    "https://www.quitech.com",
-    "https://api.quitech.online",
     "https://quitech.online",
     "https://www.quitech.online",
-    "https://quizora-two-mocha.vercel.app",
-    "capacitor://localhost",
-    "http://localhost",
-    "https://localhost",
-    "http://127.0.0.1",
-  ];
-  const localCapacitorOrigins = [
-    "capacitor://localhost",
-    "http://localhost",
-    "https://localhost",
-    "http://localhost:3000",
-    "http://127.0.0.1",
-    "http://127.0.0.1:3000",
-    "file://",
-    "null",
   ];
   const configuredOrigins = process.env["CLIENT_ORIGIN"]
     ?.split(",")
@@ -47,14 +29,17 @@ export async function createApp() {
     ...new Set([...defaultProductionOrigins, ...(configuredOrigins ?? [])]),
   ];
   const isAllowedOrigin = (origin: string | undefined) => {
-    if (!origin || origin === "null") return true;
-    if (localCapacitorOrigins.includes(origin)) return true;
-    if (
-      origin.startsWith("capacitor://") ||
-      origin.startsWith("http://localhost") ||
-      origin.startsWith("http://127.0.0.1")
-    )
-      return true;
+    if (!origin) return true;
+    if (origin === "capacitor://localhost") return true;
+    try {
+      const url = new URL(origin);
+      const isLoopbackHost =
+        url.hostname === "localhost" || url.hostname === "127.0.0.1";
+      if (isLoopbackHost && ["http:", "https:"].includes(url.protocol))
+        return true;
+    } catch {
+      return false;
+    }
     return productionOrigins.includes(origin);
   };
 
@@ -70,7 +55,7 @@ export async function createApp() {
         return;
       }
 
-      callback(new Error("Origin not allowed by CORS"), false);
+      callback(null, false);
     },
     credentials: true,
     methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],

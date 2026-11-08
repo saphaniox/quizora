@@ -18,10 +18,6 @@ const artsFacts: [string, string][] = [
   ["How many lines are in a music staff?", "5"],
   ["What do we call a group of singers?", "A choir"],
   ["Which instrument has black and white keys?", "The piano"],
-  [
-    "Which instrument do you blow into and has strings? (trick)",
-    "None — a flute is blown, a guitar is strung",
-  ],
   ["Which instrument is played with a bow?", "The violin"],
   ["Which instrument is hit with sticks?", "The drum"],
   ["What do we call a picture of a person?", "A portrait"],

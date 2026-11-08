@@ -10,7 +10,7 @@ const artsFacts: [string, string][] = [
   ["What are the three primary colours?", "Red, blue and yellow"], ["What colour do you get mixing red and yellow?", "Orange"],
   ["What colour do you get mixing blue and yellow?", "Green"], ["What colour do you get mixing red and blue?", "Purple"],
   ["How many lines are in a music staff?", "5"], ["What do we call a group of singers?", "A choir"],
-  ["Which instrument has black and white keys?", "The piano"], ["Which instrument do you blow into and has strings? (trick)", "None — a flute is blown, a guitar is strung"],
+  ["Which instrument has black and white keys?", "The piano"],
   ["Which instrument is played with a bow?", "The violin"], ["Which instrument is hit with sticks?", "The drum"],
   ["What do we call a picture of a person?", "A portrait"], ["What do we call a picture of the countryside?", "A landscape"],
   ["What tool do painters use to apply paint?", "A brush"], ["What do we call art made by carving?", "Sculpture"],

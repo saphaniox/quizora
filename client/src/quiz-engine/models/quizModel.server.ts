@@ -37,7 +37,7 @@ export const PASS_MARK = 80;
 export const CERTIFICATE_QUESTION_COUNT = FULL_SECTION_CERTIFICATE_QUESTION_COUNT;
 
 const descriptionTails: Record<string, string> = {
-  foundations: "Built for clear 13+ refreshers, steady confidence, and everyday learning momentum.",
+  foundations: "Designed for confident secondary-entry preparation and durable academic understanding.",
   secondary: "Built for focused revision, confident recall, and steady exam-style practice.",
   college: "Built for higher-level practice, applied reasoning, and certificate-ready review.",
   professional:
@@ -254,8 +254,6 @@ const PRACTICE_SECONDS_PER_QUESTION: Record<Difficulty, number> = {
   Medium: 60,
   Hard: 120,
 };
-const FULL_SECONDS_PER_QUESTION = 120;
-
 interface SectionMeta {
   level: (typeof levelDefinitions)[number];
   section: SectionDefinition;
@@ -389,7 +387,7 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
     sectionId: quiz.sectionId,
     difficulty: quiz.difficulty,
     timeLimitSeconds: fullSection
-      ? questions.length * FULL_SECONDS_PER_QUESTION
+      ? 0
       : questions.length * PRACTICE_SECONDS_PER_QUESTION[quiz.difficulty],
     totalQuestionsInSection: total,
     certificateEligible,

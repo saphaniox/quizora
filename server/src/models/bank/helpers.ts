@@ -51,10 +51,12 @@ export function fromMap(
   });
 }
 
-function explainFact(question: string, answer: string): string {
+export function explainFact(question: string, answer: string): string {
   const prompt = question.replace(/[?]+$/, "").trim();
   const capitalize = (text: string) => text.charAt(0).toUpperCase() + text.slice(1);
-  let match = prompt.match(/^what is produced when (.+)$/i);
+  let match = prompt.match(/^what is the term for (.+)$/i);
+  if (match) return `The term for ${match[1] as string} is ${answer}.`;
+  match = prompt.match(/^what is produced when (.+)$/i);
   if (match) {
     const product = answer.replace(/^(a|an) /i, "");
     return `When ${match[1] as string}, the products include ${product}.`;
