@@ -1,18 +1,24 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { Award, BadgeCheck, Download, Gem, Loader2, Printer, Share2 } from "lucide-react";
+import {
+  Award,
+  BadgeCheck,
+  Crown,
+  Download,
+  Gem,
+  Loader2,
+  Medal,
+  Printer,
+  Share2,
+} from "lucide-react";
 import QRCode from "qrcode";
 import { getCertificate } from "@/lib/api";
 import { countryFlag } from "@/lib/countries";
 import { appLinksText, webAppUrl } from "@/lib/share-links";
 import type { Certificate } from "@/types/quiz";
 import { notifications } from "@/lib/notifications";
-import {
-  certificateCompletionText,
-  certificateTierLabel,
-  getCertificateTier,
-} from "@/lib/certificate-awards";
+import { certificateCompletionText, getCertificateTier } from "@/lib/certificate-awards";
 
 /** Look the code up through the client-hosted API. */
 async function verify(code: string): Promise<{ certificate: Certificate }> {
@@ -99,7 +105,66 @@ function CertificatePage() {
 
   const certificate = data.certificate;
   const certificateTier = getCertificateTier(certificate);
-  const tierLabel = certificateTierLabel(certificateTier);
+  const certificateTheme =
+    certificateTier === "diamond"
+      ? {
+          paper: "bg-sky-50",
+          frame: "border-sky-700/80",
+          frameSoft: "border-sky-500/70",
+          accent: "bg-sky-100",
+          accentLine: "bg-sky-400/70",
+          ornament: "border-sky-700",
+          badge: "border-sky-200 bg-sky-50 text-sky-700",
+          title: "text-sky-800",
+        }
+      : certificateTier === "platinum"
+        ? {
+            paper: "bg-slate-50",
+            frame: "border-slate-600/80",
+            frameSoft: "border-slate-400/70",
+            accent: "bg-slate-200",
+            accentLine: "bg-slate-400/70",
+            ornament: "border-slate-600",
+            badge: "border-slate-300 bg-slate-100 text-slate-700",
+            title: "text-slate-700",
+          }
+        : certificateTier === "gold"
+          ? {
+              paper: "bg-amber-50",
+              frame: "border-amber-700/80",
+              frameSoft: "border-amber-500/70",
+              accent: "bg-amber-100",
+              accentLine: "bg-amber-500/70",
+              ornament: "border-amber-700",
+              badge: "border-amber-200 bg-amber-50 text-amber-800",
+              title: "text-amber-800",
+            }
+          : {
+              paper: "bg-[#fbfcf8]",
+              frame: "border-blue-700/80",
+              frameSoft: "border-amber-500/70",
+              accent: "bg-blue-100",
+              accentLine: "bg-amber-500/70",
+              ornament: "border-amber-600",
+              badge: "border-emerald-200 bg-emerald-50 text-emerald-700",
+              title: "text-blue-800",
+            };
+  const TierWatermark =
+    certificateTier === "diamond"
+      ? Gem
+      : certificateTier === "platinum"
+        ? Medal
+        : certificateTier === "gold"
+          ? Crown
+          : Award;
+  const watermarkColor =
+    certificateTier === "diamond"
+      ? "text-sky-300/20"
+      : certificateTier === "platinum"
+        ? "text-slate-300/25"
+        : certificateTier === "gold"
+          ? "text-amber-400/20"
+          : "text-blue-300/20";
   const issuedDate = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "long",
@@ -152,31 +217,59 @@ function CertificatePage() {
 
   return (
     <div className="mx-auto max-w-6xl px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <div className="relative overflow-hidden rounded-lg border border-slate-300 bg-[#fbfcf8] px-5 py-10 text-center text-slate-900 shadow-xl shadow-slate-200/70 sm:p-16 print:border-slate-300 print:shadow-none">
+      <div
+        className={`relative overflow-hidden rounded-lg border border-slate-300 ${certificateTheme.paper} px-5 py-10 text-center text-slate-900 shadow-xl shadow-slate-200/70 sm:p-16 print:border-slate-300 print:shadow-none`}
+      >
         <div className="pointer-events-none absolute inset-2 rounded-lg border border-slate-950/70 sm:inset-4.5" />
-        <div className="pointer-events-none absolute inset-4 rounded-md border-2 border-blue-700/80 sm:inset-7 sm:border-[3px]" />
-        <div className="pointer-events-none absolute inset-6 border border-amber-500/70 sm:inset-10.5" />
+        <div
+          className={`pointer-events-none absolute inset-4 rounded-md border-2 ${certificateTheme.frame} sm:inset-7 sm:border-[3px]`}
+        />
+        <div
+          className={`pointer-events-none absolute inset-6 border ${certificateTheme.frameSoft} sm:inset-10.5`}
+        />
         <div className="pointer-events-none absolute inset-8.5 hidden border border-slate-200 sm:block sm:inset-13.5" />
-        <div className="pointer-events-none absolute left-1/2 top-4 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:top-7 sm:w-48" />
-        <div className="pointer-events-none absolute bottom-4 left-1/2 h-1 w-28 -translate-x-1/2 bg-blue-100 sm:bottom-7 sm:w-48" />
-        <div className="pointer-events-none absolute left-1/2 top-6 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:top-10.5 sm:w-36" />
-        <div className="pointer-events-none absolute bottom-6 left-1/2 h-px w-24 -translate-x-1/2 bg-amber-500/70 sm:bottom-10.5 sm:w-36" />
-        <div className="pointer-events-none absolute left-12 top-12 hidden h-24 w-24 border-l-[3px] border-t-[3px] border-amber-600 sm:block" />
-        <div className="pointer-events-none absolute right-12 top-12 hidden h-24 w-24 border-r-[3px] border-t-[3px] border-amber-600 sm:block" />
-        <div className="pointer-events-none absolute bottom-12 left-12 hidden h-24 w-24 border-b-[3px] border-l-[3px] border-amber-600 sm:block" />
-        <div className="pointer-events-none absolute bottom-12 right-12 hidden h-24 w-24 border-b-[3px] border-r-[3px] border-amber-600 sm:block" />
-        <div className="pointer-events-none absolute right-16 top-16 hidden h-16 w-16 border-r border-t border-blue-700/60 sm:block" />
-        <div className="pointer-events-none absolute bottom-16 left-16 hidden h-16 w-16 border-b border-l border-blue-700/60 sm:block" />
-        <div className="pointer-events-none absolute bottom-16 right-16 hidden h-16 w-16 border-b border-r border-blue-700/60 sm:block" />
-        <Gem
+        <div
+          className={`pointer-events-none absolute left-1/2 top-4 h-1 w-28 -translate-x-1/2 ${certificateTheme.accent} sm:top-7 sm:w-48`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-4 left-1/2 h-1 w-28 -translate-x-1/2 ${certificateTheme.accent} sm:bottom-7 sm:w-48`}
+        />
+        <div
+          className={`pointer-events-none absolute left-1/2 top-6 h-px w-24 -translate-x-1/2 ${certificateTheme.accentLine} sm:top-10.5 sm:w-36`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-6 left-1/2 h-px w-24 -translate-x-1/2 ${certificateTheme.accentLine} sm:bottom-10.5 sm:w-36`}
+        />
+        <div
+          className={`pointer-events-none absolute left-12 top-12 hidden h-24 w-24 border-l-[3px] border-t-[3px] ${certificateTheme.ornament} sm:block`}
+        />
+        <div
+          className={`pointer-events-none absolute right-12 top-12 hidden h-24 w-24 border-r-[3px] border-t-[3px] ${certificateTheme.ornament} sm:block`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-12 left-12 hidden h-24 w-24 border-b-[3px] border-l-[3px] ${certificateTheme.ornament} sm:block`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-12 right-12 hidden h-24 w-24 border-b-[3px] border-r-[3px] ${certificateTheme.ornament} sm:block`}
+        />
+        <div
+          className={`pointer-events-none absolute right-16 top-16 hidden h-16 w-16 border-r border-t ${certificateTheme.frame} sm:block`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-16 left-16 hidden h-16 w-16 border-b border-l ${certificateTheme.frame} sm:block`}
+        />
+        <div
+          className={`pointer-events-none absolute bottom-16 right-16 hidden h-16 w-16 border-b border-r ${certificateTheme.frame} sm:block`}
+        />
+        <TierWatermark
           aria-hidden="true"
           strokeWidth={0.65}
-          className="pointer-events-none absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 text-blue-300/20 sm:h-[32rem] sm:w-[32rem]"
+          className={`pointer-events-none absolute left-1/2 top-1/2 h-80 w-80 -translate-x-1/2 -translate-y-1/2 ${watermarkColor} sm:h-[32rem] sm:w-[32rem]`}
         />
-        <Gem
+        <TierWatermark
           aria-hidden="true"
           strokeWidth={0.55}
-          className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 text-amber-500/10 sm:h-[25rem] sm:w-[25rem]"
+          className={`pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 ${watermarkColor} opacity-60 sm:h-[25rem] sm:w-[25rem]`}
         />
         <img
           src="/logo.png"
@@ -197,22 +290,18 @@ function CertificatePage() {
                 <p className="text-xs text-slate-500">Learn, challenge & progress</p>
               </div>
             </div>
-            <div className="inline-flex w-fit items-center gap-2 rounded-md border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700">
+            <div
+              className={`inline-flex w-fit items-center gap-2 rounded-md border px-3 py-2 text-xs font-semibold ${certificateTheme.badge}`}
+            >
               <BadgeCheck className="h-4 w-4" />
-              {tierLabel} certificate · Verified credential
+              {certificate.maxScore} questions answered · Verified
             </div>
           </div>
 
           <div className="mx-auto mt-12 max-w-3xl">
             <Award className="mx-auto h-12 w-12 text-primary" />
             <p
-              className={`mt-5 text-xs font-semibold uppercase tracking-[0.2em] ${
-                certificateTier === "diamond"
-                  ? "text-sky-800"
-                  : certificateTier === "platinum"
-                    ? "text-slate-600"
-                    : "text-amber-700"
-              }`}
+              className={`mt-5 text-xs font-semibold uppercase tracking-[0.2em] ${certificateTheme.title}`}
             >
               Certificate of Achievement
             </p>
@@ -241,15 +330,7 @@ function CertificatePage() {
             )}
           </div>
 
-          <p
-            className={`mx-auto mt-6 max-w-2xl text-sm italic ${
-              certificateTier === "diamond"
-                ? "text-sky-800"
-                : certificateTier === "platinum"
-                  ? "text-slate-700"
-                  : "text-amber-800"
-            }`}
-          >
+          <p className={`mx-auto mt-6 max-w-2xl text-sm italic ${certificateTheme.title}`}>
             Awarded in recognition of the learner&apos;s focused learning, persistence and
             achievement.
           </p>
@@ -257,9 +338,7 @@ function CertificatePage() {
           <div className="mx-auto mt-8 grid max-w-4xl gap-4 border-y border-slate-200 py-5 text-left sm:grid-cols-3">
             <div>
               <p className="text-xs font-medium uppercase text-slate-500">Final Score</p>
-              <p className="mt-1 text-xl font-bold text-emerald-700">
-                {certificate.score}/{certificate.maxScore} ({certificate.percentage}%)
-              </p>
+              <p className="mt-1 text-xl font-bold text-emerald-700">{certificate.percentage}%</p>
             </div>
             <div>
               <p className="text-xs font-medium uppercase text-slate-500">Issued</p>

@@ -2,7 +2,6 @@ import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Award, Download, Eye, Gem, Loader2, X } from "lucide-react";
 import type { Certificate, CertificateTier } from "@/types/quiz";
-import { certificateTierLabel } from "@/lib/certificate-awards";
 import { notifications } from "@/lib/notifications";
 import { Capacitor } from "@capacitor/core";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
@@ -26,7 +25,7 @@ const samples: {
     score: 88,
     title: "English Language",
     level: "Secondary Education",
-    requirement: "Earn Gold by completing a 100-question quiz and scoring at least 80%.",
+    requirement: "Complete a 100-question quiz with a score of at least 80%.",
     icon: Award,
     accent: "text-amber-700",
     border: "border-amber-400",
@@ -38,7 +37,7 @@ const samples: {
     score: 176,
     title: "Digital Literacy",
     level: "Professional",
-    requirement: "Earn Platinum by completing a 200-question quiz and scoring at least 80%.",
+    requirement: "Complete a 200-question quiz with a score of at least 80%.",
     icon: Award,
     accent: "text-slate-600 dark:text-slate-300",
     border: "border-slate-400",
@@ -50,7 +49,7 @@ const samples: {
     score: 450,
     title: "World Geography & Global Awareness",
     level: "Core Foundations",
-    requirement: "Earn Diamond by finishing the full 500-question section with at least 80%.",
+    requirement: "Answer all 500 questions in the full section with a score of at least 80%.",
     icon: Gem,
     accent: "text-sky-700 dark:text-sky-300",
     border: "border-sky-500",
@@ -65,12 +64,12 @@ export const Route = createFileRoute("/certificate-samples")({
       {
         name: "description",
         content:
-          "Download sample Quitech Gold, Platinum and Diamond certificates and learn how to earn them.",
+          "Preview sample Quitech achievement certificates, distinguished by color and questions completed.",
       },
       { property: "og:title", content: "Certificate samples - Quitech" },
       {
         property: "og:description",
-        content: "Download sample Quitech Gold, Platinum and Diamond certificates.",
+        content: "Preview and download sample Quitech achievement certificates.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -84,7 +83,7 @@ function CertificateSamplesPage() {
   const [preview, setPreview] = useState<{ tier: CertificateTier; blob: Blob } | null>(null);
 
   const getSampleCertificate = (sample: (typeof samples)[number]): Certificate => ({
-    code: `SAMPLE-${sample.tier.toUpperCase()}-NOT-VALID`,
+    code: `SAMPLE-${sample.questions}-QUESTIONS-NOT-VALID`,
     awardTier: sample.tier,
     playerName: "Amina Nansubuga",
     quizTitle: sample.title,
@@ -118,7 +117,7 @@ function CertificateSamplesPage() {
     try {
       const { downloadCertificatePdf } = await import("@/lib/certificate-pdf");
       await downloadCertificatePdf(getSampleCertificate(sample), "", { sample: true });
-      notifications.success(`${certificateTierLabel(sample.tier)} sample is ready`, {
+      notifications.success("Sample certificate is ready", {
         description: "The sample PDF is ready to save or share.",
       });
     } catch (error) {
@@ -144,8 +143,8 @@ function CertificateSamplesPage() {
           See what you can earn
         </h1>
         <p className="mt-4 text-base leading-7 text-muted-foreground">
-          Open a sample to see the certificate design, or download a PDF to keep a copy. Each tier
-          has its own achievement requirements.
+          Open a sample to see the certificate design, or download a PDF to keep a copy. Each color
+          theme reflects the number of questions completed.
         </p>
       </div>
 
@@ -169,10 +168,10 @@ function CertificateSamplesPage() {
               >
                 <Icon className={`h-10 w-10 ${sample.accent}`} aria-hidden="true" />
                 <p className={`mt-3 text-xs font-bold uppercase tracking-[0.2em] ${sample.accent}`}>
-                  {certificateTierLabel(sample.tier)} award
+                  Achievement
                 </p>
                 <p className="mt-2 text-sm font-semibold text-foreground">
-                  {sample.questions}-question certificate
+                  {sample.questions} questions answered
                 </p>
                 <p className="mt-1 text-xs text-muted-foreground">
                   Earn it with a score of 80% or higher
@@ -180,7 +179,7 @@ function CertificateSamplesPage() {
               </div>
 
               <h2 className="mt-5 text-lg font-semibold text-foreground">
-                {certificateTierLabel(sample.tier)} certificate
+                {sample.questions}-question achievement
               </h2>
               <p className="mt-2 flex-1 text-sm leading-6 text-muted-foreground">
                 {sample.requirement}
@@ -240,7 +239,9 @@ function CertificateSamplesPage() {
             <div className="flex items-center justify-between gap-3 border-b border-border px-4 py-3">
               <div>
                 <h2 id="certificate-preview-title" className="font-semibold text-foreground">
-                  {certificateTierLabel(preview.tier)} certificate sample
+                  {previewSample
+                    ? `${previewSample.questions}-question certificate sample`
+                    : "Certificate sample"}
                 </h2>
                 <p className="text-xs text-muted-foreground">
                   Sample only - not a real or verifiable certificate

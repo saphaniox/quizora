@@ -17,6 +17,6 @@ export function certificateTierLabel(tier: CertificateTier): string {
 
 export function certificateCompletionText(certificate: Certificate): string {
   return certificate.maxScore === 500
-    ? "After successfully completing the full Quitech learning section"
-    : `After successfully completing a ${certificate.maxScore}-question Quitech quiz`;
+    ? "For answering all 500 questions in the full Quitech learning section"
+    : `For answering all ${certificate.maxScore} questions in a Quitech quiz`;
 }

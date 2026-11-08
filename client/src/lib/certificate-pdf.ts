@@ -1,11 +1,7 @@
 import { jsPDF } from "jspdf";
 import QRCode from "qrcode";
 import type { Certificate } from "@/types/quiz";
-import {
-  certificateCompletionText,
-  getCertificateTier,
-  certificateTierLabel,
-} from "@/lib/certificate-awards";
+import { certificateCompletionText, getCertificateTier } from "@/lib/certificate-awards";
 import { Capacitor } from "@capacitor/core";
 import { Directory, Filesystem } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -208,26 +204,54 @@ function drawGoldWatermark(doc: jsPDF, width: number): void {
     );
   }
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(78);
-  doc.setTextColor(252, 246, 226);
-  doc.text("GOLD", centerX, centerY + 25, { align: "center" });
+  const crown = [
+    [centerX - 72, centerY - 38],
+    [centerX - 48, centerY + 8],
+    [centerX - 20, centerY - 20],
+    [centerX, centerY + 12],
+    [centerX + 20, centerY - 20],
+    [centerX + 48, centerY + 8],
+    [centerX + 72, centerY - 38],
+  ] as const;
+  setDrawColor(doc, [246, 226, 168]);
+  doc.setLineWidth(7);
+  for (let index = 0; index < crown.length - 1; index += 1) {
+    const from = crown[index]!;
+    const to = crown[index + 1]!;
+    doc.line(from[0], from[1], to[0], to[1]);
+  }
+  doc.line(centerX - 48, centerY + 28, centerX + 48, centerY + 28);
+  doc.line(centerX - 48, centerY + 48, centerX + 48, centerY + 48);
 }
 
 function drawPlatinumWatermark(doc: jsPDF, width: number): void {
   const centerX = width / 2;
+  const centerY = 300;
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(58);
-  doc.setTextColor(237, 241, 246);
-  doc.text("PLATINUM", centerX, 320, { align: "center" });
+  setDrawColor(doc, [235, 239, 245]);
+  doc.setLineWidth(3);
+  doc.circle(centerX, centerY, 92, "S");
+  doc.circle(centerX, centerY, 76, "S");
 
-  setDrawColor(doc, [241, 244, 248]);
-  doc.setLineWidth(1.2);
-  doc.line(92, 178, width - 92, 178);
-  doc.line(92, 466, width - 92, 466);
-  doc.line(118, 188, 118, 456);
-  doc.line(width - 118, 188, width - 118, 456);
+  const starPoints = Array.from({ length: 10 }, (_, index) => {
+    const angle = -Math.PI / 2 + (index * Math.PI) / 5;
+    const radius = index % 2 === 0 ? 58 : 25;
+    return [centerX + Math.cos(angle) * radius, centerY + Math.sin(angle) * radius] as const;
+  });
+  setDrawColor(doc, [229, 234, 241]);
+  doc.setLineWidth(3);
+  for (let index = 0; index < starPoints.length; index += 1) {
+    const from = starPoints[index]!;
+    const to = starPoints[(index + 1) % starPoints.length]!;
+    doc.line(from[0], from[1], to[0], to[1]);
+  }
+
+  setDrawColor(doc, [235, 239, 245]);
+  doc.setLineWidth(2);
+  doc.line(centerX - 52, centerY + 75, centerX - 84, centerY + 180);
+  doc.line(centerX - 84, centerY + 180, centerX - 8, centerY + 140);
+  doc.line(centerX + 52, centerY + 75, centerX + 84, centerY + 180);
+  doc.line(centerX + 84, centerY + 180, centerX + 8, centerY + 140);
 }
 
 async function buildCertificatePdf(
@@ -319,6 +343,8 @@ async function buildCertificatePdf(
   doc.setFontSize(9);
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.text("Learn, challenge & progress", logo ? 126 : 72, 92);
+  doc.setFontSize(7.5);
+  doc.text("Powered by SAPTech Uganda", logo ? 126 : 72, 106);
 
   const badgeColor: PdfColor =
     tier === "diamond"
@@ -340,10 +366,10 @@ async function buildCertificatePdf(
   doc.setFillColor(badgeFill[0], badgeFill[1], badgeFill[2]);
   doc.roundedRect(width - 218, 62, 146, 32, 6, 6, "FD");
   doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
+  doc.setFontSize(8.5);
   doc.setTextColor(badgeColor[0], badgeColor[1], badgeColor[2]);
   doc.text(
-    `${isSample ? "SAMPLE " : ""}${certificateTierLabel(tier).toUpperCase()} CERTIFICATE`,
+    isSample ? "SAMPLE - NOT VALID" : `${certificate.maxScore} QUESTIONS ANSWERED`,
     width - 145,
     82,
     { align: "center" },
@@ -426,12 +452,7 @@ async function buildCertificatePdf(
   doc.setFont("helvetica", "bold");
   doc.setFontSize(17);
   doc.setTextColor(emerald[0], emerald[1], emerald[2]);
-  doc.text(
-    `${certificate.score}/${certificate.maxScore} (${certificate.percentage}%)`,
-    width / 6,
-    detailY + 44,
-    { align: "center" },
-  );
+  doc.text(`${certificate.percentage}%`, width / 6, detailY + 44, { align: "center" });
   doc.setFontSize(11);
   doc.setTextColor(navy[0], navy[1], navy[2]);
   doc.text(issuedDate, width / 2, detailY + 44, { align: "center" });
@@ -483,7 +504,7 @@ async function buildCertificatePdf(
   doc.setFontSize(12);
   doc.setTextColor(navy[0], navy[1], navy[2]);
   doc.text(
-    isSample ? `SAMPLE-${tier.toUpperCase()}-NOT-VALID` : certificate.code,
+    isSample ? `SAMPLE-${certificate.maxScore}-QUESTIONS-NOT-VALID` : certificate.code,
     496,
     verifyY + 43,
     { align: "center", maxWidth: 270 },
@@ -519,13 +540,8 @@ async function buildCertificatePdf(
     doc.text("NOT VALID", 707, verifyY + 48, { align: "center" });
   }
 
-  doc.setFont("helvetica", "bold");
-  doc.setFontSize(9);
-  doc.setTextColor(navy[0], navy[1], navy[2]);
-  doc.text("Powered by SAPTech Uganda", width / 2, height - 40, { align: "center" });
-
   const filename = isSample
-    ? `Quitech-${tier}-certificate-SAMPLE.pdf`
+    ? `Quitech-${certificate.maxScore}-question-certificate-SAMPLE.pdf`
     : `Quitech-certificate-${certificate.code}.pdf`;
 
   return {
