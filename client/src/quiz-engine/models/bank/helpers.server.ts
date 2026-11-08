@@ -50,7 +50,9 @@ export function fromMap(
       text,
       value,
       distractors,
-      /^the correct answer is:?/i.test(explanation.trim()) ? explainSharedFact(text, value) : explanation,
+      /^the correct answer is:?/i.test(explanation.trim())
+        ? explainSharedFact(text, value)
+        : explanation,
     );
   });
 }
@@ -83,10 +85,12 @@ function explainFact(question: string, answer: string): string {
   if (match) return `${answer} stores ${match[1] as string}.`;
 
   match = prompt.match(/^when is a set of vectors linearly dependent$/i);
-  if (match) return `A set of vectors is linearly dependent when ${answer.replace(/^when\s+/i, "").toLowerCase()}.`;
+  if (match)
+    return `A set of vectors is linearly dependent when ${answer.replace(/^when\s+/i, "").toLowerCase()}.`;
 
   match = prompt.match(/^when does a square matrix have an inverse$/i);
-  if (match) return `A square matrix has an inverse when ${answer.replace(/^when\s+/i, "").toLowerCase()}.`;
+  if (match)
+    return `A square matrix has an inverse when ${answer.replace(/^when\s+/i, "").toLowerCase()}.`;
 
   match = prompt.match(/^what is the (?!.* called$)(.+)$/i);
   if (match) return `The ${match[1] as string} is ${answer}.`;

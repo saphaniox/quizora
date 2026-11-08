@@ -1,6 +1,7 @@
 import { readFile, writeFile } from "node:fs/promises";
 import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
+import { format, resolveConfig } from "prettier";
 import { join } from "node:path";
 
 const clientRoot = process.cwd();
@@ -43,7 +44,12 @@ async function writeCatalogue(levels, sourceLabel) {
     0,
   );
   const source = `import type { Level } from "@/types/quiz";\n\n// Generated from ${sourceLabel}; keep this snapshot bundled for offline startup.\nexport const offlineCatalogue: { levels: Level[]; totalQuestions: number } = ${JSON.stringify({ levels, totalQuestions }, null, 2)};\n\nexport const offlineSectionCount = ${totalSections};\n`;
-  await writeFile(outputPath, source, "utf8");
+  const prettierConfig = (await resolveConfig(outputPath)) ?? {};
+  const formattedSource = await format(source, {
+    ...prettierConfig,
+    parser: "typescript",
+  });
+  await writeFile(outputPath, formattedSource, "utf8");
 
   const sitemapUrls = [
     "",

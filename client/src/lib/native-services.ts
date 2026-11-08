@@ -30,7 +30,7 @@ const INTERSTITIAL_MIN_INTERVAL_MS = 10 * 60 * 1000;
 const INTERSTITIAL_COMPLETION_INTERVAL = 2;
 const PUSH_REGISTRATION_TIMEOUT_MS = 20_000;
 const GUEST_PUSH_ENABLED_KEY = "quitech_guest_push_enabled_v1";
-const GUEST_PUSH_PROMPT_DISMISSED_KEY = "quitech_guest_push_prompt_dismissed_v1";
+const PUSH_STARTUP_PERMISSION_DECIDED_KEY = "quitech_push_startup_permission_decided_v1";
 const PUSH_DEVICE_TOKEN_KEY = "quitech_push_device_token_v1";
 
 export type AdAgeGroup = "teen" | "adult";
@@ -44,6 +44,7 @@ let rejectPushRegistration: ((error: unknown) => void) | null = null;
 let adsReady = false;
 let adsShouldBeVisible = true;
 let bannerSuppressed = false;
+let modalSuppressed = false;
 let requestedBannerPlacement: NativeBannerPlacement | null = null;
 let activeBannerId: string | null = null;
 let adMobInitialization: Promise<void> | null = null;
@@ -57,19 +58,6 @@ export function getGuestPushNotificationsEnabled(): boolean {
   return (
     typeof window !== "undefined" && window.localStorage.getItem(GUEST_PUSH_ENABLED_KEY) === "true"
   );
-}
-
-export function hasDismissedGuestPushPrompt(): boolean {
-  return (
-    typeof window !== "undefined" &&
-    window.localStorage.getItem(GUEST_PUSH_PROMPT_DISMISSED_KEY) === "true"
-  );
-}
-
-export function dismissGuestPushPrompt(): void {
-  if (typeof window !== "undefined") {
-    window.localStorage.setItem(GUEST_PUSH_PROMPT_DISMISSED_KEY, "true");
-  }
 }
 
 export function getRegisteredPushDeviceToken(): string | null {
@@ -176,12 +164,32 @@ export async function syncPushNotifications(): Promise<void> {
   }
 }
 
-export async function syncGuestPushNotifications(): Promise<void> {
-  if (!Capacitor.isNativePlatform() || !getGuestPushNotificationsEnabled()) return;
+export async function initializeNativePushNotifications(): Promise<void> {
+  if (!Capacitor.isNativePlatform()) return;
   try {
-    await enablePushNotifications(false);
+    if (getGuestPushNotificationsEnabled()) {
+      await enablePushNotifications(false);
+      return;
+    }
+    if (
+      typeof window !== "undefined" &&
+      window.localStorage.getItem(PUSH_STARTUP_PERMISSION_DECIDED_KEY) === "true"
+    ) {
+      return;
+    }
+
+    const permission = await PushNotifications.checkPermissions();
+    if (permission.receive !== "prompt" && permission.receive !== "prompt-with-rationale") return;
+
+    const granted = await enablePushNotifications(true);
+    if (typeof window !== "undefined") {
+      window.localStorage.setItem(PUSH_STARTUP_PERMISSION_DECIDED_KEY, "true");
+    }
+    if (granted) {
+      await setGuestPushNotificationsEnabled(true);
+    }
   } catch (error) {
-    console.warn("Could not sync guest push notifications", error);
+    console.warn("Could not initialize guest push notifications", error);
   }
 }
 
@@ -318,7 +326,7 @@ export async function initializeNativeAds(): Promise<void> {
 async function syncNativeBanner(): Promise<void> {
   if (!Capacitor.isNativePlatform() || !adsReady) return;
 
-  if (!requestedBannerPlacement || bannerSuppressed) {
+  if (!requestedBannerPlacement || bannerSuppressed || modalSuppressed) {
     adsShouldBeVisible = false;
     applyBannerInset();
     if (activeBannerId) await AdMob.hideBanner();
@@ -469,5 +477,14 @@ export async function setNativeBannerSuppressed(suppressed: boolean): Promise<vo
     await syncNativeBanner();
   } catch (error) {
     console.warn("Could not update native banner visibility", error);
+  }
+}
+
+export async function setNativeModalSuppressed(suppressed: boolean): Promise<void> {
+  modalSuppressed = suppressed;
+  try {
+    await syncNativeBanner();
+  } catch (error) {
+    console.warn("Could not update native banner visibility for modal", error);
   }
 }

@@ -2,7 +2,6 @@ import { Link, useRouter, useRouterState } from "@tanstack/react-router";
 import {
   ArrowLeft,
   BadgeCheck,
-  Bell,
   BookOpen,
   BookOpenCheck,
   Award,
@@ -22,22 +21,11 @@ import { useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { getCurrentUser } from "@/lib/api";
-import { notifications } from "@/lib/notifications";
-import { Capacitor } from "@capacitor/core";
-import {
-  dismissGuestPushPrompt,
-  enablePushNotifications,
-  getGuestPushNotificationsEnabled,
-  hasDismissedGuestPushPrompt,
-  setGuestPushNotificationsEnabled,
-  setNativeBannerSuppressed,
-  syncGuestPushNotifications,
-  syncPushNotifications,
-} from "@/lib/native-services";
+import { setNativeBannerSuppressed, syncPushNotifications } from "@/lib/native-services";
 
 const links = [
-  { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/", label: "Quizzes", icon: Home },
+  { to: "/learn", label: "Learn", icon: GraduationCap },
   { to: "/daily-challenge", label: "Daily challenge", icon: CalendarDays },
   { to: "/study-guides", label: "Study guides", icon: BookOpen },
   { to: "/revision-notes", label: "Revision notes", icon: BookOpenCheck },
@@ -49,8 +37,6 @@ const links = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
-  const [showGuestPushPrompt, setShowGuestPushPrompt] = useState(false);
-  const [enablingGuestPush, setEnablingGuestPush] = useState(false);
   const router = useRouter();
   const pathname = useRouterState({ select: (state) => state.location.pathname });
   const { data, isLoading: isLoadingUser } = useQuery({
@@ -62,58 +48,8 @@ export function Header() {
   const userId = user?.id;
 
   useEffect(() => {
-    if (userId) {
-      void syncPushNotifications();
-    } else if (!isLoadingUser) {
-      void syncGuestPushNotifications();
-    }
+    if (userId) void syncPushNotifications();
   }, [isLoadingUser, userId]);
-
-  useEffect(() => {
-    if (
-      !Capacitor.isNativePlatform() ||
-      isLoadingUser ||
-      userId ||
-      getGuestPushNotificationsEnabled() ||
-      hasDismissedGuestPushPrompt()
-    ) {
-      return;
-    }
-    const timer = window.setTimeout(() => setShowGuestPushPrompt(true), 2500);
-    return () => window.clearTimeout(timer);
-  }, [isLoadingUser, userId]);
-
-  const enableGuestPush = async () => {
-    if (enablingGuestPush) return;
-    setEnablingGuestPush(true);
-    try {
-      const granted = await enablePushNotifications(true);
-      if (!granted) {
-        notifications.info("Notifications are still turned off", {
-          description:
-            "You can allow Quitech notifications in your device settings, then enable them from Privacy settings.",
-        });
-        return;
-      }
-      await setGuestPushNotificationsEnabled(true);
-      dismissGuestPushPrompt();
-      setShowGuestPushPrompt(false);
-      notifications.success("You’re subscribed to Quitech updates", {
-        description: "You can change this anytime in Privacy settings.",
-      });
-    } catch (error) {
-      notifications.error("We couldn’t enable notifications", {
-        description: error instanceof Error ? error.message : "Please try again.",
-      });
-    } finally {
-      setEnablingGuestPush(false);
-    }
-  };
-
-  const dismissGuestPush = () => {
-    dismissGuestPushPrompt();
-    setShowGuestPushPrompt(false);
-  };
 
   useEffect(() => {
     void setNativeBannerSuppressed(open);
@@ -282,44 +218,6 @@ export function Header() {
           </nav>
         )}
       </header>
-      {showGuestPushPrompt && (
-        <aside
-          aria-label="Quitech notifications"
-          className="border-b border-primary/20 bg-primary/5 px-4 py-4 print:hidden"
-        >
-          <div className="mx-auto flex max-w-7xl flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-            <div className="flex items-start gap-3">
-              <Bell className="mt-0.5 h-5 w-5 shrink-0 text-primary" aria-hidden="true" />
-              <div>
-                <p className="text-sm font-semibold text-foreground">
-                  Stay in the loop with Quitech
-                </p>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  Get occasional greetings, learning news, and important app updates. No account is
-                  needed, and you can turn notifications off anytime.
-                </p>
-              </div>
-            </div>
-            <div className="flex shrink-0 flex-wrap gap-2 pl-8 sm:pl-0">
-              <button
-                type="button"
-                onClick={() => void enableGuestPush()}
-                disabled={enablingGuestPush}
-                className="inline-flex min-h-10 items-center justify-center rounded-md bg-primary px-4 text-sm font-semibold text-primary-foreground hover:bg-primary/90 disabled:opacity-60"
-              >
-                {enablingGuestPush ? "Enabling…" : "Enable notifications"}
-              </button>
-              <button
-                type="button"
-                onClick={dismissGuestPush}
-                className="inline-flex min-h-10 items-center justify-center rounded-md border border-input bg-background px-4 text-sm font-medium text-foreground hover:bg-accent"
-              >
-                Not now
-              </button>
-            </div>
-          </div>
-        </aside>
-      )}
     </>
   );
 }

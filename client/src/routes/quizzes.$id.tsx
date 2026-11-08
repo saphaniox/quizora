@@ -132,13 +132,14 @@ function QuizPage() {
   const [submitting, setSubmitting] = useState(false);
   const [reportedQuestions, setReportedQuestions] = useState<string[]>([]);
   const [bookmarked, setBookmarked] = useState(false);
+  const [certificatePromptMode, setCertificatePromptMode] = useState<Mode | null>(null);
   const [pauseDialogOpen, setPauseDialogOpen] = useState(false);
   const startedAt = useRef<number>(0);
   const lastAccountSaveAt = useRef(0);
   const lastAccountSaveKey = useRef("");
   const [resumeState, setResume] = useState<SavedProgress | null>(null);
 
-  const { data: accountData } = useQuery({
+  const { data: accountData, isLoading: accountLoading } = useQuery({
     queryKey: ["auth", "me"],
     queryFn: () => getCurrentUser(),
     retry: false,
@@ -164,12 +165,16 @@ function QuizPage() {
   });
 
   const quiz = data?.quiz;
-  const { data: setupData } = useQuery({
+  const { data: setupData, isError: setupError } = useQuery({
     queryKey: ["quiz-setup", id],
     queryFn: () => getQuiz(id, 10, "setup"),
     enabled: !started,
     staleTime: 60_000,
   });
+  const setupQuestionCount = setupData?.quiz.totalQuestionsInSection;
+  const certificateReady = [100, 200, 500].includes(setupQuestionCount ?? 0);
+  const isCertificateMode = (selectedMode: Mode) =>
+    selectedMode === 100 || selectedMode === 200 || (selectedMode === "full" && certificateReady);
   const questions = useMemo(() => quiz?.questions ?? [], [quiz]);
   const current = questions[index];
   const answeredCount = Object.keys(answers).length;
@@ -386,6 +391,11 @@ function QuizPage() {
   }, [account?.id, id]);
 
   const beginQuiz = (selectedMode: Mode) => {
+    if (isCertificateMode(selectedMode) && !account?.id) {
+      setCertificatePromptMode(selectedMode);
+      return;
+    }
+    setCertificatePromptMode(null);
     const savedName = playerName.trim() || account?.displayName || "Anonymous";
     setMode(selectedMode);
     setSeed(Date.now().toString(36));
@@ -404,7 +414,13 @@ function QuizPage() {
 
   const resumeSaved = () => {
     if (!resumeState) return;
-    setMode(resumeState.mode as Mode);
+    const savedMode = resumeState.mode as Mode;
+    if (isCertificateMode(savedMode) && !account?.id) {
+      setCertificatePromptMode(savedMode);
+      return;
+    }
+    setCertificatePromptMode(null);
+    setMode(savedMode);
     setSeed(resumeState.seed);
     setAnswers(resumeState.answers);
     setFlagged(resumeState.flagged);
@@ -415,8 +431,6 @@ function QuizPage() {
   };
 
   const savedProgress = resumeState;
-  const setupQuestionCount = setupData?.quiz.totalQuestionsInSection;
-  const certificateReady = (setupQuestionCount ?? 0) >= 100;
   const quizModes: { value: Mode; title: string; copy: string }[] = [
     {
       value: 10,
@@ -525,7 +539,11 @@ function QuizPage() {
               <button
                 key={String(option.value)}
                 type="button"
-                disabled={!playerName.trim()}
+                disabled={
+                  !playerName.trim() ||
+                  (accountLoading && isCertificateMode(option.value)) ||
+                  (option.value === "full" && !setupData)
+                }
                 onClick={() => beginQuiz(option.value)}
                 className="flex min-h-20 items-start justify-between gap-4 rounded-lg border border-border bg-background p-4 text-left transition-colors hover:border-primary/50 hover:bg-accent disabled:cursor-not-allowed disabled:opacity-50"
               >
@@ -545,6 +563,65 @@ function QuizPage() {
               </button>
             ))}
           </div>
+
+          {accountLoading && (
+            <p className="mt-3 text-xs text-muted-foreground" role="status">
+              Checking your account before starting a certificate run...
+            </p>
+          )}
+
+          {!setupData && (
+            <p className="mt-3 text-xs text-muted-foreground" role="status">
+              {setupError
+                ? "We couldn’t load this section’s details, so the full quiz is unavailable right now."
+                : "Loading section details before opening the full quiz..."}
+            </p>
+          )}
+
+          {certificatePromptMode !== null && !account?.id && (
+            <section
+              className="mt-5 rounded-lg border border-primary/30 bg-primary/5 p-4"
+              aria-live="polite"
+            >
+              <h2 className="text-sm font-semibold text-foreground">Make this achievement yours</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                You chose the{" "}
+                {certificatePromptMode === "full"
+                  ? `full ${setupQuestionCount}-question`
+                  : `${certificatePromptMode}-question`}{" "}
+                run. Create a free account or sign in before starting so your result and any
+                certificate you earn stay connected to you. You’ll come right back here to begin.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <Link
+                  to="/auth"
+                  search={
+                    {
+                      mode: "signup",
+                      next: `/quizzes/${encodeURIComponent(id)}`,
+                    } as never
+                  }
+                  className="inline-flex min-h-10 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                >
+                  Create a free account
+                </Link>
+                <Link
+                  to="/auth"
+                  search={{ next: `/quizzes/${encodeURIComponent(id)}` } as never}
+                  className="text-sm font-medium text-primary underline-offset-4 hover:underline"
+                >
+                  I already have an account
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => setCertificatePromptMode(null)}
+                  className="text-sm text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Maybe later
+                </button>
+              </div>
+            </section>
+          )}
 
           {savedProgress && (
             <div className="mt-4 rounded-lg border border-primary/40 bg-primary/5 p-4">

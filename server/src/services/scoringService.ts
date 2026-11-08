@@ -5,6 +5,7 @@ import * as certificateModel from "../models/certificateModel.js";
 import {
   certificateTierForQuestionCount,
   isCertificateRunEligible,
+  requiresAccountForCertificateRun,
 } from "./certificateAwards.js";
 import type {
   AnswerPayload,
@@ -213,7 +214,7 @@ function quizPushNotification(input: {
 export async function scoreSubmission(
   payload: AnswerPayload,
   user: User | null = null,
-): Promise<AnswerResult | null> {
+): Promise<AnswerResult | { accountRequired: true } | null> {
   const quiz = await findQuiz(payload.quizId);
   if (!quiz) return null;
 
@@ -245,6 +246,17 @@ export async function scoreSubmission(
     })
   ) {
     return null;
+  }
+
+  const fullSection = submittedQuestionIds.length === quiz.questions.length;
+  if (
+    requiresAccountForCertificateRun(
+      submittedQuestionIds.length,
+      fullSection,
+      Boolean(user),
+    )
+  ) {
+    return { accountRequired: true };
   }
 
   const graded = submittedQuestionIds.map((id) => questionById.get(id)!);
@@ -297,7 +309,6 @@ export async function scoreSubmission(
     : null;
   if (!leaderboardVisible) await leaderboardModel.hideParticipantEntries(entry);
 
-  const fullSection = graded.length === quiz.questions.length;
   const certificateTier = certificateTierForQuestionCount(maxScore);
   const certificateEligible = isCertificateRunEligible(maxScore, fullSection);
   const passed = percentage >= PASS_MARK;

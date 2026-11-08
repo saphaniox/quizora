@@ -10,6 +10,7 @@ import {
 import {
   certificateTierForQuestionCount,
   isCertificateRunEligible,
+  requiresAccountForCertificateRun,
 } from "../dist/services/certificateAwards.js";
 
 function makeQuiz(questionCount) {
@@ -144,4 +145,15 @@ test("a limited practice run is never certificate eligible", () => {
 
   assert.equal(practiceRun.questions.length, 50);
   assert.equal(practiceRun.certificateEligible, false);
+});
+
+test("certificate-eligible runs require an account, but practice remains open", () => {
+  assert.equal(requiresAccountForCertificateRun(100, false, false), true);
+  assert.equal(requiresAccountForCertificateRun(200, false, false), true);
+  assert.equal(
+    requiresAccountForCertificateRun(CERTIFICATE_QUESTION_COUNT, true, false),
+    true,
+  );
+  assert.equal(requiresAccountForCertificateRun(50, false, false), false);
+  assert.equal(requiresAccountForCertificateRun(100, false, true), false);
 });

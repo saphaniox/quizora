@@ -33,11 +33,13 @@ import { Capacitor } from "@capacitor/core";
 import { Browser } from "@capacitor/browser";
 import {
   getNativeAdAgeGroup,
+  initializeNativePushNotifications,
   initializePushNotificationActions,
   syncPushNotifications,
   initializeNativeAds,
   setNativeAdAgeGroup,
   setNativeBannerPlacement,
+  setNativeModalSuppressed,
   type AdAgeGroup,
   type NativeBannerPlacement,
 } from "@/lib/native-services";
@@ -222,9 +224,40 @@ function RootComponent() {
   useEffect(() => {
     initializePushNotificationActions();
     if (Capacitor.isNativePlatform()) {
+      void initializeNativePushNotifications();
       setNativeAdAgeGroupState(getNativeAdAgeGroup());
       setNativeAgePromptReady(true);
     }
+  }, []);
+
+  useEffect(() => {
+    if (!Capacitor.isNativePlatform()) return;
+
+    let modalOpen = false;
+    const syncModalSuppression = () => {
+      const isOpen = Boolean(
+        document.querySelector(
+          '[aria-modal="true"], [role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]',
+        ),
+      );
+      if (isOpen === modalOpen) return;
+
+      modalOpen = isOpen;
+      document.documentElement.dataset["nativeModalOpen"] = String(isOpen);
+      window.dispatchEvent(new CustomEvent("quitech:modal-overlay", { detail: isOpen }));
+      void setNativeModalSuppressed(isOpen);
+    };
+
+    const observer = new MutationObserver(syncModalSuppression);
+    observer.observe(document.body, {
+      childList: true,
+      subtree: true,
+      attributes: true,
+      attributeFilter: ["aria-modal", "data-state"],
+    });
+    syncModalSuppression();
+
+    return () => observer.disconnect();
   }, []);
 
   useEffect(() => {

@@ -1,8 +1,5 @@
 const DEFAULT_SERVER_API_BASE = "https://api.quitech.online";
-const DEFAULT_PROXY_HOSTS = [
-  "quitech.online",
-  "www.quitech.online",
-];
+const DEFAULT_PROXY_HOSTS = ["quitech.online", "www.quitech.online"];
 const API_ENV_KEYS = ["SERVER_API_URL", "API_URL", "VITE_SERVER_API_URL", "VITE_API_URL"] as const;
 const FORWARDED_REQUEST_HEADERS = [
   "accept",

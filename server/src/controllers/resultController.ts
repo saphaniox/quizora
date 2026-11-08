@@ -78,6 +78,13 @@ export async function submitAnswers(
     reply.code(404).send({ error: "Quiz not found" });
     return;
   }
+  if ("accountRequired" in result) {
+    reply.code(401).send({
+      error:
+        "Certificate-eligible runs require an account. Please sign in or create a free account to continue.",
+    });
+    return;
+  }
   return reply.send({ result });
 }
 
@@ -85,7 +92,11 @@ export async function getLeaderboard(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const query = request.query as { quizId?: string; levelId?: string; countryCode?: string };
+  const query = request.query as {
+    quizId?: string;
+    levelId?: string;
+    countryCode?: string;
+  };
   return reply.send({
     leaderboard: await leaderboardModel.list({
       quizId: query.quizId,

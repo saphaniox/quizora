@@ -18,3 +18,11 @@ export function isCertificateRunEligible(questionCount: number, fullSection: boo
     (questionCount === FULL_SECTION_CERTIFICATE_QUESTION_COUNT && fullSection)
   );
 }
+
+export function requiresAccountForCertificateRun(
+  questionCount: number,
+  fullSection: boolean,
+  hasAccount: boolean,
+): boolean {
+  return !hasAccount && isCertificateRunEligible(questionCount, fullSection);
+}

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { findQuiz } from "../models/quizModel.server";
+import { requiresAccountForCertificateRun } from "../models/certificateAwards.server";
 import { scoreSubmission } from "../services/scoringService.server";
 import * as leaderboardModel from "../models/leaderboardModel.server";
 import * as certificateModel from "../models/certificateModel.server";
@@ -53,6 +55,23 @@ export function submitAnswers(payload: unknown): ControllerResult {
   const parsed = answerSchema.safeParse(payload);
   if (!parsed.success) {
     return { status: 400, body: { error: "Invalid submission", details: parsed.error.format() } };
+  }
+  const quiz = findQuiz(parsed.data.quizId);
+  if (!quiz) return { status: 404, body: { error: "Quiz not found" } };
+  const questionCount =
+    parsed.data.questionIds && parsed.data.questionIds.length > 0
+      ? parsed.data.questionIds.length
+      : Object.keys(parsed.data.answers).length;
+  if (
+    requiresAccountForCertificateRun(questionCount, questionCount === quiz.questions.length, false)
+  ) {
+    return {
+      status: 401,
+      body: {
+        error:
+          "Certificate-eligible runs require an account. Please sign in or create a free account to continue.",
+      },
+    };
   }
   const result = scoreSubmission(parsed.data);
   if (!result) return { status: 404, body: { error: "Quiz not found" } };

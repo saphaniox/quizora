@@ -119,7 +119,8 @@ function updateActiveSlot(): void {
   animationFrame = window.requestAnimationFrame(() => {
     animationFrame = null;
     activeSlot =
-      document.documentElement.dataset["mobileNavigationOpen"] === "true"
+      document.documentElement.dataset["mobileNavigationOpen"] === "true" ||
+      document.documentElement.dataset["nativeModalOpen"] === "true"
         ? null
         : findVisibleSlot();
     void reconcileAd();
@@ -129,6 +130,17 @@ function updateActiveSlot(): void {
 function handleMobileNavigation(event: Event): void {
   const isOpen = (event as CustomEvent<unknown>).detail === true;
   document.documentElement.dataset["mobileNavigationOpen"] = String(isOpen);
+  if (isOpen) {
+    activeSlot = null;
+    void reconcileAd();
+  } else {
+    updateActiveSlot();
+  }
+}
+
+function handleModalOverlay(event: Event): void {
+  const isOpen = (event as CustomEvent<unknown>).detail === true;
+  document.documentElement.dataset["nativeModalOpen"] = String(isOpen);
   if (isOpen) {
     activeSlot = null;
     void reconcileAd();
@@ -150,6 +162,7 @@ function attachListeners(): void {
   window.addEventListener("resize", updateActiveSlot);
   document.addEventListener("visibilitychange", updateActiveSlot);
   window.addEventListener("quitech:mobile-navigation", handleMobileNavigation);
+  window.addEventListener("quitech:modal-overlay", handleModalOverlay);
   window.addEventListener("quitech-native-ads-ready", retryActiveAd);
   resizeObserver = new ResizeObserver(updateActiveSlot);
   updateActiveSlot();
@@ -162,6 +175,7 @@ function detachListeners(): void {
   window.removeEventListener("resize", updateActiveSlot);
   document.removeEventListener("visibilitychange", updateActiveSlot);
   window.removeEventListener("quitech:mobile-navigation", handleMobileNavigation);
+  window.removeEventListener("quitech:modal-overlay", handleModalOverlay);
   window.removeEventListener("quitech-native-ads-ready", retryActiveAd);
   resizeObserver?.disconnect();
   resizeObserver = null;

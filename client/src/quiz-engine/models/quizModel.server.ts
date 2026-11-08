@@ -1,4 +1,4 @@
-import type { Level, Quiz, QuizSummary, PublicQuiz } from "../types.server";
+import type { Difficulty, Level, Quiz, QuizSummary, PublicQuiz } from "../types.server";
 import {
   expandSectionToQuestionCount,
   finalize,
@@ -37,7 +37,8 @@ export const PASS_MARK = 80;
 export const CERTIFICATE_QUESTION_COUNT = FULL_SECTION_CERTIFICATE_QUESTION_COUNT;
 
 const descriptionTails: Record<string, string> = {
-  foundations: "Designed for confident secondary-entry preparation and durable academic understanding.",
+  foundations:
+    "Designed for confident secondary-entry preparation and durable academic understanding.",
   secondary: "Built for focused revision, confident recall, and steady exam-style practice.",
   college: "Built for higher-level practice, applied reasoning, and certificate-ready review.",
   professional:
@@ -249,11 +250,10 @@ function targetFor(section: SectionDefinition): number {
 }
 
 /** Timed practice gives Hard runs two minutes per question; other practice is one minute. */
-const PRACTICE_SECONDS_PER_QUESTION: Record<Difficulty, number> = {
-  Easy: 60,
-  Medium: 60,
-  Hard: 120,
-};
+function practiceSecondsPerQuestion(difficulty: Difficulty): number {
+  return difficulty === "Hard" ? 120 : 60;
+}
+
 interface SectionMeta {
   level: (typeof levelDefinitions)[number];
   section: SectionDefinition;
@@ -388,7 +388,7 @@ export function toPublicQuiz(quiz: Quiz, limit?: number, seed?: string): PublicQ
     difficulty: quiz.difficulty,
     timeLimitSeconds: fullSection
       ? 0
-      : questions.length * PRACTICE_SECONDS_PER_QUESTION[quiz.difficulty],
+      : questions.length * practiceSecondsPerQuestion(quiz.difficulty),
     totalQuestionsInSection: total,
     certificateEligible,
     passMark: PASS_MARK,
