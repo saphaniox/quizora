@@ -108,6 +108,51 @@ export const Route = createFileRoute("/_authenticated/admin")({
 
 type StatusTone = "ready" | "warning" | "blocked";
 
+const pushMessageTemplates = [
+  {
+    id: "hello",
+    label: "A friendly hello",
+    title: "A little hello from Quitech",
+    body: "We’re glad you’re learning with us. Whenever you’re ready, there’s always something new to explore on Quitech.",
+    url: "/",
+  },
+  {
+    id: "new-lessons",
+    label: "New learning content",
+    title: "New lessons are ready",
+    body: "We’ve added fresh lessons to help you keep learning at your own pace. Take a look whenever you have a moment.",
+    url: "/learn",
+  },
+  {
+    id: "study-greeting",
+    label: "Gentle study encouragement",
+    title: "Keep your learning going",
+    body: "A few minutes of focused study can make a difference. Pick up where you left off whenever it suits you.",
+    url: "/learn",
+  },
+  {
+    id: "daily-challenge",
+    label: "Daily challenge",
+    title: "Your next challenge is waiting",
+    body: "Ready for a quick brain stretch? Try today’s challenge whenever you have a few minutes.",
+    url: "/daily-challenge",
+  },
+  {
+    id: "app-update",
+    label: "App update",
+    title: "Quitech has an update",
+    body: "We’ve made improvements to your Quitech experience. Open the app to see what’s new and keep learning.",
+    url: "/",
+  },
+  {
+    id: "service-notice",
+    label: "Service or maintenance notice",
+    title: "A quick Quitech update",
+    body: "We’re making improvements to Quitech. Some features may be briefly unavailable; thank you for your patience.",
+    url: "/",
+  },
+] as const;
+
 interface ReadinessItem {
   label: string;
   detail: string;
@@ -282,6 +327,7 @@ function AdminPage() {
   const [feedbackSort, setFeedbackSort] = useState("newest");
   const [analyticsFrom, setAnalyticsFrom] = useState("");
   const [analyticsTo, setAnalyticsTo] = useState("");
+  const [pushTemplate, setPushTemplate] = useState("");
   const [pushDraft, setPushDraft] = useState({ title: "", body: "", url: "/" });
   const [pushAction, setPushAction] = useState<{ tone: StatusTone; message: string } | null>(null);
   const [emailDraft, setEmailDraft] = useState<{
@@ -556,10 +602,11 @@ function AdminPage() {
   const sendPushMutation = useMutation({
     mutationFn: sendAdminPushNotification,
     onSuccess: (result) => {
+      setPushTemplate("");
       setPushDraft({ title: "", body: "", url: "/" });
       setPushAction({
         tone: result.failed ? "warning" : "ready",
-        message: `We sent it to ${formatNumber(result.sent)} of ${formatNumber(result.recipients)} registered devices.`,
+        message: `We sent it to ${formatNumber(result.sent)} of ${formatNumber(result.recipients)} opted-in devices.`,
       });
     },
     onError: (error) => {
@@ -1262,7 +1309,9 @@ function AdminPage() {
             <h2 className="text-base font-semibold text-card-foreground">Push notification</h2>
           </div>
           <p className="mt-1 text-sm text-muted-foreground">
-            Send a concise update to learners who enabled notifications in the mobile app.
+            Send greetings, learning news, and app or service updates to opted-in mobile devices,
+            including visitors who use the app without an account. Do not use this channel for
+            promotional offers.
           </p>
           <form
             className="mt-4 grid min-w-0 gap-3 lg:grid-cols-[minmax(0,0.8fr)_minmax(0,1.5fr)_minmax(0,0.7fr)_auto] lg:items-end"
@@ -1276,6 +1325,36 @@ function AdminPage() {
               });
             }}
           >
+            <label className="min-w-0 text-xs font-medium text-muted-foreground lg:col-span-4">
+              Start with a message template
+              <select
+                value={pushTemplate}
+                onChange={(event) => {
+                  const template = pushMessageTemplates.find(
+                    (item) => item.id === event.target.value,
+                  );
+                  setPushTemplate(event.target.value);
+                  if (template) {
+                    setPushDraft({
+                      title: template.title,
+                      body: template.body,
+                      url: template.url,
+                    });
+                  }
+                }}
+                className="mt-1 block min-h-10 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground"
+              >
+                <option value="">Choose a ready-to-edit message…</option>
+                {pushMessageTemplates.map((template) => (
+                  <option key={template.id} value={template.id}>
+                    {template.label}
+                  </option>
+                ))}
+              </select>
+              <span className="mt-1 block font-normal">
+                Selecting a template fills in the fields below. Review or edit it before sending.
+              </span>
+            </label>
             <label className="min-w-0 text-xs font-medium text-muted-foreground">
               Title
               <input

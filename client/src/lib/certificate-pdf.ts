@@ -187,6 +187,49 @@ function drawDiamondWatermark(doc: jsPDF, width: number): void {
   doc.line(upperRight, upperY, center, bottomY);
 }
 
+function drawGoldWatermark(doc: jsPDF, width: number): void {
+  const centerX = width / 2;
+  const centerY = 300;
+
+  setDrawColor(doc, [249, 235, 190]);
+  doc.setLineWidth(2);
+  doc.circle(centerX, centerY, 170, "S");
+  doc.circle(centerX, centerY, 156, "S");
+
+  setDrawColor(doc, [252, 244, 218]);
+  doc.setLineWidth(1);
+  for (let angle = 0; angle < 360; angle += 15) {
+    const radians = (angle * Math.PI) / 180;
+    doc.line(
+      centerX + Math.cos(radians) * 162,
+      centerY + Math.sin(radians) * 162,
+      centerX + Math.cos(radians) * 170,
+      centerY + Math.sin(radians) * 170,
+    );
+  }
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(78);
+  doc.setTextColor(252, 246, 226);
+  doc.text("GOLD", centerX, centerY + 25, { align: "center" });
+}
+
+function drawPlatinumWatermark(doc: jsPDF, width: number): void {
+  const centerX = width / 2;
+
+  doc.setFont("helvetica", "bold");
+  doc.setFontSize(58);
+  doc.setTextColor(237, 241, 246);
+  doc.text("PLATINUM", centerX, 320, { align: "center" });
+
+  setDrawColor(doc, [241, 244, 248]);
+  doc.setLineWidth(1.2);
+  doc.line(92, 178, width - 92, 178);
+  doc.line(92, 466, width - 92, 466);
+  doc.line(118, 188, 118, 456);
+  doc.line(width - 118, 188, width - 118, 456);
+}
+
 async function buildCertificatePdf(
   certificate: Certificate,
   verifyUrl: string,
@@ -217,6 +260,14 @@ async function buildCertificatePdf(
         : tier === "gold"
           ? ([202, 138, 4] as const)
           : ([180, 132, 45] as const);
+  const paper =
+    tier === "gold"
+      ? ([255, 252, 239] as const)
+      : tier === "platinum"
+        ? ([250, 251, 253] as const)
+        : tier === "diamond"
+          ? ([247, 251, 255] as const)
+          : ([251, 252, 248] as const);
   const issuedDate = new Intl.DateTimeFormat(undefined, {
     year: "numeric",
     month: "long",
@@ -239,10 +290,16 @@ async function buildCertificatePdf(
     keywords: "Quitech, certificate, achievement, SAPTech Uganda",
   });
 
-  doc.setFillColor(251, 252, 248);
+  setFillColor(doc, paper);
   doc.rect(0, 0, width, height, "F");
 
-  drawDiamondWatermark(doc, width);
+  if (tier === "diamond") {
+    drawDiamondWatermark(doc, width);
+  } else if (tier === "gold") {
+    drawGoldWatermark(doc, width);
+  } else if (tier === "platinum") {
+    drawPlatinumWatermark(doc, width);
+  }
 
   if (watermark) {
     doc.addImage(watermark, "PNG", width / 2 - 125, height / 2 - 125, 250, 250);
@@ -263,7 +320,7 @@ async function buildCertificatePdf(
   doc.setTextColor(slate[0], slate[1], slate[2]);
   doc.text("Learn, challenge & progress", logo ? 126 : 72, 92);
 
-  const badgeColor =
+  const badgeColor: PdfColor =
     tier === "diamond"
       ? [3, 105, 161]
       : tier === "platinum"
@@ -271,7 +328,7 @@ async function buildCertificatePdf(
         : tier === "gold"
           ? [146, 64, 14]
           : [4, 120, 87];
-  const badgeFill =
+  const badgeFill: PdfColor =
     tier === "diamond"
       ? [224, 242, 254]
       : tier === "platinum"

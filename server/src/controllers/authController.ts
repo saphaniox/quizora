@@ -426,12 +426,6 @@ export async function registerPushDevice(
   request: FastifyRequest,
   reply: FastifyReply,
 ): Promise<void> {
-  const user = await requireUser(
-    request,
-    reply,
-    "Please sign in to turn on notifications.",
-  );
-  if (!user) return;
   const parsed = pushDeviceSchema.safeParse(request.body);
   if (!parsed.success) {
     reply
@@ -439,8 +433,31 @@ export async function registerPushDevice(
       .send({ error: "This device could not be registered for notifications." });
     return;
   }
-  await auth.savePushDevice(user.id, parsed.data.token, parsed.data.platform);
+  const user = await auth.getUser(readSessionToken(request));
+  await auth.savePushDevice(user?.id ?? null, parsed.data.token, parsed.data.platform);
   reply.send({ ok: true });
+}
+
+export async function savePushDevicePreference(
+  request: FastifyRequest,
+  reply: FastifyReply,
+): Promise<void> {
+  const parsed = z
+    .object({
+      token: z.string().min(20).max(4096),
+      enabled: z.boolean(),
+    })
+    .safeParse(request.body);
+  if (!parsed.success) {
+    reply.code(400).send({ error: "Please choose whether this device can receive notifications." });
+    return;
+  }
+  const updated = await auth.setPushDeviceEnabled(parsed.data.token, parsed.data.enabled);
+  if (!updated) {
+    reply.code(404).send({ error: "This device is not registered for notifications yet." });
+    return;
+  }
+  reply.header("cache-control", "no-store").send({ enabled: parsed.data.enabled });
 }
 
 export async function getPushPreference(

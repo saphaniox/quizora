@@ -289,15 +289,28 @@ export async function resetPasswordWithToken(
 }
 
 export async function savePushDevice(
-  userId: string,
+  userId: string | null,
   token: string,
   platform: "android" | "ios" | "web",
 ) {
   await pool.query(
     `INSERT INTO push_devices (token, user_id, platform) VALUES ($1, $2, $3)
-     ON CONFLICT (token) DO UPDATE SET user_id = EXCLUDED.user_id, platform = EXCLUDED.platform, enabled = TRUE, updated_at = NOW()`,
+     ON CONFLICT (token) DO UPDATE
+     SET user_id = EXCLUDED.user_id,
+         platform = EXCLUDED.platform,
+         enabled = TRUE,
+         updated_at = NOW()`,
     [token, userId, platform],
   );
+}
+
+export async function setPushDeviceEnabled(token: string, enabled: boolean): Promise<boolean> {
+  const result = await pool.query(
+    `UPDATE push_devices SET enabled = $2, updated_at = NOW()
+     WHERE token = $1`,
+    [token, enabled],
+  );
+  return Boolean(result.rowCount);
 }
 
 export async function getPushNotificationsEnabled(userId: string): Promise<boolean> {

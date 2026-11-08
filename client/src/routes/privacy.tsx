@@ -1,13 +1,18 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Capacitor } from "@capacitor/core";
-import { Database, Loader2, Mail, ShieldCheck, SlidersHorizontal } from "lucide-react";
-import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
+import { Bell, Database, Loader2, Mail, ShieldCheck, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
 import { notifications } from "@/lib/notifications";
+import { getCurrentUser } from "@/lib/api";
 
 import {
   clearNativeAdAgeGroup,
+  enablePushNotifications,
+  getGuestPushNotificationsEnabled,
   getNativeAdAgeGroup,
   openNativePrivacyChoices,
+  setGuestPushNotificationsEnabled,
   type AdAgeGroup,
 } from "@/lib/native-services";
 
@@ -43,7 +48,7 @@ const collectedData = [
   },
   {
     title: "Device and usage data",
-    body: "The app may use cookies, local storage, a visitor ID for leaderboard retakes made without an account, hosting logs, error reports, and basic analytics. This helps us keep Quitech working and understand what needs improvement.",
+    body: "The app may use cookies, local storage, a visitor ID for leaderboard retakes made without an account, hosting logs, error reports, and basic analytics. If you opt in to push notifications, we store this device’s notification token so we can deliver requested messages. The token can be kept as a guest installation or linked to your account when you sign in.",
   },
   {
     title: "Support messages",
@@ -63,15 +68,27 @@ const uses = [
   "Provide quizzes, results, progress history, leaderboards, and certificate verification.",
   "Authenticate accounts, keep sessions secure, prevent abuse, and troubleshoot issues.",
   "Respond to support, privacy, and account deletion requests.",
-  "Send account and security notices, plus optional learning reminders and product updates you can turn off at any time.",
+  "Send account and security notices, plus optional greetings, learning news, and app or service updates to devices that have opted in.",
   "Measure performance and improve quiz content and product quality.",
   "Show and measure ads when advertising is enabled in the app.",
 ] as const;
 
 function PrivacyPage() {
   const [openingPrivacyChoices, setOpeningPrivacyChoices] = useState(false);
+  const [guestPushEnabled, setGuestPushEnabled] = useState(false);
+  const [savingGuestPush, setSavingGuestPush] = useState(false);
   const [adAgeGroup] = useState<AdAgeGroup | null>(() => getNativeAdAgeGroup());
   const isNativeApp = Capacitor.isNativePlatform();
+  const accountQuery = useQuery({
+    queryKey: ["auth", "me"],
+    queryFn: getCurrentUser,
+    retry: false,
+    enabled: isNativeApp,
+  });
+
+  useEffect(() => {
+    setGuestPushEnabled(getGuestPushNotificationsEnabled());
+  }, []);
 
   const handlePrivacyChoices = async () => {
     if (openingPrivacyChoices) return;
@@ -96,6 +113,35 @@ function PrivacyPage() {
   const handleChangeAgeGroup = () => {
     clearNativeAdAgeGroup();
     window.location.reload();
+  };
+
+  const handleGuestPushChange = async () => {
+    if (savingGuestPush) return;
+    setSavingGuestPush(true);
+    try {
+      const nextEnabled = !guestPushEnabled;
+      if (nextEnabled) {
+        const permissionGranted = await enablePushNotifications(true);
+        if (!permissionGranted) {
+          notifications.info("Notifications are still turned off", {
+            description: "Allow notifications for Quitech in your device settings, then try again.",
+          });
+          return;
+        }
+      }
+      await setGuestPushNotificationsEnabled(nextEnabled);
+      setGuestPushEnabled(nextEnabled);
+      notifications.success(
+        nextEnabled ? "You’re subscribed to Quitech updates" : "Quitech notifications are off",
+      );
+    } catch (failure) {
+      notifications.error("We couldn’t update your notification choice", {
+        description:
+          failure instanceof Error ? failure.message : "Please try again in a little while.",
+      });
+    } finally {
+      setSavingGuestPush(false);
+    }
   };
 
   return (
@@ -166,6 +212,46 @@ function PrivacyPage() {
             phone number connected to your account.
           </p>
         </div>
+
+        {isNativeApp && (
+          <div>
+            <h2 className="text-xl font-semibold tracking-tight text-foreground">
+              Quitech notifications
+            </h2>
+            {accountQuery.isLoading ? (
+              <p className="mt-3 text-sm text-muted-foreground">Checking notification settings…</p>
+            ) : accountQuery.data?.user ? (
+              <p className="mt-3 text-sm leading-6 text-muted-foreground">
+                Manage notifications for your account in{" "}
+                <Link to="/wallet" className="font-medium text-primary hover:underline">
+                  Account settings
+                </Link>
+                .
+              </p>
+            ) : (
+              <>
+                <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                  Choose whether this app can receive occasional greetings, learning news, and
+                  important app or service updates. No account is needed. Your device will ask for
+                  permission when you turn notifications on.
+                </p>
+                <button
+                  type="button"
+                  onClick={() => void handleGuestPushChange()}
+                  disabled={savingGuestPush}
+                  className="mt-4 inline-flex min-h-10 items-center gap-2 rounded-md border border-input bg-background px-4 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-60"
+                >
+                  {savingGuestPush ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Bell className="h-4 w-4" />
+                  )}
+                  {guestPushEnabled ? "Turn off notifications" : "Turn on notifications"}
+                </button>
+              </>
+            )}
+          </div>
+        )}
 
         {isNativeApp && (
           <div>

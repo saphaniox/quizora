@@ -1,10 +1,11 @@
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowRight, BookOpen, Clock3, GraduationCap, Search, ShieldCheck } from "lucide-react";
 import { getLearningLessons } from "@/lib/api";
 import { formatStudyDuration } from "@/lib/learning";
 import type { LearningLesson } from "@/lib/api";
+import { NativeCatalogueAd } from "@/components/NativeCatalogueAd";
 
 export const Route = createFileRoute("/learn/")({
   head: () => ({
@@ -257,58 +258,66 @@ function LearningHubPage() {
         </div>
       ) : (
         <div className="mt-7 space-y-8">
-          {groupedLessons.map((group) => (
-            <section key={group.key}>
-              <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
-                <div>
-                  <p className="text-xs font-medium uppercase tracking-wide text-primary">
-                    {group.levelName}
-                  </p>
-                  <h2 className="mt-1 text-xl font-semibold text-foreground">{group.subject}</h2>
-                </div>
-                <span className="text-xs text-muted-foreground">
-                  {group.items.length} {group.items.length === 1 ? "lesson" : "lessons"}
-                </span>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
-                {group.items.map((lesson) => (
-                  <Link
-                    key={lesson.slug}
-                    to="/learn/$slug"
-                    params={{ slug: lesson.slug }}
-                    className="group flex min-h-52 flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-                  >
-                    <div className="flex items-center justify-between gap-3">
-                      <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
-                        {lesson.difficulty}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {lesson.reviewedAt
-                          ? `Reviewed ${new Date(`${lesson.reviewedAt}T00:00:00`).toLocaleDateString()}`
-                          : "Expert review pending"}
-                      </span>
-                    </div>
-                    <h3 className="mt-4 text-lg font-semibold leading-6 text-foreground">
-                      {lesson.title}
-                    </h3>
-                    <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-muted-foreground">
-                      {lesson.summary}
+          {groupedLessons.map((group, groupIndex) => {
+            const lessonsBeforeGroup = groupedLessons
+              .slice(0, groupIndex)
+              .reduce((count, previousGroup) => count + previousGroup.items.length, 0);
+
+            return (
+              <section key={group.key}>
+                <div className="mb-3 flex flex-wrap items-baseline justify-between gap-2">
+                  <div>
+                    <p className="text-xs font-medium uppercase tracking-wide text-primary">
+                      {group.levelName}
                     </p>
-                    <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
-                      <span className="inline-flex items-center gap-1.5">
-                        <Clock3 className="h-3.5 w-3.5" />
-                        {formatStudyDuration(lesson.estimatedMinutes)}
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 font-medium text-primary">
-                        Study lesson{" "}
-                        <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-                      </span>
-                    </div>
-                  </Link>
-                ))}
-              </div>
-            </section>
-          ))}
+                    <h2 className="mt-1 text-xl font-semibold text-foreground">{group.subject}</h2>
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {group.items.length} {group.items.length === 1 ? "lesson" : "lessons"}
+                  </span>
+                </div>
+                <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                  {group.items.map((lesson, lessonIndex) => (
+                    <Fragment key={lesson.slug}>
+                      <Link
+                        to="/learn/$slug"
+                        params={{ slug: lesson.slug }}
+                        className="group flex min-h-52 flex-col rounded-xl border border-border bg-card p-5 shadow-sm transition hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <span className="rounded-full bg-secondary px-2.5 py-1 text-xs font-medium text-secondary-foreground">
+                            {lesson.difficulty}
+                          </span>
+                          <span className="text-xs text-muted-foreground">
+                            {lesson.reviewedAt
+                              ? `Reviewed ${new Date(`${lesson.reviewedAt}T00:00:00`).toLocaleDateString()}`
+                              : "Expert review pending"}
+                          </span>
+                        </div>
+                        <h3 className="mt-4 text-lg font-semibold leading-6 text-foreground">
+                          {lesson.title}
+                        </h3>
+                        <p className="mt-2 line-clamp-3 flex-1 text-sm leading-6 text-muted-foreground">
+                          {lesson.summary}
+                        </p>
+                        <div className="mt-4 flex items-center justify-between gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+                          <span className="inline-flex items-center gap-1.5">
+                            <Clock3 className="h-3.5 w-3.5" />
+                            {formatStudyDuration(lesson.estimatedMinutes)}
+                          </span>
+                          <span className="inline-flex items-center gap-1.5 font-medium text-primary">
+                            Study lesson{" "}
+                            <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+                          </span>
+                        </div>
+                      </Link>
+                      {(lessonsBeforeGroup + lessonIndex + 1) % 5 === 0 && <NativeCatalogueAd />}
+                    </Fragment>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
         </div>
       )}
     </main>

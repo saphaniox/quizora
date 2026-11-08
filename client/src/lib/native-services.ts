@@ -8,7 +8,11 @@ import {
   BannerAdSize,
   MaxAdContentRating,
 } from "@capacitor-community/admob";
-import { getPushNotificationPreference, registerPushDevice } from "@/lib/api";
+import {
+  getPushNotificationPreference,
+  registerPushDevice,
+  savePushDevicePreference,
+} from "@/lib/api";
 
 const TEST_BANNER_ID = "ca-app-pub-3940256099942544/6300978111";
 const TEST_INTERSTITIAL_ID = "ca-app-pub-3940256099942544/1033173712";
@@ -25,6 +29,9 @@ const INTERSTITIAL_LAST_SHOWN_KEY = "quitech_interstitial_last_shown_v1";
 const INTERSTITIAL_MIN_INTERVAL_MS = 10 * 60 * 1000;
 const INTERSTITIAL_COMPLETION_INTERVAL = 2;
 const PUSH_REGISTRATION_TIMEOUT_MS = 20_000;
+const GUEST_PUSH_ENABLED_KEY = "quitech_guest_push_enabled_v1";
+const GUEST_PUSH_PROMPT_DISMISSED_KEY = "quitech_guest_push_prompt_dismissed_v1";
+const PUSH_DEVICE_TOKEN_KEY = "quitech_push_device_token_v1";
 
 export type AdAgeGroup = "teen" | "adult";
 export type NativeBannerPlacement = "home" | "leaderboard" | "history";
@@ -45,6 +52,40 @@ let bannerHeight = 0;
 let interstitialReady = false;
 let interstitialPreparing: Promise<boolean> | null = null;
 let nativeAdRequestsAllowed = false;
+
+export function getGuestPushNotificationsEnabled(): boolean {
+  return (
+    typeof window !== "undefined" && window.localStorage.getItem(GUEST_PUSH_ENABLED_KEY) === "true"
+  );
+}
+
+export function hasDismissedGuestPushPrompt(): boolean {
+  return (
+    typeof window !== "undefined" &&
+    window.localStorage.getItem(GUEST_PUSH_PROMPT_DISMISSED_KEY) === "true"
+  );
+}
+
+export function dismissGuestPushPrompt(): void {
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(GUEST_PUSH_PROMPT_DISMISSED_KEY, "true");
+  }
+}
+
+export function getRegisteredPushDeviceToken(): string | null {
+  if (typeof window === "undefined") return null;
+  return window.localStorage.getItem(PUSH_DEVICE_TOKEN_KEY);
+}
+
+export async function setGuestPushNotificationsEnabled(enabled: boolean): Promise<void> {
+  if (typeof window === "undefined") return;
+  const token = getRegisteredPushDeviceToken();
+  if (!token && enabled) {
+    throw new Error("This device is not registered for notifications yet.");
+  }
+  if (token) await savePushDevicePreference(token, enabled);
+  window.localStorage.setItem(GUEST_PUSH_ENABLED_KEY, String(enabled));
+}
 
 function applyBannerInset(): void {
   if (typeof document === "undefined") return;
@@ -123,10 +164,24 @@ export function enablePushNotifications(requestPermission = false): Promise<bool
 export async function syncPushNotifications(): Promise<void> {
   if (!Capacitor.isNativePlatform()) return;
   try {
+    const token = getRegisteredPushDeviceToken();
+    const platform = Capacitor.getPlatform();
+    if (token && (platform === "android" || platform === "ios")) {
+      await registerPushDevice(token, platform);
+    }
     const { enabled } = await getPushNotificationPreference();
     if (enabled) await enablePushNotifications(true);
   } catch (error) {
     console.warn("Could not load push notification preference", error);
+  }
+}
+
+export async function syncGuestPushNotifications(): Promise<void> {
+  if (!Capacitor.isNativePlatform() || !getGuestPushNotificationsEnabled()) return;
+  try {
+    await enablePushNotifications(false);
+  } catch (error) {
+    console.warn("Could not sync guest push notifications", error);
   }
 }
 
@@ -155,7 +210,12 @@ async function initializePushNotifications(requestPermission: boolean): Promise<
       const platform = Capacitor.getPlatform();
       if (platform === "android" || platform === "ios") {
         void registerPushDevice(value, platform)
-          .then(() => resolvePushRegistration?.())
+          .then(() => {
+            if (typeof window !== "undefined") {
+              window.localStorage.setItem(PUSH_DEVICE_TOKEN_KEY, value);
+            }
+            resolvePushRegistration?.();
+          })
           .catch((error: unknown) => {
             console.warn("Could not register push device", error);
             rejectPushRegistration?.(error);

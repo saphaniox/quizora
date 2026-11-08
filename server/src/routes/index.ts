@@ -8,6 +8,7 @@ import * as learningController from "../controllers/learningController.js";
 const routes: FastifyPluginAsync = async (app) => {
   const submissionTimes = new Map<string, number[]>();
   const authAttemptTimes = new Map<string, number[]>();
+  const pushRegistrationTimes = new Map<string, number[]>();
   const submissionRateLimit = async (
     request: FastifyRequest,
     reply: FastifyReply,
@@ -44,6 +45,24 @@ const routes: FastifyPluginAsync = async (app) => {
         .code(429)
         .send({ error: "Too many account attempts. Try again later." });
       return;
+    }
+  };
+  const pushRegistrationRateLimit = async (
+    request: FastifyRequest,
+    reply: FastifyReply,
+  ) => {
+    const key = request.ip;
+    const now = Date.now();
+    const recent = (pushRegistrationTimes.get(key) ?? []).filter(
+      (time) => now - time < 60_000,
+    );
+    recent.push(now);
+    pushRegistrationTimes.set(key, recent);
+    if (recent.length > 20) {
+      await reply
+        .header("retry-after", "60")
+        .code(429)
+        .send({ error: "Too many notification requests. Try again later." });
     }
   };
   app.get("/levels", quizController.getLevels);
@@ -101,6 +120,16 @@ const routes: FastifyPluginAsync = async (app) => {
   app.delete("/auth/me", authController.deleteAccount);
   app.post("/auth/logout", authController.logout);
   app.put("/auth/me/push-device", authController.registerPushDevice);
+  app.put(
+    "/push/device",
+    { preHandler: pushRegistrationRateLimit },
+    authController.registerPushDevice,
+  );
+  app.patch(
+    "/push/device",
+    { preHandler: pushRegistrationRateLimit },
+    authController.savePushDevicePreference,
+  );
   app.get("/auth/me/push-device", authController.getPushPreference);
   app.patch("/auth/me/push-device", authController.savePushPreference);
   app.post("/admin/notifications", authController.sendAdminPushNotification);

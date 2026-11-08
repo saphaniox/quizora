@@ -606,9 +606,19 @@ export async function registerPushDevice(
   token: string,
   platform: "android" | "ios" | "web",
 ): Promise<void> {
-  await fetchJson<{ ok: true }>("/auth/me/push-device", {
+  await fetchJson<{ ok: true }>("/push/device", {
     method: "PUT",
     body: JSON.stringify({ token, platform }),
+  });
+}
+
+export async function savePushDevicePreference(
+  token: string,
+  enabled: boolean,
+): Promise<{ enabled: boolean }> {
+  return fetchJson<{ enabled: boolean }>("/push/device", {
+    method: "PATCH",
+    body: JSON.stringify({ token, enabled }),
   });
 }
 

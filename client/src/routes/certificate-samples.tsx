@@ -1,9 +1,12 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight, Award, Download, Eye, Gem, Loader2, X } from "lucide-react";
 import type { Certificate, CertificateTier } from "@/types/quiz";
 import { certificateTierLabel } from "@/lib/certificate-awards";
 import { notifications } from "@/lib/notifications";
+import { Capacitor } from "@capacitor/core";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import { NativeCatalogueAd } from "@/components/NativeCatalogueAd";
 
 const samples: {
   tier: Exclude<CertificateTier, "standard">;
@@ -78,14 +81,7 @@ export const Route = createFileRoute("/certificate-samples")({
 
 function CertificateSamplesPage() {
   const [busyTier, setBusyTier] = useState<CertificateTier | null>(null);
-  const [preview, setPreview] = useState<{ tier: CertificateTier; url: string } | null>(null);
-
-  useEffect(
-    () => () => {
-      if (preview) URL.revokeObjectURL(preview.url);
-    },
-    [preview],
-  );
+  const [preview, setPreview] = useState<{ tier: CertificateTier; blob: Blob } | null>(null);
 
   const getSampleCertificate = (sample: (typeof samples)[number]): Certificate => ({
     code: `SAMPLE-${sample.tier.toUpperCase()}-NOT-VALID`,
@@ -107,8 +103,7 @@ function CertificateSamplesPage() {
     try {
       const { createCertificatePdfBlob } = await import("@/lib/certificate-pdf");
       const blob = await createCertificatePdfBlob(getSampleCertificate(sample), { sample: true });
-      const url = URL.createObjectURL(blob);
-      setPreview({ tier: sample.tier, url });
+      setPreview({ tier: sample.tier, blob });
     } catch (error) {
       notifications.error("We couldn’t open the sample certificate", {
         description: error instanceof Error ? error.message : "Please try again.",
@@ -134,6 +129,10 @@ function CertificateSamplesPage() {
       setBusyTier(null);
     }
   };
+
+  const previewSample = preview
+    ? samples.find((sample) => sample.tier === preview.tier)
+    : undefined;
 
   return (
     <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6 sm:py-14 lg:px-8">
@@ -220,6 +219,10 @@ function CertificateSamplesPage() {
         })}
       </div>
 
+      <div className="mt-8">
+        <NativeCatalogueAd />
+      </div>
+
       {preview && (
         <div
           className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 p-3 sm:p-6"
@@ -252,11 +255,9 @@ function CertificateSamplesPage() {
                 <X className="h-5 w-5" />
               </button>
             </div>
-            <iframe
-              title={`${certificateTierLabel(preview.tier)} certificate sample PDF`}
-              src={preview.url}
-              className="min-h-0 flex-1 bg-muted"
-            />
+            <div className="flex min-h-0 flex-1 items-center justify-center overflow-auto bg-muted p-3 sm:p-6">
+              <SamplePdfPreview blob={preview.blob} />
+            </div>
             <div className="flex justify-end gap-2 border-t border-border p-3">
               <button
                 type="button"
@@ -265,14 +266,17 @@ function CertificateSamplesPage() {
               >
                 Close
               </button>
-              <a
-                href={preview.url}
-                download={`Quitech-${preview.tier}-certificate-SAMPLE.pdf`}
+              <button
+                type="button"
+                onClick={() => {
+                  if (previewSample) void downloadSample(previewSample);
+                }}
+                disabled={busyTier !== null}
                 className="inline-flex items-center gap-2 rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:bg-primary/90"
               >
                 <Download className="h-4 w-4" />
                 Download PDF
-              </a>
+              </button>
             </div>
           </section>
         </div>
@@ -293,5 +297,94 @@ function CertificateSamplesPage() {
         </Link>
       </div>
     </main>
+  );
+}
+
+function SamplePdfPreview({ blob }: { blob: Blob }) {
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    let cancelRender: (() => void) | undefined;
+
+    async function renderPdf() {
+      try {
+        const pdfjs = await import("pdfjs-dist");
+        pdfjs.GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+        const pdf = await pdfjs.getDocument({ data: await blob.arrayBuffer() }).promise;
+        const page = await pdf.getPage(1);
+        const canvas = canvasRef.current;
+        const container = containerRef.current;
+        if (!active || !canvas || !container) return;
+
+        const baseViewport = page.getViewport({ scale: 1 });
+        const scale = Math.min(
+          container.clientWidth / baseViewport.width,
+          container.clientHeight / baseViewport.height,
+        );
+        if (!Number.isFinite(scale) || scale <= 0) {
+          throw new Error("The preview area is not ready. Please close and reopen the sample.");
+        }
+        const pixelRatio = window.devicePixelRatio || 1;
+        const viewport = page.getViewport({ scale: scale * pixelRatio });
+        const context = canvas.getContext("2d");
+        if (!context) throw new Error("This device could not prepare the certificate preview.");
+
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        canvas.style.width = `${viewport.width / pixelRatio}px`;
+        canvas.style.height = `${viewport.height / pixelRatio}px`;
+        const renderTask = page.render({ canvas, canvasContext: context, viewport });
+        cancelRender = () => renderTask.cancel();
+        await renderTask.promise;
+        if (active) setIsLoading(false);
+      } catch (renderError) {
+        if (!active) return;
+        setIsLoading(false);
+        setError(
+          renderError instanceof Error
+            ? renderError.message
+            : "Please download the PDF to view this certificate.",
+        );
+      }
+    }
+
+    void renderPdf();
+    return () => {
+      active = false;
+      cancelRender?.();
+    };
+  }, [blob]);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex h-full min-h-52 w-full items-center justify-center"
+      aria-label="Certificate PDF preview"
+    >
+      {error ? (
+        <p role="alert" className="max-w-md text-center text-sm text-muted-foreground">
+          {error}{" "}
+          {Capacitor.isNativePlatform() && "You can also download the sample PDF to view it."}
+        </p>
+      ) : (
+        <div className="relative flex h-full w-full items-center justify-center">
+          {isLoading && (
+            <div className="absolute inset-0 flex items-center justify-center gap-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Preparing certificate preview…
+            </div>
+          )}
+          <canvas
+            ref={canvasRef}
+            className="max-h-full max-w-full bg-white shadow-lg"
+            aria-label="Rendered certificate sample"
+          />
+        </div>
+      )}
+    </div>
   );
 }

@@ -152,8 +152,9 @@ export async function sendPushNotification(input: {
 
   const result = await pool.query<{ token: string }>(
     `SELECT devices.token FROM push_devices devices
-     JOIN users ON users.id = devices.user_id
-     WHERE devices.enabled = TRUE AND users.push_notifications_enabled = TRUE
+     LEFT JOIN users ON users.id = devices.user_id
+     WHERE devices.enabled = TRUE
+       AND (devices.user_id IS NULL OR users.push_notifications_enabled = TRUE)
      ORDER BY devices.updated_at DESC`,
   );
   return sendToTokens(app, result.rows.map((row) => row.token), input);

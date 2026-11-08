@@ -219,6 +219,10 @@ function ResultsPage() {
         </div>
       )}
 
+      <div className="mt-8">
+        <NativeCatalogueAd />
+      </div>
+
       <h2 className="mt-10 text-xl font-semibold tracking-tight text-foreground">Answer review</h2>
       <div className="mt-4 rounded-lg border border-border bg-card p-5 shadow-sm">
         <div className="flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
@@ -275,10 +279,6 @@ function ResultsPage() {
             />
           </div>
         ))}
-      </div>
-
-      <div className="mt-8">
-        <NativeCatalogueAd />
       </div>
     </div>
   );
