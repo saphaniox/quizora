@@ -14,6 +14,7 @@ import appCss from "../styles.css?url";
 import { reportError } from "../lib/error-reporting";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
+import { AppInstallPrompt } from "@/components/AppInstallPrompt";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -398,6 +399,7 @@ function RootComponent() {
           <Outlet />
         </main>
         <Footer />
+        {!Capacitor.isNativePlatform() && <AppInstallPrompt />}
 
         <AlertDialog open={nativeAgePromptReady && !nativeAdAgeGroup}>
           <AlertDialogContent onEscapeKeyDown={(event) => event.preventDefault()}>
